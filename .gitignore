@@ -13,3 +13,11 @@ b~main.adb
 b~main.ads
 
 gnatinspect.db
+
+auto.cgpr
+
+gnatinspect.db-shm
+
+gnatinspect.db-wal
+
+errors.d
