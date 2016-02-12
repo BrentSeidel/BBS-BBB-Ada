@@ -1,8 +1,17 @@
 <?xml version="1.0"?>
 <Locations >
-  <Project >
+  <Project>
+    <vfs_file>/Users/brent/Development/GitHub/BBS-BBB-Ada/i2c.gpr</vfs_file>
+    <file_marker column=" 1" line=" 1" >
+      <vfs_file>/Users/brent/Development/GitHub/BBS-BBB-Ada/bbs-bbb-i2c-l3gd20h.ads</vfs_file>
+    </file_marker>
     <file_marker current="true" column=" 1" line=" 1" >
-      <vfs_file>/Users/brent/Development/GitHub/BBS-BBB-Ada/main.adb</vfs_file>
+      <vfs_file>/Users/brent/Development/GitHub/BBS-BBB-Ada/bbs-bbb-i2c-lms303dlhc.ads</vfs_file>
+    </file_marker>
+  </Project>
+  <Project >
+    <file_marker current="true" column=" 1" line=" 1">
+      <vfs_file >/Users/brent/Development/GitHub/BBS-BBB-Ada/main.adb</vfs_file>
     </file_marker>
   </Project>
   <Project >
