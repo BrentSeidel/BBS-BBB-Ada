@@ -21,6 +21,17 @@ package BBS.BBB.i2c.L3GD20H is
    ref : constant uint8 := 16#25#;
    out_temp : constant uint8 := 16#26#;
    status : constant uint8 := 16#27#;
+   --
+   -- Status bits
+   zyx_or : constant uint8 := 16#80#; -- Underscore inserted because xor is a
+   z_or : constant uint8 := 16#40#;   -- reserved word.
+   y_or : constant uint8 := 16#20#;
+   x_or : constant uint8 := 16#10#;
+   zyxda : constant uint8 := 16#08#;
+   zda : constant uint8 := 16#04#;
+   yda : constant uint8 := 16#02#;
+   xda : constant uint8 := 16#01#;
+   --
    out_x_l : constant uint8 := 16#28#;
    out_x_h : constant uint8 := 16#29#;
    out_y_l : constant uint8 := 16#2a#;
@@ -53,6 +64,8 @@ package BBS.BBB.i2c.L3GD20H is
    function get_rotation_y(error : out integer) return integer;
    function get_rotation_z(error : out integer) return integer;
    function get_rotations(error : out integer) return rotations;
+   function get_status(error : out integer) return uint8;
+   function data_ready(error : out integer) return boolean;
 
 private
    buff : aliased buffer;

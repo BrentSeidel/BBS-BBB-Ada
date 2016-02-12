@@ -8,6 +8,7 @@ with BBS.BBB.i2c;
 -- useful starting point.
 --
 package BBS.BBB.i2c.LMS303DLHC is
+   --
    -- Addresses for LMS303DLHC - accelerometer and magnetometer
    -- Note that though the accelerometer and magnetometer are on the same
    -- physical chip, they have different addresses on the I2C bus.
@@ -22,6 +23,17 @@ package BBS.BBB.i2c.LMS303DLHC is
    accel_ctrl6 : constant uint8 := 16#25#;
    accel_ref : constant uint8 := 16#26#;
    accel_status : constant uint8 := 16#27#;
+   --
+   -- Status bits
+   accel_stat_zyxor : constant uint8 := 16#80#;
+   accel_stat_zor : constant uint8 := 16#40#;
+   accel_stat_yor : constant uint8 := 16#20#;
+   accel_stat_xor : constant uint8 := 16#10#;
+   accel_stat_zyxda : constant uint8 := 16#08#;
+   accel_stat_zda : constant uint8 := 16#04#;
+   accel_stat_yda : constant uint8 := 16#02#;
+   accel_stat_xda : constant uint8 := 16#01#;
+   --
    accel_out_x_h : constant uint8 := 16#28#;
    accel_out_x_l : constant uint8 := 16#29#;
    accel_out_y_h : constant uint8 := 16#2a#;
@@ -57,6 +69,11 @@ package BBS.BBB.i2c.LMS303DLHC is
    mag_out_z_h : constant uint8 := 16#05#;
    mag_out_z_l : constant uint8 := 16#06#;
    mag_sr : constant uint8 := 16#09#;
+   --
+   -- Status bits
+   mag_lock : constant uint8 := 16#02#;
+   mag_drdy : constant uint8 := 16#01#;
+   --
    mag_ira : constant uint8 := 16#0a#;
    mag_irb : constant uint8 := 16#0b#;
    mag_irc : constant uint8 := 16#0c#;
@@ -83,10 +100,14 @@ package BBS.BBB.i2c.LMS303DLHC is
    function get_acceleration_y(error : out integer) return integer;
    function get_acceleration_z(error : out integer) return integer;
    function get_accelerations(error : out integer) return accelerations;
+   function get_accel_status(error : out integer) return uint8;
+   function accel_data_ready(error : out integer) return boolean;
    function get_magnet_x(error : out integer) return integer;
    function get_magnet_y(error : out integer) return integer;
    function get_magnet_z(error : out integer) return integer;
    function get_magnetism(error : out integer) return magnetism;
+   function get_mag_status(error : out integer) return uint8;
+   function mag_data_ready(error : out integer) return boolean;
 
 private
    buff : aliased buffer;

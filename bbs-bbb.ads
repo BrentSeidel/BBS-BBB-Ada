@@ -14,11 +14,11 @@ package BBS.BBB is
      with size => 7;
    type int8 is range -128 .. 127
      with size => 8;
-   type uint8 is range 0 .. 255
+   type uint8 is mod 2**8
      with size => 8;
    type int16 is range -32768 .. 32767
      with size => 16;
-   type uint16 is range 0 .. 65535
+   type uint16 is mod 2**16
      with Size => 16;
    --
    -- A couple of unchecked conversions to convert unsigned into signed values.

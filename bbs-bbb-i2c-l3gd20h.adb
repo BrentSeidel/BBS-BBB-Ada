@@ -54,5 +54,23 @@ package body BBS.BBB.i2c.L3GD20H is
       rot.z :=Integer(uint16_to_int16(uint16(buff(4)) + uint16(buff(5))*256));
       return rot;
    end;
+   --
+   function get_status(error : out integer) return uint8 is
+   begin
+      return BBS.BBB.i2c.read(addr, status, error);
+   end;
+   --
+   function data_ready(error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := BBS.BBB.i2c.read(addr, status, err);
+      error := err;
+      if ((byte and zyxda) = zyxda) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
 
 end;

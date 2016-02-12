@@ -20,7 +20,7 @@ package body BBS.BBB.i2c.LMS303DLHC is
       word : uint16;
    begin
       byte := BBS.BBB.i2c.read(addr_mag, mag_temp_h, error);
-      word := BBS.BBB.uint16(byte * 256);
+      word := BBS.BBB.uint16(byte) * 256;
       byte := BBS.BBB.i2c.read(addr_mag, mag_temp_l, error);
       return integer(BBS.BBB.uint16_to_int16(word + BBS.BBB.uint16(byte)))/16;
    end;
@@ -60,6 +60,24 @@ package body BBS.BBB.i2c.LMS303DLHC is
       return accel;
    end;
    --
+   function get_accel_status(error : out integer) return uint8 is
+   begin
+      return BBS.BBB.i2c.read(addr_accel, accel_status, error);
+   end;
+   --
+   function accel_data_ready(error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := BBS.BBB.i2c.read(addr_accel, accel_status, err);
+      error := err;
+      if ((byte and accel_stat_zyxda) = accel_stat_zyxda) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+   --
    function get_magnet_x(error : out integer) return integer is
       word : uint16;
    begin
@@ -94,4 +112,23 @@ package body BBS.BBB.i2c.LMS303DLHC is
       mag.y :=Integer(uint16_to_int16(uint16(buff(4)) + uint16(buff(5))*256));
       return mag;
    end;
+   --
+   function get_mag_status(error : out integer) return uint8 is
+   begin
+      return BBS.BBB.i2c.read(addr_mag, mag_sr, error);
+   end;
+   --
+   function mag_data_ready(error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := BBS.BBB.i2c.read(addr_mag, mag_sr, err);
+      error := err;
+      if ((byte and mag_drdy) = mag_drdy) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+
 end;
