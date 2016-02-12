@@ -1,0 +1,25 @@
+project I2C is
+
+   for Source_Dirs use ("./**");
+   for Main use ();
+   for Languages use ("Ada", "C");
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s", "-g");
+   end Builder;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+      for Default_Switches ("c") use ("-g");
+   end Linker;
+
+   package Compiler is
+      for Default_Switches ("c") use ("-g");
+   end Compiler;
+
+end I2C;
+

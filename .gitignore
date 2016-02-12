@@ -3,3 +3,11 @@
 
 # Ada Library Information
 *.ali
+
+b__main.adb
+
+b__main.ads
+
+b~main.adb
+
+b~main.ads
