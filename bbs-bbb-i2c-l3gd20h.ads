@@ -69,4 +69,11 @@ package BBS.BBB.i2c.L3GD20H is
 
 private
    buff : aliased buffer;
+   --
+   -- The temperature offset is emperically determined and seems to work for my
+   -- application.  You may want to check the values that you get from the
+   -- temperature sensor and compare them with a calibrated thermometer to
+   -- determine your own value.
+   --
+   temperature_offset : constant integer := 37;
 end;

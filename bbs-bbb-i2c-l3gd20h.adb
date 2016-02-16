@@ -13,11 +13,15 @@ package body BBS.BBB.i2c.L3GD20H is
    -- that for this device, adding 16#80# to the register address causes the
    -- address to automatically increment when reading multiple bytes.
    --
+   -- The temperature sensor values actually have a LSB resolution of -1 deg C.
+   -- It also appears to be offset by about 40 deg C.  This is determined
+   -- emperically as the datasheet isn't really clear.
+   --
    function get_temperature(error : out integer) return integer is
       byte : uint8;
    begin
       byte := BBS.BBB.i2c.read(addr, out_temp, error);
-      return Integer(BBS.BBB.uint8_to_int8(byte));
+      return temperature_offset-Integer(BBS.BBB.uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(error : out integer) return integer is

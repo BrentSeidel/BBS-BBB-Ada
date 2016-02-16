@@ -20,6 +20,8 @@ package BBS.BBB is
      with size => 16;
    type uint16 is mod 2**16
      with Size => 16;
+   type uint32 is mod 2**32
+     with Size => 32;
    --
    -- A couple of unchecked conversions to convert unsigned into signed values.
    --

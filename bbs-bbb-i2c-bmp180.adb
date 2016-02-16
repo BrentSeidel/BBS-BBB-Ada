@@ -63,15 +63,40 @@ package body BBS.BBB.i2c.BMP180 is
    --
    procedure start_conversion(kind : uint8; error : out integer) is
    begin
-      BBS.BBB.i2c.write(BBS.BBB.i2c.BMP180.addr, BBS.BBB.i2c.BMP180.ctrl, kind, error);
+      BBS.BBB.i2c.write(addr, ctrl, kind, error);
       last_cvt := kind;
    end;
+   --
+   function data_ready(error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := BBS.BBB.i2c.read(addr, ctrl, err);
+      error := err;
+      if ((byte and start_cvt) = start_cvt) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+   --
+   -- The calculations to get calibrated temperature and pressure are based on
+   -- the algorithm in the datasheet.  It does not explain the meaning of the
+   -- various constants or steps in the process.  It is also not unlikely that
+   -- some errors may have crept in in the process of translating it into Ada.
+   --
+   -- I think that some of the arithmatic depends on the details of integer math
+   -- dropping bits on underflow or overflow.
    --
    function get_temp(error : out integer) return float is
       msb_value : uint8;
       lsb_value : uint8;
       temp : int16;
    begin
+      if (last_cvt /= cvt_temp) then
+         Ada.Text_IO.Put_Line("Last conversion request was not for temperature");
+         raise Program_Error;
+      end if;
       msb_value := BBS.BBB.i2c.read(addr, msb, error);
       lsb_value := BBS.BBB.i2c.read(addr, lsb, error);
       temp := uint16_to_int16(uint16(msb_value) * 256 + uint16(lsb_value));
@@ -81,5 +106,70 @@ package body BBS.BBB.i2c.BMP180 is
       cal_temp := (b5 + 8)/16;
       return float(cal_temp) / 10.0;
    end;
-
+   --
+   function get_press(error : out integer) return integer is
+      msb_value : uint8;
+      lsb_value : uint8;
+      xlsb_value : uint8;
+      oss : uint8;
+      press : integer;
+      b6 : integer;
+      x1a : integer;
+      x2a : integer;
+      x3 : integer;
+      b3 : integer;
+      b4 : uint32;
+      b7 : uint32;
+      oss_2 : integer;
+   begin
+      if (last_cvt /= cvt_press0) and (last_cvt /= cvt_press1) and
+        (last_cvt /= cvt_press2) and (last_cvt /= cvt_press3) then
+         Ada.Text_IO.Put_Line("Last conversion request was not for pressure");
+         raise Program_Error;
+      end if;
+      msb_value := BBS.BBB.i2c.read(addr, msb, error);
+      lsb_value := BBS.BBB.i2c.read(addr, lsb, error);
+      xlsb_value := BBS.BBB.i2c.read(addr, xlsb, error);
+      press := integer(uint8_to_int8(msb_value)) * 65536 +
+        integer(uint8_to_int8(lsb_value)) * 256 +
+          integer(uint8_to_int8(xlsb_value));
+      oss := (last_cvt / 64) and 3;
+      case oss is
+      when 0 =>
+         press := press / 2 ** 8;
+         oss_2 := 1;
+      when 1 =>
+         press := press / 2 ** 7;
+         oss_2 := 2;
+      when 2 =>
+         press := press / 2 ** 6;
+         oss_2 := 4;
+      when 3 =>
+         press := press / 2 ** 5;
+         oss_2 := 8;
+      when others =>
+         Ada.Text_IO.Put_Line("OSS value out of range " & integer'Image(integer(oss)));
+         raise Program_Error;
+      end case;
+      b6 := b5 - 4000;
+      x1a := (integer(b2) * (b6*b6/4096))/2048;
+      x2a := integer(ac2)*b6/2048;
+      x3 := x1a + x2a;
+      b3 := (((integer(ac1)*4 + x3)*oss_2) + 2)/4;
+      x1a := integer(ac3)*b6/2**13;
+      x2a := (integer(b1) * (b6*b6/4096))/65536;
+      x3 := (x1a + x2a + 2)/4;
+      b4 := uint32(ac4) * uint32(x3 + 32768)/32768;
+      b7 := (int_to_uint32(press) - uint32(b3))*(50000/uint32(oss_2));
+      if (b7 < 16#80000000#) then
+         press := integer((b7*2)/b4);
+      else
+         press := integer((b7/b4)*2);
+      end if;
+      x1a := (press/256)*(press/256);
+      x1a := (x1a*3038)/65536;
+      x2a := (-7357*press)/65536;
+      press := press + (x1a + x2a + 3791)/16;
+      return press;
+   end;
 end;

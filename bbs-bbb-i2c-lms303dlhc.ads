@@ -95,7 +95,7 @@ package BBS.BBB.i2c.LMS303DLHC is
       end record;
 
    procedure configure(error : out integer);
-   function get_temperature(error : out integer) return integer;
+   function get_temperature(error : out integer) return float;
    function get_acceleration_x(error : out integer) return integer;
    function get_acceleration_y(error : out integer) return integer;
    function get_acceleration_z(error : out integer) return integer;
@@ -111,5 +111,12 @@ package BBS.BBB.i2c.LMS303DLHC is
 
 private
    buff : aliased buffer;
+   --
+   -- The temperature offset is emperically determined and seems to work for my
+   -- application.  You may want to check the values that you get from the
+   -- temperature sensor and compare them with a calibrated thermometer to
+   -- determine your own value.
+   --
+   temperature_offset : constant int16 := 136;
 
 end;

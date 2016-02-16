@@ -10,16 +10,14 @@ with BBS.BBB.i2c;
 --
 package BBS.BBB.i2c.devices is
    --
+   -- List of addresses for devices in separate packages.  These are listed here
+   -- in address order to help check for duplicate addresses.
+   --
+   addr_LMS303DLHC_accel : constant addr7 := 16#19#; -- Accelerometer
+   addr_LMS303DLHC_mag : constant addr7 := 16#1e#; -- Magnetometer
+   addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
+   addr_BMP180 : constant addr7 := 16#77#;
+   --
    -- Define some useful constants.
    --
-   --
-   -- Addresses for BMP180 - Digital Pressure Sensor
-   --
-   addr_press : constant addr7 := 16#77#;
-   press_xlsb : constant uint8 := 16#f8#;
-   press_lsb : constant uint8 := 16#f7#;
-   press_msb : constant uint8 := 16#f6#;
-   press_ctrl : constant uint8 := 16#f4#;
-   press_reset : constant uint8 := 16#e0#;
-   press_id : constant uint8 := 16#d0#;
 end;

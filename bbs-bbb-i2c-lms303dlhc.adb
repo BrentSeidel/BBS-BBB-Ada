@@ -15,14 +15,21 @@ package body BBS.BBB.i2c.LMS303DLHC is
    -- that for this device, adding 16#80# to the register address causes the
    -- address to automatically increment when reading multiple bytes.
    --
-   function get_temperature(error : out integer) return integer is
+   --
+   -- The temperature is a 12 bit value returned in two 8 bit registers.  The
+   -- resolution is 8 LSB to one degree C.  Unfortunately, in testing, this
+   -- does not seem to produce a reasonable value.  The value produced is about
+   -- 20C too low.
+   --
+   function get_temperature(error : out integer) return float is
       byte : uint8;
       word : uint16;
    begin
       byte := BBS.BBB.i2c.read(addr_mag, mag_temp_h, error);
-      word := BBS.BBB.uint16(byte) * 256;
+      word := uint16(byte) * 256;
       byte := BBS.BBB.i2c.read(addr_mag, mag_temp_l, error);
-      return integer(BBS.BBB.uint16_to_int16(word + BBS.BBB.uint16(byte)))/16;
+      word := word + uint16(byte);
+      return float(temperature_offset + BBS.BBB.uint16_to_int16(word)/16)/8.0;
    end;
    --
    function get_acceleration_x(error : out integer) return integer is
