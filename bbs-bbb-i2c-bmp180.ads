@@ -101,5 +101,7 @@ private
    --
    function int_to_uint32 is
      new Ada.Unchecked_Conversion(source => integer, target => uint32);
+   function uint32_to_int is
+     new Ada.Unchecked_Conversion(source => uint32, target => integer);
 
 end;

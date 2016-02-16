@@ -73,7 +73,7 @@ package body BBS.BBB.i2c.BMP180 is
    begin
       byte := BBS.BBB.i2c.read(addr, ctrl, err);
       error := err;
-      if ((byte and start_cvt) = start_cvt) and (err = 0) then
+      if ((byte and start_cvt) /= start_cvt) and (err = 0) then
          return true;
       else
          return false;
@@ -112,6 +112,7 @@ package body BBS.BBB.i2c.BMP180 is
       lsb_value : uint8;
       xlsb_value : uint8;
       oss : uint8;
+      oss_2 : integer;
       press : integer;
       b6 : integer;
       x1a : integer;
@@ -120,7 +121,6 @@ package body BBS.BBB.i2c.BMP180 is
       b3 : integer;
       b4 : uint32;
       b7 : uint32;
-      oss_2 : integer;
    begin
       if (last_cvt /= cvt_press0) and (last_cvt /= cvt_press1) and
         (last_cvt /= cvt_press2) and (last_cvt /= cvt_press3) then
@@ -130,9 +130,7 @@ package body BBS.BBB.i2c.BMP180 is
       msb_value := BBS.BBB.i2c.read(addr, msb, error);
       lsb_value := BBS.BBB.i2c.read(addr, lsb, error);
       xlsb_value := BBS.BBB.i2c.read(addr, xlsb, error);
-      press := integer(uint8_to_int8(msb_value)) * 65536 +
-        integer(uint8_to_int8(lsb_value)) * 256 +
-          integer(uint8_to_int8(xlsb_value));
+      press := uint32_to_int(uint32(msb_value) * 65536 + uint32(lsb_value) * 256 + uint32(xlsb_value));
       oss := (last_cvt / 64) and 3;
       case oss is
       when 0 =>
@@ -152,24 +150,24 @@ package body BBS.BBB.i2c.BMP180 is
          raise Program_Error;
       end case;
       b6 := b5 - 4000;
-      x1a := (integer(b2) * (b6*b6/4096))/2048;
-      x2a := integer(ac2)*b6/2048;
+      x1a := (integer(b2) * (b6*b6/2**12))/2**11;
+      x2a := integer(ac2)*b6/2**11;
       x3 := x1a + x2a;
       b3 := (((integer(ac1)*4 + x3)*oss_2) + 2)/4;
       x1a := integer(ac3)*b6/2**13;
-      x2a := (integer(b1) * (b6*b6/4096))/65536;
-      x3 := (x1a + x2a + 2)/4;
-      b4 := uint32(ac4) * uint32(x3 + 32768)/32768;
+      x2a := (integer(b1) * (b6*b6/2**12))/2**16;
+      x3 := (x1a + x2a + 2)/2**2;
+      b4 := uint32(ac4) * uint32(x3 + 32768)/2**15;
       b7 := (int_to_uint32(press) - uint32(b3))*(50000/uint32(oss_2));
       if (b7 < 16#80000000#) then
          press := integer((b7*2)/b4);
       else
          press := integer((b7/b4)*2);
       end if;
-      x1a := (press/256)*(press/256);
-      x1a := (x1a*3038)/65536;
-      x2a := (-7357*press)/65536;
-      press := press + (x1a + x2a + 3791)/16;
+      x1a := (press/2**8)*(press/2**8);
+      x1a := (x1a*3038)/2**16;
+      x2a := (-7357*press)/2**16;
+      press := press + (x1a + x2a + 3791)/2**4;
       return press;
    end;
 end;
