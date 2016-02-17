@@ -6,8 +6,39 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    procedure configure(error : out integer) is
    begin
-      BBS.BBB.i2c.write(addr, ctrl1, 16#0f#, error);
+      dps_scale := 245.0/32767.0;
+      BBS.BBB.i2c.write(addr, ctrl1, 16#ff#, error);
+      --
+      -- Data rate = 50Hz (or 800Hz if low_odr is 0)
+      -- Bandwidth is 16.6Hz or 100Hz
+      -- Normal mode
+      -- X, Y, Z, axis sensors enabled
+      --
    end;
+   --
+   procedure configure(deflection : uint8; error : out integer) is
+   begin
+      case deflection is
+         when fs_245dps =>
+            dps_scale := 245.0/32767.0;
+         when fs_500dps =>
+            dps_scale := 500.0/32767.0;
+         when fs_2000dps =>
+            dps_scale := 2000.0/32767.0;
+         when others =>
+         Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
+         raise Program_Error;
+      end case;
+      BBS.BBB.i2c.write(addr, ctrl4, deflection, error);
+      BBS.BBB.i2c.write(addr, ctrl1, 16#ff#, error);
+      --
+      -- Data rate = 50Hz (or 800Hz if low_odr is 0)
+      -- Bandwidth is 16.6Hz or 100Hz
+      -- Normal mode
+      -- X, Y, Z, axis sensors enabled
+      --
+   end;
+
    --
    -- A set of utility functions to get measurements from the sensors.  Note
    -- that for this device, adding 16#80# to the register address causes the
@@ -15,13 +46,14 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    -- The temperature sensor values actually have a LSB resolution of -1 deg C.
    -- It also appears to be offset by about 40 deg C.  This is determined
-   -- emperically as the datasheet isn't really clear.
+   -- emperically as the datasheet isn't really clear.  This function returns the
+   -- raw value from the sensor.
    --
    function get_temperature(error : out integer) return integer is
       byte : uint8;
    begin
       byte := BBS.BBB.i2c.read(addr, out_temp, error);
-      return temperature_offset-Integer(BBS.BBB.uint8_to_int8(byte));
+      return Integer(BBS.BBB.uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(error : out integer) return integer is
@@ -76,5 +108,44 @@ package body BBS.BBB.i2c.L3GD20H is
          return false;
       end if;
    end;
-
+   --
+   function get_temperature(error : out integer) return Celsius is
+      raw : integer;
+   begin
+      raw := get_temperature(error);
+      return Celsius(temperature_offset - raw);
+   end;
+   --
+   function get_rotation_x(error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := get_rotation_x(error);
+      return rate_dps(float(raw) * dps_scale);
+   end;
+   --
+   function get_rotation_y(error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := get_rotation_y(error);
+      return rate_dps(float(raw) * dps_scale);
+   end;
+   --
+   function get_rotation_z(error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := get_rotation_z(error);
+      return rate_dps(float(raw) * dps_scale);
+   end;
+   --
+   function get_rotations(error : out integer) return rotations_dps is
+      raw : rotations;
+      rot : rotations_dps;
+   begin
+      raw := get_rotations(error);
+      rot.x := rate_dps(float(raw.x) * dps_scale);
+      rot.y := rate_dps(float(raw.y) * dps_scale);
+      rot.z := rate_dps(float(raw.z) * dps_scale);
+      return rot;
+   end;
+   --
 end;

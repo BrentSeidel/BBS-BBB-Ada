@@ -1,10 +1,16 @@
 # BBS-BBB-Ada
-This repository contains a collection of Ada sources for working with the BeagleBone Black.
+This repository contains a collection of Ada sources for working with the
+BeagleBone Black Linux computer.  Some of these could probably be easily ported
+to similar systems such as the Raspberry PI.
 
 # Notice
 Due to changes in the way that various I/O is handled, these routines are pretty much
 guarenteed not to work on some versions of Linux.  The I2C routines were developed on
 Debian Jessie, Linux V4.1.12-ti-r29 and use Ada 2012.
+
+Some of the system files that control I/O are owned by root and do not allow world
+write access.  A shell script is provided to set the permissions so that the Ada
+program does not need to run as root.
 
 # Contents
 ## LEDs
@@ -12,11 +18,17 @@ The BBS.BBB.LED package contains definitions and routines for controlling the fo
 in LEDs on the board next to the ethernet connector.
 
 ## i2c
-The BBS.BBB.i2c package contains a set of routines for reading and writing to devices on
-I2C bus 1 (pins P9-24 and P9-26).
+The BBS.BBB.i2c package contains a set of routines for reading and writing to
+devices on I2C bus 1 (pins P9-24 and P9-26).  Currently the other two I2C busses
+are not supported.  They may be at some future point, but they seem to be used
+for system functions so probably best not to mess with them.
 
 ## i2c subpackages
 Subpackages have been created for the following devices to provide a higher level interface.
+
+### BMP180
+This chip contains a pressure sensor and a temperature sensor along with calibration
+values.
 
 ### LMS303DLHC
 This chip contains a 3 axis accelerometer and a 3 axis magnetometer.  Routines are provided

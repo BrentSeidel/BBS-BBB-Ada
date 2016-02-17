@@ -1,5 +1,33 @@
 package body BBS.BBB.i2c.BMP180 is
    --
+   -- Unit conversion routines.  At some point, these should probably be moved
+   -- into a separate package.
+   --
+   function to_milliBar(pressure : Pascal) return milliBar is
+   begin
+      return milliBar(float(pressure) / 100.0);
+   end;
+   --
+   function to_Atmosphere(pressure : Pascal) return Atmosphere is
+   begin
+      return Atmosphere(float(pressure) / 101325.0);
+   end;
+   --
+   function to_inHg(pressure : Pascal) return inHg is
+   begin
+      return inHg(float(pressure) / 3386.39);
+   end;
+   --
+   function to_Farenheit(temp : Celsius) return Farenheit is
+   begin
+      return Farenheit(float(temp)*9.0/5.0 + 32.0);
+   end;
+   --
+   function to_Kelvin(temp : Celsius) return Kelvin is
+   begin
+      return Kelvin(float(temp) + 273.15);
+   end;
+   --
    -- Procedures to work with the BMP180 pressure and temperature sensor
    --
    --
@@ -88,7 +116,7 @@ package body BBS.BBB.i2c.BMP180 is
    -- I think that some of the arithmatic depends on the details of integer math
    -- dropping bits on underflow or overflow.
    --
-   function get_temp(error : out integer) return float is
+   function get_temp(error : out integer) return integer is
       msb_value : uint8;
       lsb_value : uint8;
       temp : int16;
@@ -103,8 +131,31 @@ package body BBS.BBB.i2c.BMP180 is
       x1 := ((integer(temp) - integer(ac6)) * integer(ac5)) / 32768;
       x2 := integer(mc) * 2048 / (x1 + integer(md));
       b5 := x1 + x2;
-      cal_temp := (b5 + 8)/16;
-      return float(cal_temp) / 10.0;
+      return (b5 + 8)/16;
+   end;
+   --
+   function get_temp(error : out integer) return float is
+      int_temp : integer := get_temp(error);
+   begin
+      return float(int_temp) / 10.0;
+   end;
+   --
+   function get_temp(error : out integer) return Celsius is
+      int_temp : integer := get_temp(error);
+   begin
+      return Celsius(float(int_temp) / 10.0);
+   end;
+   --
+   function get_temp(error : out integer) return Farenheit is
+      int_temp : integer := get_temp(error);
+   begin
+      return to_Farenheit(Celsius(float(int_temp) / 10.0));
+   end;
+   --
+   function get_temp(error : out integer) return Kelvin is
+      int_temp : integer := get_temp(error);
+   begin
+      return to_Kelvin(Celsius(float(int_temp) / 10.0));
    end;
    --
    function get_press(error : out integer) return integer is
@@ -170,4 +221,34 @@ package body BBS.BBB.i2c.BMP180 is
       press := press + (x1a + x2a + 3791)/2**4;
       return press;
    end;
+   --
+   function get_press(error : out integer) return Pascal is
+      int_press : integer;
+   begin
+      int_press := get_press(error);
+      return Pascal(int_press);
+   end;
+   --
+   function get_press(error : out integer) return milliBar is
+      int_press : integer;
+   begin
+      int_press := get_press(error);
+      return to_millibar(Pascal(int_press));
+   end;
+   --
+   function get_press(error : out integer) return Atmosphere is
+      int_press : integer;
+   begin
+      int_press := get_press(error);
+      return to_Atmosphere(Pascal(int_press));
+   end;
+   --
+   function get_press(error : out integer) return inHg is
+      int_press : integer;
+   begin
+      int_press := get_press(error);
+      return to_inHg(Pascal(int_press));
+   end;
+   --
+
 end;

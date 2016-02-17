@@ -36,6 +36,28 @@ package BBS.BBB.i2c.BMP180 is
    cvt_press2 : constant uint8 := 16#b4#;
    cvt_press3 : constant uint8 := 16#f4#;
    --
+   -- Since temperature and pressure have quite a wide variaty of units provide
+   -- some types and conversion routines.  These will allow the compiler to help
+   -- ensure that you have your units straight.  At some point, these should be
+   -- collected with other units into a separate package.
+   --
+   type Pascal is new integer;
+   type milliBar is new float;
+   type Atmosphere is new float;
+   type inHg is new float;
+   type Celsius is new float;
+   type Farenheit is new float;
+   type Kelvin is new float;
+   --
+   -- Conversion routines
+   --
+   function to_milliBar(pressure : Pascal) return milliBar;
+   function to_Atmosphere(pressure : Pascal) return Atmosphere;
+   function to_inHg(pressure : Pascal) return inHg;
+   --
+   function to_Farenheit(temp : Celsius) return Farenheit;
+   function to_Kelvin(temp : Celsius) return Kelvin;
+   --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
    --
@@ -61,14 +83,33 @@ package BBS.BBB.i2c.BMP180 is
    --
    function data_ready(error : out integer) return boolean;
    --
-   -- Return a calibrated temperature value.
+   -- Return a calibrated temperature value.  Temperature is returned in units
+   -- of degrees Celsius.
    --
    function get_temp(error : out integer) return float;
    --
+   -- Return calibrated temperature in units of 0.1 degrees Celsius.
+   --
+   function get_temp(error : out integer) return integer;
+   --
+   -- Return temperature in various units.
+   --
+   function get_temp(error : out integer) return Celsius;
+   function get_temp(error : out integer) return Farenheit;
+   function get_temp(error : out integer) return Kelvin;
+      --
    -- Return a calibrated pressure value.  Note that a temperature reading must
-   -- be made before calibrated pressure can be successfully computed.
+   -- be made before calibrated pressure can be successfully computed.  Pressure
+   -- is returned in units of Pascals.
    --
    function get_press(error : out integer) return integer;
+   --
+   -- Return pressure in various units.
+   --
+   function get_press(error : out integer) return Pascal;
+   function get_press(error : out integer) return milliBar;
+   function get_press(error : out integer) return Atmosphere;
+   function get_press(error : out integer) return inHg;
    --
 private
    buff : aliased buffer;
@@ -92,7 +133,6 @@ private
    x1 : integer;
    x2 : integer;
    b5 : integer;
-   cal_temp : integer;
    --
    last_cvt : uint8 := 0;
    dump_values : constant boolean := false;
