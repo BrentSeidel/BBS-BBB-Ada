@@ -26,8 +26,8 @@ package body BBS.BBB.i2c.L3GD20H is
          when fs_2000dps =>
             dps_scale := 2000.0/32767.0;
          when others =>
-         Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
-         raise Program_Error;
+            Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
+            raise Program_Error;
       end case;
       BBS.BBB.i2c.write(addr, ctrl4, deflection, error);
       BBS.BBB.i2c.write(addr, ctrl1, 16#ff#, error);
