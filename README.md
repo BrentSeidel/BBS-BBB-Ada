@@ -23,12 +23,20 @@ devices on I2C bus 1 (pins P9-24 and P9-26).  Currently the other two I2C busses
 are not supported.  They may be at some future point, but they seem to be used
 for system functions so probably best not to mess with them.
 
+An object oriented interface has been provided for the I2C bus as well as for
+devices on the bus.  The functionality is the same as the non-object oriented
+interface with the exception that the object oriented interface will allow for
+mutliple devices of the same kind on an I2C bus.
+
 ## i2c subpackages
 Subpackages have been created for the following devices to provide a higher level interface.
 
 ### BMP180
 This chip contains a pressure sensor and a temperature sensor along with calibration
-values.
+values.  The package also contains type definitions for a number of pressure,
+temperature, and distance values with conversions between.  In addition routines
+have been provided to return altitude given current pressure and altimeter setting
+as well as altimeter setting given current pressure and altitude.
 
 ### LSM303DLHC
 This chip contains a 3 axis accelerometer and a 3 axis magnetometer.  Routines are provided

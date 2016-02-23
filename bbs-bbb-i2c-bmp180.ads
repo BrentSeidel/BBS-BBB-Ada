@@ -1,6 +1,7 @@
 with Ada.Text_IO;
 with Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
+with Ada.Numerics.Generic_Elementary_Functions;
 with BBS.BBB.i2c;
 --
 -- This package contains constants and routines to communicate with the BMP180
@@ -45,18 +46,37 @@ package BBS.BBB.i2c.BMP180 is
    type milliBar is new float;
    type Atmosphere is new float;
    type inHg is new float;
+   --
    type Celsius is new float;
    type Farenheit is new float;
    type Kelvin is new float;
+   --
+   type meters is new float;
+   type feet is new float;
    --
    -- Conversion routines
    --
    function to_milliBar(pressure : Pascal) return milliBar;
    function to_Atmosphere(pressure : Pascal) return Atmosphere;
    function to_inHg(pressure : Pascal) return inHg;
+   function to_Pascal(pressure : milliBar) return Pascal;
+   function to_Pascal(pressure : Atmosphere) return Pascal;
+   function to_Pascal(pressure : inHg) return Pascal;
    --
    function to_Farenheit(temp : Celsius) return Farenheit;
    function to_Kelvin(temp : Celsius) return Kelvin;
+   function to_Celsius(temp : Farenheit) return Celsius;
+   function to_Celsius(temp : Kelvin) return Celsius;
+   --
+   function to_feet(dist : meters) return feet;
+   function to_meters(dist : feet) return meters;
+   --
+   -- Given local pressure and altimeter setting, determine the pressure
+   -- altitude.  Given local pressure and altitude, determine the altimeter
+   -- setting.
+   --
+   function pressure_altitude(pressure : Pascal; altm : Pascal) return meters;
+   function altimeter(pressure : Pascal; altitude : meters) return Pascal;
    --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
