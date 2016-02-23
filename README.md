@@ -30,7 +30,7 @@ Subpackages have been created for the following devices to provide a higher leve
 This chip contains a pressure sensor and a temperature sensor along with calibration
 values.
 
-### LMS303DLHC
+### LSM303DLHC
 This chip contains a 3 axis accelerometer and a 3 axis magnetometer.  Routines are provided
 to initialize the chip and to return the acceleration or magnetic field for each axis.
 Combined acceleration or magnetic field for all three axis can also be returned.

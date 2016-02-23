@@ -97,7 +97,7 @@ package BBS.BBB.i2c.BMP180 is
    function get_temp(error : out integer) return Celsius;
    function get_temp(error : out integer) return Farenheit;
    function get_temp(error : out integer) return Kelvin;
-      --
+   --
    -- Return a calibrated pressure value.  Note that a temperature reading must
    -- be made before calibrated pressure can be successfully computed.  Pressure
    -- is returned in units of Pascals.
@@ -110,6 +110,29 @@ package BBS.BBB.i2c.BMP180 is
    function get_press(error : out integer) return milliBar;
    function get_press(error : out integer) return Atmosphere;
    function get_press(error : out integer) return inHg;
+   --
+   -- Stuff for object oriented interface.  These basically emulate the function
+   -- of the conventional routines above.
+   --
+   type BMP180_record is new i2c_device_record with private;
+   type BMP180_ptr is access BMP180_record;
+   --
+   function i2c_new return BMP180_ptr;
+   procedure configure(self : not null access BMP180_record'class; port : i2c_interface;
+                       addr : addr7; error : out integer);
+   --
+   procedure start_conversion(self : not null access BMP180_record'class; kind : uint8; error : out integer);
+   function data_ready(self : not null access BMP180_record'class; error : out integer) return boolean;
+   function get_temp(self : not null access BMP180_record'class; error : out integer) return float;
+   function get_temp(self : not null access BMP180_record'class; error : out integer) return integer;
+   function get_temp(self : not null access BMP180_record'class; error : out integer) return Celsius;
+   function get_temp(self : not null access BMP180_record'class; error : out integer) return Farenheit;
+   function get_temp(self : not null access BMP180_record'class; error : out integer) return Kelvin;
+   function get_press(self : not null access BMP180_record'class; error : out integer) return integer;
+   function get_press(self : not null access BMP180_record'class; error : out integer) return Pascal;
+   function get_press(self : not null access BMP180_record'class; error : out integer) return milliBar;
+   function get_press(self : not null access BMP180_record'class; error : out integer) return Atmosphere;
+   function get_press(self : not null access BMP180_record'class; error : out integer) return inHg;
    --
 private
    buff : aliased buffer;
@@ -143,5 +166,24 @@ private
      new Ada.Unchecked_Conversion(source => integer, target => uint32);
    function uint32_to_int is
      new Ada.Unchecked_Conversion(source => uint32, target => integer);
+   --
+   type BMP180_record is new i2c_device_record with record
+      buff : aliased buffer;
+      ac1 : int16 := 0;
+      ac2 : int16 := 0;
+      ac3 : int16 := 0;
+      ac4 : uint16 := 0;
+      ac5 : uint16 := 0;
+      ac6 : uint16 := 0;
+      b1 : int16 := 0;
+      b2 : int16 := 0;
+      mb : int16 := 0;
+      mc : int16 := 0;
+      md : int16 := 0;
+      x1 : integer;
+      x2 : integer;
+      b5 : integer;
+      last_cvt : uint8 := 0;
+   end record;
 
 end;

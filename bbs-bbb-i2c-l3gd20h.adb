@@ -77,9 +77,8 @@ package body BBS.BBB.i2c.L3GD20H is
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
-   -- Currently this function is unimplemented.  Eventually it will read all
-   -- three rotation values in a single i2c transaction and return a structure
-   -- containing the values.
+   -- This function reads all three rotation values in a single i2c transaction
+   -- and returns a structure containing the values.
    --
    function get_rotations(error : out integer) return rotations is
       rot : rotations;
@@ -146,6 +145,164 @@ package body BBS.BBB.i2c.L3GD20H is
       rot.y := rate_dps(float(raw.y) * dps_scale);
       rot.z := rate_dps(float(raw.z) * dps_scale);
       return rot;
+   end;
+   --
+   -- Object oriented interface.  This basically emulates the standard interface
+   -- above.
+   --
+   function i2c_new return L3GD20H_ptr is
+   begin
+      return new L3GD20H_record;
+   end;
+   --
+   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
+                       addr : addr7; error : out integer) is
+   begin
+      self.port := port;
+      self.address := addr;
+      self.scale := 245.0/32767.0;
+      self.port.write(addr, ctrl1, 16#ff#, error);
+      --
+      -- Data rate = 50Hz (or 800Hz if low_odr is 0)
+      -- Bandwidth is 16.6Hz or 100Hz
+      -- Normal mode
+      -- X, Y, Z, axis sensors enabled
+      --
+   end;
+   --
+   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
+                       addr : addr7; deflection : uint8; error : out integer) is
+
+   begin
+      case deflection is
+         when fs_245dps =>
+            self.scale := 245.0/32767.0;
+         when fs_500dps =>
+            self.scale := 500.0/32767.0;
+         when fs_2000dps =>
+            self.scale := 2000.0/32767.0;
+         when others =>
+            Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
+            raise Program_Error;
+      end case;
+      self.port := port;
+      self.address := addr;
+      self.port.write(addr, ctrl4, deflection, error);
+      self.port.write(addr, ctrl1, 16#ff#, error);
+      --
+      -- Data rate = 50Hz (or 800Hz if low_odr is 0)
+      -- Bandwidth is 16.6Hz or 100Hz
+      -- Normal mode
+      -- X, Y, Z, axis sensors enabled
+      --
+   end;
+   --
+   function get_temperature(self : not null access L3GD20H_record'class;
+                            error : out integer) return integer is
+      byte : uint8;
+   begin
+      byte := self.port.read(self.address, out_temp, error);
+      return Integer(BBS.BBB.uint8_to_int8(byte));
+   end;
+   --
+   function get_rotation_x(self : not null access L3GD20H_record'class;
+                           error : out integer) return integer is
+      word : uint16;
+   begin
+      word := self.port.read(self.address, out_x_l + 16#80#, error);
+      return Integer(BBS.BBB.uint16_to_int16(word));
+   end;
+   --
+   function get_rotation_y(self : not null access L3GD20H_record'class;
+                           error : out integer) return integer is
+      word : uint16;
+   begin
+      word := self.port.read(self.address, out_y_l + 16#80#, error);
+      return Integer(BBS.BBB.uint16_to_int16(word));
+   end;
+   --
+   function get_rotation_z(self : not null access L3GD20H_record'class;
+                           error : out integer) return integer is
+      word : uint16;
+   begin
+      word := self.port.read(self.address, out_z_l + 16#80#, error);
+      return Integer(BBS.BBB.uint16_to_int16(word));
+   end;
+   --
+   function get_rotations(self : not null access L3GD20H_record'class;
+                          error : out integer) return rotations is
+      rot : rotations;
+   begin
+      self.port.read(self.address, out_x_l + 16#80#, buff'access, 6, error);
+      rot.x :=Integer(uint16_to_int16(uint16(buff(0)) + uint16(buff(1))*256));
+      rot.y :=Integer(uint16_to_int16(uint16(buff(2)) + uint16(buff(3))*256));
+      rot.z :=Integer(uint16_to_int16(uint16(buff(4)) + uint16(buff(5))*256));
+      return rot;
+   end;
+   --
+   --
+   function get_temperature(self : not null access L3GD20H_record'class;
+                            error : out integer) return Celsius is
+      raw : integer;
+   begin
+      raw := self.get_temperature(error);
+      return Celsius(self.temp_offset - raw);
+   end;
+   --
+   function get_rotation_x(self : not null access L3GD20H_record'class;
+                           error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := self.get_rotation_x(error);
+      return rate_dps(float(raw) * self.scale);
+   end;
+   --
+   function get_rotation_y(self : not null access L3GD20H_record'class;
+                           error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := self.get_rotation_y(error);
+      return rate_dps(float(raw) * self.scale);
+   end;
+   --
+   function get_rotation_z(self : not null access L3GD20H_record'class;
+                           error : out integer) return rate_dps is
+      raw : integer;
+   begin
+      raw := self.get_rotation_z(error);
+      return rate_dps(float(raw) * self.scale);
+   end;
+   --
+   function get_rotations(self : not null access L3GD20H_record'class;
+                          error : out integer) return rotations_dps is
+      raw : rotations;
+      rot : rotations_dps;
+   begin
+      raw := self.get_rotations(error);
+      rot.x := rate_dps(float(raw.x) * self.scale);
+      rot.y := rate_dps(float(raw.y) * self.scale);
+      rot.z := rate_dps(float(raw.z) * self.scale);
+      return rot;
+   end;
+   --
+   function get_status(self : not null access L3GD20H_record'class;
+                       error : out integer) return uint8 is
+   begin
+      return self.port.read(self.address, status, error);
+   end;
+   --
+   function data_ready(self : not null access L3GD20H_record'class;
+                       error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := self.port.read(self.address, status, err);
+      error := err;
+      if ((byte and zyxda) = zyxda) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
    end;
    --
 end;

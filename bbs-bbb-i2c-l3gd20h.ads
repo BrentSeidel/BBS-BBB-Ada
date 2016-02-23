@@ -107,7 +107,34 @@ package BBS.BBB.i2c.L3GD20H is
    --
    function get_status(error : out integer) return uint8;
    function data_ready(error : out integer) return boolean;
-
+   --
+   -- Stuff for object oriented interface.  These basically emulate the function
+   -- of the conventional routines above.
+   --
+   type L3GD20H_record is new i2c_device_record with private;
+   type L3GD20H_ptr is access L3GD20H_record;
+   --
+   function i2c_new return L3GD20H_ptr;
+   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
+                       addr : addr7; error : out integer);
+   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
+                       addr : addr7; deflection : uint8; error : out integer);
+   --
+   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return integer;
+   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return integer;
+   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return integer;
+   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return integer;
+   function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations;
+   --
+   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return Celsius;
+   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
+   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
+   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
+   function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations_dps;
+   --
+   function get_status(self : not null access L3GD20H_record'class; error : out integer) return uint8;
+   function data_ready(self : not null access L3GD20H_record'class; error : out integer) return boolean;
+   --
 private
    buff : aliased buffer;
    --
@@ -121,4 +148,13 @@ private
    -- The selected full scale deflection.
    --
    dps_scale : float := 245.0/32767.0;
+   --
+   type L3GD20H_record is new i2c_device_record with record
+      buff : aliased buffer;
+      temp_offset : integer := 37;
+      x_offset : integer := 0;
+      y_offset : integer := 0;
+      z_offset : integer := 0;
+      scale : float := 245.0/32767.0;
+   end record;
 end;

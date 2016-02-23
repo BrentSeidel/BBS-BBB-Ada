@@ -20,4 +20,31 @@ package BBS.BBB.i2c.devices is
    --
    -- Define some useful constants.
    --
+   -- Addresses for MCP23008 - 8 Bit I/O Expander
+   --
+   -- The MCP23008 has 3 address select pins so it can have one of 8 addresses.
+   -- This allows up to 8 of the devices on a single I2C bus.  The MCP23S08 has
+   -- 2 address select pins allowing only 4 addresses.  These are the same as
+   -- the first 4 addresses of the MCP23008.
+   --
+   addr_MCP23008_1 : constant addr7 := 16#20#;
+   addr_MCP23008_2 : constant addr7 := 16#21#;
+   addr_MCP23008_3 : constant addr7 := 16#22#;
+   addr_MCP23008_4 : constant addr7 := 16#23#;
+   addr_MCP23008_5 : constant addr7 := 16#24#;
+   addr_MCP23008_6 : constant addr7 := 16#25#;
+   addr_MCP23008_7 : constant addr7 := 16#26#;
+   addr_MCP23008_8 : constant addr7 := 16#27#;
+   --
+   MCP23008_IODIR : constant uint8 := 16#00#; -- I/O Direction
+   MCP23008_IPOL : constant uint8 := 16#01#; -- Input polarity
+   MCP23008_GPINTEN : constant uint8 := 16#02#; -- Interrupt-on-change control
+   MCP23008_DEFVAL : constant uint8 := 16#03#; --Default compare
+   MCP23008_INTCON : constant uint8 := 16#04#; -- Interrupt control
+   MCP23008_IOCON : constant uint8 := 16#05#; --Configuration
+   MCP23008_GPPU : constant uint8 := 16#06#; -- Pull-up resistor configuration
+   MCP23008_INTF : constant uint8 := 16#07#; -- Interrupt flag
+   MCP23008_INTCAP : constant uint8 := 16#08#; -- Interrupt capture
+   MCP23008_GPIO : constant uint8 := 16#09#; -- Port register
+   MCP23008_OLAT : constant uint8 := 16#0a#; -- Output latch
 end;

@@ -44,6 +44,7 @@ package body BBS.BBB.i2c is
    --
    procedure write(addr : addr7; reg : uint8; data : uint8; error : out integer) is
       status : interfaces.C.int;
+      err : integer;
    begin
       msg(0).addr := uint16(addr);
       msg(0).flags := 0;
@@ -55,9 +56,12 @@ package body BBS.BBB.i2c is
       buff1(1) := data;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         Ada.Text_IO.Put_Line("Error " & Integer'Image(get_errno) & " occured.");
-         Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(get_errno)));
-         error := get_errno;
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
       else
          error := 0;
       end if;
@@ -68,6 +72,7 @@ package body BBS.BBB.i2c is
    function read(addr : addr7; reg : uint8; error : out integer)
                        return uint8 is
       status : interfaces.C.int;
+      err : integer;
    begin
       msg(0).addr := uint16(addr);
       msg(0).flags := 0;
@@ -82,9 +87,12 @@ package body BBS.BBB.i2c is
       buff1(0) := reg;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         Ada.Text_IO.Put_Line("Error " & Integer'Image(get_errno) & " occured.");
-         Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(get_errno)));
-         error := get_errno;
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
       else
          error := 0;
       end if;
@@ -96,6 +104,7 @@ package body BBS.BBB.i2c is
    function read(addr : addr7; reg : uint8; error : out integer)
                        return uint16 is
       status : interfaces.C.int;
+      err : integer;
    begin
       msg(0).addr := uint16(addr);
       msg(0).flags := 0; -- write
@@ -110,9 +119,12 @@ package body BBS.BBB.i2c is
       buff1(0) := reg;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         Ada.Text_IO.Put_Line("Error " & Integer'Image(get_errno) & " occured.");
-         Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(get_errno)));
-         error := get_errno;
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
       else
          error := 0;
       end if;
@@ -124,6 +136,7 @@ package body BBS.BBB.i2c is
    procedure read(addr : addr7; reg : uint8; buff : buff_ptr; size : uint16;
                   error : out integer) is
       status : interfaces.C.int;
+      err : integer;
    begin
       msg(0).addr := uint16(addr);
       msg(0).flags := 0; -- write
@@ -138,14 +151,16 @@ package body BBS.BBB.i2c is
       buff1(0) := reg;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         Ada.Text_IO.Put_Line("Error " & Integer'Image(get_errno) & " occured.");
-         Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(get_errno)));
-         error := get_errno;
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
       else
          error := 0;
       end if;
    end;
-
    --
    -- Convert an string from strerror into a printable Ada string
    --
@@ -154,5 +169,150 @@ package body BBS.BBB.i2c is
         Ada.Strings.Fixed.index(string(str_ptr.all), "" & ASCII.NUL);
    begin
       return Ada.Strings.Fixed.head(string(str_ptr.all), null_loc - 1);
+   end;
+   --
+   -- Object oriented interface
+   --
+   function i2c_new return i2c_interface is
+   begin
+      return new i2c_interface_record;
+   end;
+   --
+   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
+                      SCL : string; SDA : string) is
+      ctrl_file : Ada.Text_IO.File_Type;
+   begin
+      --
+      -- Set the pins to the proper state.  This may need root access.
+      --
+      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SCL_Ctrl);
+      Ada.Text_IO.Put_Line(ctrl_file, "i2c");
+      Ada.Text_IO.Close(ctrl_file);
+      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SDA_Ctrl);
+      Ada.Text_IO.Put_Line(ctrl_file, "i2c");
+      Ada.Text_IO.Close(ctrl_file);
+      self.port := C_open(i2c_file, O_RDWR, 8#666#);
+      self.msg(0).buff := self.buff1'Access;
+      self.ioctl_msg.messages := self.msg'Access;
+      self.msg(1).buff := self.buff2'Access;
+   end;
+   --
+   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                   data : uint8; error : out integer) is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      self.msg(0).addr := uint16(addr);
+      self.msg(0).flags := 0;
+      self.msg(0).len := 2;
+      self.ioctl_msg.nmsgs := 1;
+      self.buff1(0) := reg;
+      self.buff1(1) := data;
+      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+   end;
+   --
+   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint8 is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      self.msg(0).addr := uint16(addr);
+      self.msg(0).flags := 0;
+      self.msg(0).len := 1;
+      self.msg(1).addr := uint16(addr);
+      self.msg(1).flags := 1;
+      self.msg(1).len := 1;
+      self.ioctl_msg.nmsgs := 2;
+      self.buff1(0) := reg;
+      self.msg(1).buff := self.buff2'Access;
+      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+      return self.buff2(0);
+   end;
+   --
+   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint16 is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      self.msg(0).addr := uint16(addr);
+      self.msg(0).flags := 0; -- write
+      self.msg(0).len := 1;
+      self.msg(1).addr := uint16(addr);
+      self.msg(1).flags := 1; -- read
+      self.msg(1).len := 2;
+      self.msg(1).buff := self.buff2'Access;
+      self.ioctl_msg.nmsgs := 2;
+      self.buff1(0) := reg;
+      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+      return uint16(self.buff2(1)) * 256 + uint16(self.buff2(0));
+   end;
+   --
+   procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                  buff : buff_ptr; size : uint16; error : out integer) is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      self.msg(0).addr := uint16(addr);
+      self.msg(0).flags := 0; -- write
+      self.msg(0).len := 1;
+      self.msg(1).addr := uint16(addr);
+      self.msg(1).flags := 1; -- read
+      self.msg(1).len := size;
+      self.msg(1).buff := buff;
+      self.ioctl_msg.nmsgs := 2;
+      self.buff1(0) := reg;
+      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+   end;
+   --
+   function i2c_new return i2c_device is
+   begin
+      return new i2c_device_record;
+   end;
+   --
+   procedure configure(self : not null access i2c_device_record'Class; port : i2c_interface;
+                      addr : addr7) is
+   begin
+      self.port := port;
+      self.address := addr;
    end;
 end;

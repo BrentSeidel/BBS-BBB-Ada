@@ -17,6 +17,8 @@ with BBS.BBB;
 --
 package BBS.BBB.i2c is
    --
+   SCL_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_24_pinmux/state";
+   SDA_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_26_pinmux/state";
    --
    -- buffer to use for reading and writing from i2c bus.  In most cases, only
    -- a few bytes are needed.  This should be quite adequate.
@@ -38,7 +40,33 @@ package BBS.BBB.i2c is
    function read(addr : addr7; reg : uint8; error : out integer) return uint16;
    procedure read(addr : addr7; reg : uint8; buff : buff_ptr;
                   size : uint16; error : out integer);
-
+   --
+   -- Set to true to print error messages.
+   --
+   debug : boolean := true;
+   --
+   -- Definitions for object oriented interface.
+   --
+   type i2c_interface_record is tagged private;
+   type i2c_interface is access i2c_interface_record;
+   type i2c_device_record is tagged private;
+   type i2c_device is access i2c_device_record;
+   --
+   function i2c_new return i2c_interface;
+   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
+                      SCL : string; SDA : string);
+   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                   data : uint8; error : out integer);
+   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint8;
+   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint16;
+   procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                  buff : buff_ptr; size : uint16; error : out integer);
+   --
+   function i2c_new return i2c_device;
+   procedure configure(self : not null access i2c_device_record'class; port : i2c_interface;
+                       addr : addr7);
 private
    --
    -- The rest of the stuff is private to hid the ugliness required to be
@@ -154,8 +182,6 @@ private
    --
    function cvt_cstr_adastr(str_ptr : err_msg_ptr) return string;
    --
-   SCL_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_24_pinmux/state";
-   SDA_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_26_pinmux/state";
    i2c_fd : file_id;
    --
    -- Buffer and message variables
@@ -164,5 +190,21 @@ private
    buff2 : aliased buffer;
    msg : aliased i2c_msg_arr;
    ioctl_msg : i2c_rdwr_ioctl_data;
-
+   --
+   -- Object oriented definitions
+   --
+   type i2c_interface_record is tagged
+      record
+         port : file_id;
+         buff1 : aliased buffer;
+         buff2 : aliased buffer;
+         msg : aliased i2c_msg_arr;
+         ioctl_msg : i2c_rdwr_ioctl_data;
+      end record;
+   --
+   type i2c_device_record is tagged
+      record
+         port : i2c_interface;
+         address : addr7;
+      end record;
 end;

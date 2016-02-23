@@ -250,5 +250,196 @@ package body BBS.BBB.i2c.BMP180 is
       return to_inHg(Pascal(int_press));
    end;
    --
+   -- Object oriented interface
+   --
+   function i2c_new return BMP180_ptr is
+   begin
+      return new BMP180_record;
+   end;
+   --
+   procedure configure(self : not null access BMP180_record'class; port : i2c_interface;
+                       addr : addr7; error : out integer) is
+   begin
+      self.port := port;
+      self.address := addr;
+      self.port.read(self.address, cal_start, self.buff'access,
+                     uint16(cal_end - cal_start + 1), error);
+      --
+      -- offsets into the buffer do not match the addresses.  Offset zero is
+      -- equal to address 16#aa#.
+      --
+      self.ac1 := uint16_to_int16(uint16(self.buff(0)) * 256 + uint16(self.buff(1)));
+      self.ac2 := uint16_to_int16(uint16(self.buff(2)) * 256 + uint16(self.buff(3)));
+      self.ac3 := uint16_to_int16(uint16(self.buff(4)) * 256 + uint16(self.buff(5)));
+      self.ac4 := uint16(self.buff(6)) * 256 + uint16(self.buff(7));
+      self.ac5 := uint16(self.buff(8)) * 256 + uint16(self.buff(9));
+      self.ac6 := uint16(self.buff(10)) * 256 + uint16(self.buff(11));
+      self.b1 := uint16_to_int16(uint16(self.buff(12)) * 256 + uint16(self.buff(13)));
+      self.b2 := uint16_to_int16(uint16(self.buff(14)) * 256 + uint16(self.buff(15)));
+      self.mb := uint16_to_int16(uint16(self.buff(16)) * 256 + uint16(self.buff(17)));
+      self.mc := uint16_to_int16(uint16(self.buff(18)) * 256 + uint16(self.buff(19)));
+      self.md := uint16_to_int16(uint16(self.buff(20)) * 256 + uint16(self.buff(21)));
+   end;
+   --
+   procedure start_conversion(self : not null access BMP180_record'class;
+                              kind : uint8; error : out integer) is
+   begin
+      self.port.write(self.address, ctrl, kind, error);
+      self.last_cvt := kind;
+   end;
+   --
+   function data_ready(self : not null access BMP180_record'class;
+                       error : out integer) return boolean is
+      byte : uint8;
+      err : integer;
+   begin
+      byte := self.port.read(self.address, ctrl, err);
+      error := err;
+      if ((byte and start_cvt) /= start_cvt) and (err = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+   --
+   function get_temp(self : not null access BMP180_record'class;
+                     error : out integer) return integer is
+      msb_value : uint8;
+      lsb_value : uint8;
+      temp : int16;
+   begin
+      if (self.last_cvt /= cvt_temp) then
+         Ada.Text_IO.Put_Line("Last conversion request was not for temperature");
+         raise Program_Error;
+      end if;
+      msb_value := self.port.read(self.address, msb, error);
+      lsb_value := self.port.read(self.address, lsb, error);
+      temp := uint16_to_int16(uint16(msb_value) * 256 + uint16(lsb_value));
+      self.x1 := ((integer(temp) - integer(self.ac6)) * integer(self.ac5)) / 32768;
+      self.x2 := integer(self.mc) * 2048 / (self.x1 + integer(self.md));
+      self.b5 := self.x1 + self.x2;
+      return (self.b5 + 8)/16;
+   end;
+   --
+   function get_temp(self : not null access BMP180_record'class;
+                     error : out integer) return float is
+      int_temp : integer := self.get_temp(error);
+   begin
+      return float(int_temp) / 10.0;
+   end;
+   --
+   function get_temp(self : not null access BMP180_record'class;
+                     error : out integer) return Celsius is
+      int_temp : integer := self.get_temp(error);
+   begin
+      return Celsius(float(int_temp) / 10.0);
+   end;
+   --
+   function get_temp(self : not null access BMP180_record'class;
+                     error : out integer) return Farenheit is
+      int_temp : integer := self.get_temp(error);
+   begin
+      return to_Farenheit(Celsius(float(int_temp) / 10.0));
+   end;
+   --
+   function get_temp(self : not null access BMP180_record'class;
+                     error : out integer) return Kelvin is
+      int_temp : integer := self.get_temp(error);
+   begin
+      return to_Kelvin(Celsius(float(int_temp) / 10.0));
+   end;
+   --
+   function get_press(self : not null access BMP180_record'class;
+                      error : out integer) return integer is
+      msb_value : uint8;
+      lsb_value : uint8;
+      xlsb_value : uint8;
+      oss : uint8;
+      oss_2 : integer;
+      press : integer;
+      b6a : integer;
+      x1a : integer;
+      x2a : integer;
+      x3a : integer;
+      b3a : integer;
+      b4a : uint32;
+      b7a : uint32;
+   begin
+      if (self.last_cvt /= cvt_press0) and (self.last_cvt /= cvt_press1) and
+        (self.last_cvt /= cvt_press2) and (self.last_cvt /= cvt_press3) then
+         Ada.Text_IO.Put_Line("Last conversion request was not for pressure");
+         raise Program_Error;
+      end if;
+      msb_value := self.port.read(self.address, msb, error);
+      lsb_value := self.port.read(self.address, lsb, error);
+      xlsb_value := self.port.read(self.address, xlsb, error);
+      press := uint32_to_int(uint32(msb_value) * 65536 + uint32(lsb_value) * 256 + uint32(xlsb_value));
+      oss := (self.last_cvt / 64) and 3;
+      case oss is
+      when 0 =>
+         press := press / 2 ** 8;
+         oss_2 := 1;
+      when 1 =>
+         press := press / 2 ** 7;
+         oss_2 := 2;
+      when 2 =>
+         press := press / 2 ** 6;
+         oss_2 := 4;
+      when 3 =>
+         press := press / 2 ** 5;
+         oss_2 := 8;
+      when others =>
+         Ada.Text_IO.Put_Line("OSS value out of range " & integer'Image(integer(oss)));
+         raise Program_Error;
+      end case;
+      b6a := self.b5 - 4000;
+      x1a := (integer(self.b2) * (b6a*b6a/2**12))/2**11;
+      x2a := integer(self.ac2)*b6a/2**11;
+      x3a := x1a + x2a;
+      b3a := (((integer(self.ac1)*4 + x3a)*oss_2) + 2)/4;
+      x1a := integer(self.ac3)*b6a/2**13;
+      x2a := (integer(self.b1) * (b6a*b6a/2**12))/2**16;
+      x3a := (x1a + x2a + 2)/2**2;
+      b4a := uint32(self.ac4) * uint32(x3a + 32768)/2**15;
+      b7a := (int_to_uint32(press) - uint32(b3a))*(50000/uint32(oss_2));
+      if (b7a < 16#80000000#) then
+         press := integer((b7a*2)/b4a);
+      else
+         press := integer((b7a/b4a)*2);
+      end if;
+      x1a := (press/2**8)*(press/2**8);
+      x1a := (x1a*3038)/2**16;
+      x2a := (-7357*press)/2**16;
+      press := press + (x1a + x2a + 3791)/2**4;
+      return press;
+   end;
+   --
+   function get_press(self : not null access BMP180_record'class;
+                      error : out integer) return Pascal is
+      int_press : integer := self.get_press(error);
+   begin
+      return Pascal(int_press);
+   end;
+   --
+   function get_press(self : not null access BMP180_record'class;
+                      error : out integer) return milliBar is
+      int_press : integer := self.get_press(error);
+   begin
+      return to_millibar(Pascal(int_press));
+   end;
+   --
+   function get_press(self : not null access BMP180_record'class;
+                      error : out integer) return Atmosphere is
+      int_press : integer := self.get_press(error);
+   begin
+      return to_Atmosphere(Pascal(int_press));
+   end;
+   --
+   function get_press(self : not null access BMP180_record'class;
+                      error : out integer) return inHg is
+      int_press : integer := self.get_press(error);
+   begin
+      return to_inHg(Pascal(int_press));
+   end;
 
 end;
