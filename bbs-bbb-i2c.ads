@@ -3,6 +3,7 @@ with Ada.Long_Integer_Text_IO;
 with Ada.Strings.Fixed;
 with Interfaces.C;
 with BBS.BBB;
+with BBS.BBB.pins;
 --
 --   The Linux i2c driver does not seem to be designed to work well using file
 -- read and write calls.  Much of it is based on ioctl calls.  Thus we have to
@@ -17,8 +18,8 @@ with BBS.BBB;
 --
 package BBS.BBB.i2c is
    --
-   SCL_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_24_pinmux/state";
-   SDA_Ctrl : constant string := "/sys/devices/platform/ocp/ocp:P9_26_pinmux/state";
+   SCL_Ctrl : constant string := BBS.BBB.pins.P9_24;
+   SDA_Ctrl : constant string := BBS.BBB.pins.P9_26;
    --
    -- buffer to use for reading and writing from i2c bus.  In most cases, only
    -- a few bytes are needed.  This should be quite adequate.

@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with BBS.BBB.pins;
 package BBS.BBB.LED is
    --
    -- There is probably a better way to do this.  Some time it might get
@@ -65,11 +66,16 @@ private
    -- This will have to be fiddled with if the names ever change, but at
    -- least it's in one spot.
    --
+--   led_names : constant array (led_num) of String(1 .. 48) :=
+--     ("/sys/class/leds/beaglebone:green:usr0/brightness",
+--      "/sys/class/leds/beaglebone:green:usr1/brightness",
+--      "/sys/class/leds/beaglebone:green:usr2/brightness",
+--      "/sys/class/leds/beaglebone:green:usr3/brightness");
    led_names : constant array (led_num) of String(1 .. 48) :=
-     ("/sys/class/leds/beaglebone:green:usr0/brightness",
-      "/sys/class/leds/beaglebone:green:usr1/brightness",
-      "/sys/class/leds/beaglebone:green:usr2/brightness",
-      "/sys/class/leds/beaglebone:green:usr3/brightness");
+     (BBS.BBB.pins.LED_0 & "brightness",
+      BBS.BBB.pins.LED_0 & "brightness",
+      BBS.BBB.pins.LED_0 & "brightness",
+      BBS.BBB.pins.LED_0 & "brightness");
 
    led_files : array (led_num) of Ada.Text_IO.File_Type;
 end;
