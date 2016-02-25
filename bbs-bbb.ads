@@ -10,6 +10,8 @@ package BBS.BBB is
    --
    -- Define some types for use here.
    --
+   type bit is range 0 .. 1
+     with Size => 1;
    type addr7 is range 0 .. 127
      with size => 7;
    type int8 is range -128 .. 127

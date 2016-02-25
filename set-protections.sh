@@ -68,5 +68,5 @@ chmod 666 /sys/devices/platform/ocp/ocp:P9_92_pinmux/state
 # Set direction to "in" or "out" for input or output.
 # Set value to "0" or "1" for output or read "0" or "1" for input.
 #
-chmod 666 /sys/class/gpio/gpio49/direction
-chmod 666 /sys/class/gpio/gpio49/value
+chmod 666 /sys/class/gpio/*/direction
+chmod 666 /sys/class/gpio/*/value
