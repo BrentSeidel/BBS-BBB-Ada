@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with Ada.Direct_IO;
 --
 -- This is a high level object-oriented interface to some of the GPIO pins on
 -- the BeagleBone Black.  This uses the control files in the /sys directory
@@ -67,9 +68,10 @@ package BBS.BBB.GPIO is
    procedure close(self : not null access GPIO_record'class);
 
 private
+   package Char_IO is new Ada.Direct_IO(Character);
    type GPIO_record is tagged limited
       record
-         gpio_file : Ada.Text_IO.File_Type;
+         gpio_file : Char_IO.File_Type;
          dir : direction;
       end record;
 end;

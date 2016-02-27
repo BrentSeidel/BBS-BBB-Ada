@@ -54,3 +54,9 @@ The chip also contains an temperature sensor and a routine is provided to access
 
 ### Devices
 This package contains constants for other devices that do not yet have individual packages.
+
+## GPIO
+This is an object oriented interface to the GPIO pins.  It allows setting or
+testing a pin.  This uses the /sys filesystem interface and this is not particularly
+high performance.  It should be adequate for lighting indicators or checking the
+state of switches.

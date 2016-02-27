@@ -27,28 +27,37 @@ package body BBS.BBB.GPIO is
       Ada.Text_IO.Close(temp);
       self.dir := dir;
       --
-      -- Open the output file
+      -- Open the GPIO file
       --
-      Ada.Text_IO.Open(self.gpio_file, Ada.Text_IO.Out_File, port & "value");
+      if (dir = input) then
+         Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
+      else
+         Char_IO.Open(self.gpio_file, Char_IO.Out_File, port & "value");
+      end if;
    end;
    --
    procedure set(self : not null access GPIO_record'class; value : bit) is
    begin
       if (value = 0) then
-         Ada.Text_IO.Put(self.gpio_file, "0");
+         Char_IO.Write(self.gpio_file, '0', 1);
       else
-         Ada.Text_IO.Put(self.gpio_file, "1");
+         Char_IO.Write(self.gpio_file, '1', 1);
       end if;
-      Ada.Text_IO.Flush(self.gpio_file);
    end;
    --
    function get(self : not null access GPIO_record'class) return bit is
+      char : character;
    begin
-      return 0;
+      Char_IO.Read(self.gpio_file, char, 1);
+      if (char = '0') then
+         return 0;
+      else
+         return 1;
+      end if;
    end;
    --
    procedure close(self : not null access GPIO_record'class) is
    begin
-      Ada.Text_IO.Close(self.gpio_file);
+      Char_IO.Close(self.gpio_file);
    end;
 end;
