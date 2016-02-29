@@ -12,8 +12,8 @@ with Ada.Direct_IO;
 package BBS.BBB.GPIO is
 --
 -- Mapping of GPIO file directories to pins.  Note that not all have an associated
--- pin.  Also many pins have a GPIO which does not have a GPIO directory.  It is
--- unclear how to access them.
+-- pin.  Also many pins have a GPIO which does not have a GPIO directory.  To create
+-- missing gpio directory structures, write the pin number to /sys/class/gpio/export
 --
 --   GPIO_2   - P9_22 (multi)
 --   GPIO_3   - P9_21 (multi)
@@ -63,6 +63,12 @@ package BBS.BBB.GPIO is
    --
    procedure configure(self : not null access GPIO_record'class;
                        pin : string; port : string; dir : direction);
+   --
+   -- Not all GPIOs have an associated pin control file.  Some pins are dedicated
+   -- to GPIO and have no other function.
+   --
+   procedure configure(self : not null access GPIO_record'class;
+                       port : string; dir : direction);
    procedure set(self : not null access GPIO_record'class; value : bit);
    function get(self : not null access GPIO_record'class) return bit;
    procedure close(self : not null access GPIO_record'class);
