@@ -50,30 +50,26 @@ package body BBS.BBB.i2c.L3GD20H is
    -- raw value from the sensor.
    --
    function get_temperature(error : out integer) return integer is
-      byte : uint8;
+      byte : uint8 := BBS.BBB.i2c.read(addr, out_temp, error);
    begin
-      byte := BBS.BBB.i2c.read(addr, out_temp, error);
       return Integer(BBS.BBB.uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(error : out integer) return integer is
-      word : uint16;
+      word : uint16 := BBS.BBB.i2c.read(addr, out_x_l + 16#80#, error);
    begin
-      word := BBS.BBB.i2c.read(addr, out_x_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_y(error : out integer) return integer is
-      word : uint16;
+      word : uint16 := BBS.BBB.i2c.read(addr, out_y_l + 16#80#, error);
    begin
-      word := BBS.BBB.i2c.read(addr, out_y_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_z(error : out integer) return integer is
-      word : uint16;
+      word : uint16 := BBS.BBB.i2c.read(addr, out_z_l + 16#80#, error);
    begin
-      word := BBS.BBB.i2c.read(addr, out_z_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
@@ -96,10 +92,9 @@ package body BBS.BBB.i2c.L3GD20H is
    end;
    --
    function data_ready(error : out integer) return boolean is
-      byte : uint8;
       err : integer;
+      byte : uint8 := BBS.BBB.i2c.read(addr, status, err);
    begin
-      byte := BBS.BBB.i2c.read(addr, status, err);
       error := err;
       if ((byte and zyxda) = zyxda) and (err = 0) then
          return true;
@@ -109,38 +104,33 @@ package body BBS.BBB.i2c.L3GD20H is
    end;
    --
    function get_temperature(error : out integer) return Celsius is
-      raw : integer;
+      raw : integer := get_temperature(error);
    begin
-      raw := get_temperature(error);
       return Celsius(temperature_offset - raw);
    end;
    --
    function get_rotation_x(error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := get_rotation_x(error);
    begin
-      raw := get_rotation_x(error);
       return rate_dps(float(raw) * dps_scale);
    end;
    --
    function get_rotation_y(error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := get_rotation_y(error);
    begin
-      raw := get_rotation_y(error);
       return rate_dps(float(raw) * dps_scale);
    end;
    --
    function get_rotation_z(error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := get_rotation_z(error);
    begin
-      raw := get_rotation_z(error);
       return rate_dps(float(raw) * dps_scale);
    end;
    --
    function get_rotations(error : out integer) return rotations_dps is
-      raw : rotations;
+      raw : rotations := get_rotations(error);
       rot : rotations_dps;
    begin
-      raw := get_rotations(error);
       rot.x := rate_dps(float(raw.x) * dps_scale);
       rot.y := rate_dps(float(raw.y) * dps_scale);
       rot.z := rate_dps(float(raw.z) * dps_scale);
@@ -199,33 +189,29 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    function get_temperature(self : not null access L3GD20H_record'class;
                             error : out integer) return integer is
-      byte : uint8;
+      byte : uint8 := self.port.read(self.address, out_temp, error);
    begin
-      byte := self.port.read(self.address, out_temp, error);
       return Integer(BBS.BBB.uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16;
+      word : uint16 := self.port.read(self.address, out_x_l + 16#80#, error);
    begin
-      word := self.port.read(self.address, out_x_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_y(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16;
+      word : uint16 := self.port.read(self.address, out_y_l + 16#80#, error);
    begin
-      word := self.port.read(self.address, out_y_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_z(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16;
+      word : uint16 := self.port.read(self.address, out_z_l + 16#80#, error);
    begin
-      word := self.port.read(self.address, out_z_l + 16#80#, error);
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
@@ -243,45 +229,40 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    function get_temperature(self : not null access L3GD20H_record'class;
                             error : out integer) return Celsius is
-      raw : integer;
+      raw : integer := self.get_temperature(error);
    begin
-      raw := self.get_temperature(error);
       return Celsius(self.temp_offset - raw);
    end;
    --
    function get_rotation_x(self : not null access L3GD20H_record'class;
                            error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := self.get_rotation_x(error);
    begin
-      raw := self.get_rotation_x(error);
       return rate_dps(float(raw) * self.scale);
    end;
    --
    function get_rotation_y(self : not null access L3GD20H_record'class;
                            error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := self.get_rotation_y(error);
    begin
-      raw := self.get_rotation_y(error);
       return rate_dps(float(raw) * self.scale);
    end;
    --
    function get_rotation_z(self : not null access L3GD20H_record'class;
                            error : out integer) return rate_dps is
-      raw : integer;
+      raw : integer := self.get_rotation_z(error);
    begin
-      raw := self.get_rotation_z(error);
       return rate_dps(float(raw) * self.scale);
    end;
    --
    function get_rotations(self : not null access L3GD20H_record'class;
                           error : out integer) return rotations_dps is
-      raw : rotations;
+      raw : rotations := self.get_rotations(error);
       rot : rotations_dps;
    begin
-      raw := self.get_rotations(error);
-      rot.x := rate_dps(float(raw.x) * self.scale);
-      rot.y := rate_dps(float(raw.y) * self.scale);
-      rot.z := rate_dps(float(raw.z) * self.scale);
+      rot.x := rate_dps(float(raw.x - self.offset_x) * self.scale);
+      rot.y := rate_dps(float(raw.y - self.offset_y) * self.scale);
+      rot.z := rate_dps(float(raw.z - self.offset_z) * self.scale);
       return rot;
    end;
    --
@@ -303,6 +284,31 @@ package body BBS.BBB.i2c.L3GD20H is
       else
          return false;
       end if;
+   end;
+   --
+   procedure measure_offsets(self : not null access L3GD20H_record'class) is
+      sum_x : integer := 0;
+      sum_y : integer := 0;
+      sum_z : integer := 0;
+      rot : rotations;
+      samples : constant integer := 50;
+      err : integer;
+   begin
+      for i in 1 .. samples loop
+         loop
+            exit when self.data_ready(err);
+         end loop;
+         rot := self.get_rotations(err);
+         sum_x := sum_x + rot.x;
+         sum_y := sum_y + rot.y;
+         sum_z := sum_z + rot.z;
+      end loop;
+      self.offset_x := sum_x / samples;
+      self.offset_y := sum_y / samples;
+      self.offset_z := sum_z / samples;
+      Ada.Text_IO.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
+                    integer'Image(self.offset_y) & ", " &
+                    integer'Image(self.offset_z) & ">");
    end;
    --
 end;

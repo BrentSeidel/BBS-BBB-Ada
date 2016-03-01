@@ -91,13 +91,21 @@ package BBS.BBB.i2c.L3GD20H is
    procedure configure(error : out integer);
    procedure configure(deflection : uint8; error : out integer);
    --
-   -- Get values from the device
+   -- Get values from the device.  The integer values are the value read from
+   -- the device registers.
    --
    function get_temperature(error : out integer) return integer;
    function get_rotation_x(error : out integer) return integer;
    function get_rotation_y(error : out integer) return integer;
    function get_rotation_z(error : out integer) return integer;
+   --
+   -- get_rotations gets the rotations around all three axises in a single
+   -- transaction and returns them in a structure.
+   --
    function get_rotations(error : out integer) return rotations;
+   --
+   -- Get values in engineering units.  These have been scaled and offset to
+   -- convert them into standard units.
    --
    function get_temperature(error : out integer) return Celsius;
    function get_rotation_x(error : out integer) return rate_dps;
@@ -135,6 +143,13 @@ package BBS.BBB.i2c.L3GD20H is
    function get_status(self : not null access L3GD20H_record'class; error : out integer) return uint8;
    function data_ready(self : not null access L3GD20H_record'class; error : out integer) return boolean;
    --
+   -- When stationary, the sensors may not report 0.  This function should be
+   -- called when the sensor is stationary.  It reads the rotations several times
+   -- and averages the results.  This is used to calculate offset values.  Note
+   -- that this feature is only available using the object oriented interface.
+   --
+   procedure measure_offsets(self : not null access L3GD20H_record'class);
+   --
 private
    buff : aliased buffer;
    --
@@ -152,9 +167,9 @@ private
    type L3GD20H_record is new i2c_device_record with record
       buff : aliased buffer;
       temp_offset : integer := 37;
-      x_offset : integer := 0;
-      y_offset : integer := 0;
-      z_offset : integer := 0;
+      offset_x : integer := 0;
+      offset_y : integer := 0;
+      offset_z : integer := 0;
       scale : float := 245.0/32767.0;
    end record;
 end;

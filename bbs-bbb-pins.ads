@@ -3,6 +3,10 @@ package BBS.BBB.pins is
 -- This package contains definitions for some of the BeagleBone Black pins.  If
 -- nothing else, it can serve as a reference for the pins on the board.
 --
+-- If the /sys directory tree changes, the constants here can be changed and
+-- the rest of the software should still work.  Hopefully.  So, use the constants
+-- here.
+--
 -- The pin state files.
 -- Note that not all pins have multiple functions.  The ones with a fixed
 -- function do not need a state file.  These are listed as comments with
@@ -110,7 +114,9 @@ package BBS.BBB.pins is
    P9_91 : aliased constant string := "/sys/devices/platform/ocp/ocp:P9_91_pinmux/state";
    P9_92 : aliased constant string := "/sys/devices/platform/ocp/ocp:P9_92_pinmux/state";
 --
--- GPIO Definitions
+-- GPIO Definitions.  Note that additional GPIO may be exported.  This is the
+-- set that appears on my system.  If you plan to use additional GPIO, just add
+-- them to this list.
 --
    GPIO_2 : aliased constant string := "/sys/class/gpio/gpio2/";
    GPIO_3 : aliased constant string := "/sys/class/gpio/gpio3/";

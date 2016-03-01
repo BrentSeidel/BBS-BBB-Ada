@@ -69,8 +69,18 @@ package BBS.BBB.GPIO is
    --
    procedure configure(self : not null access GPIO_record'class;
                        port : string; dir : direction);
+   --
+   -- Set the value of an output GPIO.
+   --
    procedure set(self : not null access GPIO_record'class; value : bit);
+   --
+   -- Read the value of an input GPIO.
+   --
    function get(self : not null access GPIO_record'class) return bit;
+   --
+   -- Close the file for the pin.  Once this is called, the GPIO object will
+   -- need to be re-configured.
+   --
    procedure close(self : not null access GPIO_record'class);
 
 private

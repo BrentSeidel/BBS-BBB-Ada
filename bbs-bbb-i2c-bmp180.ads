@@ -11,6 +11,8 @@ with BBS.BBB.i2c;
 -- device.  If you wish a more sophisticated interface, this could provide a
 -- useful starting point.
 --
+-- Please refer to the BMP180 datasheet for more information.
+--
 package BBS.BBB.i2c.BMP180 is
    --
    -- Addresses for the BMP180 pressure and temperature sensor
@@ -39,7 +41,7 @@ package BBS.BBB.i2c.BMP180 is
    --
    -- Since temperature and pressure have quite a wide variaty of units provide
    -- some types and conversion routines.  These will allow the compiler to help
-   -- ensure that you have your units straight.  At some point, these should be
+   -- ensure that you have your units straight.  At some point, these may be
    -- collected with other units into a separate package.
    --
    type Pascal is new integer;
@@ -86,9 +88,10 @@ package BBS.BBB.i2c.BMP180 is
    -- are needed to produce the calibrated pressure.
    --
    -- The temperature and pressure are read out of the same registers.  The value
-   -- in the registers is determined by the start conversion procedure.  If one
-   -- gets mixed up and attempts to read a pressure after starting a temperature
-   -- conversion or vice versa, the values returned will not be useful.
+   -- in the registers is determined by the start conversion procedure.  The
+   -- start_conversion routine records the type of reading requested.  Then when
+   -- get_temp or get_press is called, the type is checked to ensure that the
+   -- proper reading was started.
    --
    procedure configure(error : out integer);
    --
@@ -178,7 +181,6 @@ private
    b5 : integer;
    --
    last_cvt : uint8 := 0;
-   dump_values : constant boolean := false;
    --
    -- Some unchecked conversions are needed in pressure conversion.
    --

@@ -6,8 +6,8 @@ package body BBS.BBB.i2c.BMP180 is
    function "**"(Left, Right : float) return float
                  renames float_functions."**";
    --
-   -- Unit conversion routines.  At some point, these should probably be moved
-   -- into a separate package.
+   -- Unit conversion routines.  At some point, these may be moved into a
+   -- separate package.
    --
    -- Pressure conversions
    --
@@ -113,41 +113,6 @@ package body BBS.BBB.i2c.BMP180 is
       mb := uint16_to_int16(uint16(buff(16)) * 256 + uint16(buff(17)));
       mc := uint16_to_int16(uint16(buff(18)) * 256 + uint16(buff(19)));
       md := uint16_to_int16(uint16(buff(20)) * 256 + uint16(buff(21)));
-      if (dump_values) then
-         Ada.Text_IO.Put("Constant AC1 has a value of " & integer'Image(integer(ac1)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac1), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant AC2 has a value of " & integer'Image(integer(ac2)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac2), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant AC3 has a value of " & integer'Image(integer(ac3)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac3), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant AC4 has a value of " & integer'Image(integer(ac4)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac4), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant AC5 has a value of " & integer'Image(integer(ac5)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac5), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant AC6 has a value of " & integer'Image(integer(ac6)) & " (");
-         Ada.Integer_Text_IO.Put(integer(ac6), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant B1 has a value of " & integer'Image(integer(b1)) & " (");
-         Ada.Integer_Text_IO.Put(integer(b1), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant B2 has a value of " & integer'Image(integer(b2)) & " (");
-         Ada.Integer_Text_IO.Put(integer(b2), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant MB has a value of " & integer'Image(integer(mb)) & " (");
-         Ada.Integer_Text_IO.Put(integer(mb), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant MC has a value of " & integer'Image(integer(mc)) & " (");
-         Ada.Integer_Text_IO.Put(integer(mc), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-         Ada.Text_IO.Put("Constant MD has a value of " & integer'Image(integer(md)) & " (");
-         Ada.Integer_Text_IO.Put(integer(md), 10, 16);
-         Ada.Text_IO.Put_Line(")");
-      end if;
    end;
    --
    procedure start_conversion(kind : uint8; error : out integer) is
