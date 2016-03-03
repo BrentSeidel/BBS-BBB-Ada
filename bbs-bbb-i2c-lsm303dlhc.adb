@@ -342,6 +342,26 @@ package body BBS.BBB.i2c.LSM303DLHC is
       self.port.write(self.addr_mag, mag_mr, 16#00#, error);
    end;
    --
+   procedure calibrate_accel(self : not null access LSM303DLHC_record'class) is
+      sum_sq : float := 0.0;
+      accel : accelerations_g;
+      samples : constant integer := 100;
+      err : integer;
+   begin
+      for i in 1 .. samples loop
+         loop
+            exit when self.accel_data_ready(err);
+         end loop;
+         accel := self.get_accelerations(err);
+         sum_sq := sum_sq + Math.Sqrt(float(accel.x*accel.x) + float(accel.y*accel.y) +
+           float(accel.z*accel.z));
+      end loop;
+      self.accel_calib := 1.0 / (sum_sq/float(samples));
+      Ada.Text_IO.Put("Acceleration calibration is: <");
+      Ada.Float_Text_IO.Put(self.accel_calib, 1, 2, 0);
+      Ada.Text_IO.Put_Line(">");
+   end;
+   --
    function get_acceleration_x(self : not null access LSM303DLHC_record'class;
                                error : out integer) return integer is
       word : uint16 := self.port.read(self.addr_accel, accel_out_x_h + 16#80#, error);
@@ -379,21 +399,21 @@ package body BBS.BBB.i2c.LSM303DLHC is
                                error : out integer) return accel_g is
       accel : integer := self.get_acceleration_x(error);
    begin
-      return accel_g(float(accel) * self.accel_scale);
+      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_acceleration_y(self : not null access LSM303DLHC_record'class;
                                error : out integer) return accel_g is
       accel : integer := self.get_acceleration_y(error);
    begin
-      return accel_g(float(accel) * self.accel_scale);
+      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_acceleration_z(self : not null access LSM303DLHC_record'class;
                                error : out integer) return accel_g is
       accel : integer := self.get_acceleration_z(error);
    begin
-      return accel_g(float(accel) * self.accel_scale);
+      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_accelerations(self : not null access LSM303DLHC_record'class;
@@ -401,9 +421,9 @@ package body BBS.BBB.i2c.LSM303DLHC is
       accel : accelerations := self.get_accelerations(error);
       accel_gs : accelerations_g;
    begin
-      accel_gs.x := accel_g(float(accel.x) * self.accel_scale);
-      accel_gs.y := accel_g(float(accel.y) * self.accel_scale);
-      accel_gs.z := accel_g(float(accel.z) * self.accel_scale);
+      accel_gs.x := accel_g(float(accel.x) * self.accel_scale * self.accel_calib);
+      accel_gs.y := accel_g(float(accel.y) * self.accel_scale * self.accel_calib);
+      accel_gs.z := accel_g(float(accel.z) * self.accel_scale * self.accel_calib);
       return accel_gs;
    end;
    --

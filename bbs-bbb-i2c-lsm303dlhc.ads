@@ -1,4 +1,7 @@
 with BBS.BBB.i2c;
+with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Text_IO;
+with Ada.Float_Text_IO;
 --
 -- This package contains constants and routines to communicate with the LSM303DLHC
 -- accelerometer and magnetometer on the i2c bus.
@@ -8,6 +11,7 @@ with BBS.BBB.i2c;
 -- useful starting point.
 --
 package BBS.BBB.i2c.LSM303DLHC is
+   package Math is new Ada.Numerics.Generic_Elementary_Functions(float);
    --
    -- Addresses for LSM303DLHC - accelerometer and magnetometer
    -- Note that though the accelerometer and magnetometer are on the same
@@ -180,6 +184,15 @@ package BBS.BBB.i2c.LSM303DLHC is
                        port : i2c_interface; addr_accel : addr7; addr_mag : addr7;
                        accel_fs : uint8; mag_fs : uint8; error : out integer);
    --
+   -- The calibrate accel procedure can be called when the sensor is stationary
+   -- in a 1G acceleration or gravitational field.  It takes multiple measurements
+   -- of the X, Y, and Z acceleration and computes the average of X^2 + Y^2 + Z^2.
+   -- This value should be 1.0.  A more sophesticated approach would be to
+   -- compute a calibration value for each of the axis separately, but that would
+   -- require the sensor to be precicely positioned three time.
+   --
+   procedure calibrate_accel(self : not null access LSM303DLHC_record'class);
+   --
    function get_acceleration_x(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
    function get_acceleration_y(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
    function get_acceleration_z(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
@@ -232,6 +245,7 @@ private
       addr_mag : addr7;
       temp_offset :  integer := 136;
       accel_scale : float := 2.0 / 32768.0;
+      accel_calib : float := 1.0;
       mag_scale_xy : float := 1.0 / 1100.0;
       mag_scale_z : float := 1.0 / 980.0;
    end record;
