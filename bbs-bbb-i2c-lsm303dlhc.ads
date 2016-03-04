@@ -2,6 +2,7 @@ with BBS.BBB.i2c;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO;
 with Ada.Float_Text_IO;
+with Ada.Integer_Text_IO;
 --
 -- This package contains constants and routines to communicate with the LSM303DLHC
 -- accelerometer and magnetometer on the i2c bus.

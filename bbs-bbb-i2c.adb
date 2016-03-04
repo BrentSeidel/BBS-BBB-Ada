@@ -100,8 +100,9 @@ package body BBS.BBB.i2c is
    end;
    --
    -- Function to read a 16 bit word from a register on a device on the i2c bus.
+   -- MSB first
    --
-   function read(addr : addr7; reg : uint8; error : out integer)
+   function readm1(addr : addr7; reg : uint8; error : out integer)
                        return uint16 is
       status : interfaces.C.int;
       err : integer;
@@ -128,7 +129,40 @@ package body BBS.BBB.i2c is
       else
          error := 0;
       end if;
-      return uint16(buff2(1)) * 256 + uint16(buff2(0));
+      return uint16(buff2(0))*256 + uint16(buff2(1));
+   end;
+   --
+   -- Function to read a 16 bit word from a register on a device on the i2c bus.
+   -- LSB first
+   --
+   function readm2(addr : addr7; reg : uint8; error : out integer)
+                       return uint16 is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      msg(0).addr := uint16(addr);
+      msg(0).flags := 0; -- write
+      msg(0).len := 1;
+      msg(0).buff := buff1'Access;
+      msg(1).addr := uint16(addr);
+      msg(1).flags := 1; -- read
+      msg(1).len := 2;
+      msg(1).buff := buff2'Access;
+      ioctl_msg.messages := msg'Access;
+      ioctl_msg.nmsgs := 2;
+      buff1(0) := reg;
+      status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+      return uint16(buff2(0)) + uint16(buff2(1))*256;
    end;
    --
    -- Procedure to read an arbitrary number of bytes from a device on the i2c bus
@@ -249,7 +283,7 @@ package body BBS.BBB.i2c is
       return self.buff2(0);
    end;
    --
-   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+   function readm1(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint16 is
       status : interfaces.C.int;
       err : integer;
@@ -274,7 +308,35 @@ package body BBS.BBB.i2c is
       else
          error := 0;
       end if;
-      return uint16(self.buff2(1)) * 256 + uint16(self.buff2(0));
+      return uint16(self.buff2(0))*256 + uint16(self.buff2(1));
+   end;
+   --
+   function readm2(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint16 is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      self.msg(0).addr := uint16(addr);
+      self.msg(0).flags := 0; -- write
+      self.msg(0).len := 1;
+      self.msg(1).addr := uint16(addr);
+      self.msg(1).flags := 1; -- read
+      self.msg(1).len := 2;
+      self.msg(1).buff := self.buff2'Access;
+      self.ioctl_msg.nmsgs := 2;
+      self.buff1(0) := reg;
+      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+      return uint16(self.buff2(0)) + uint16(self.buff2(1))*256;
    end;
    --
    procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;

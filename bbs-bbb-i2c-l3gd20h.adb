@@ -56,19 +56,19 @@ package body BBS.BBB.i2c.L3GD20H is
    end;
    --
    function get_rotation_x(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr, out_x_l + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr, out_x_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_y(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr, out_y_l + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr, out_y_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_z(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr, out_z_l + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr, out_z_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
@@ -196,21 +196,21 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    function get_rotation_x(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16 := self.port.read(self.address, out_x_l + 16#80#, error);
+      word : uint16 := self.port.readm2(self.address, out_x_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_y(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16 := self.port.read(self.address, out_y_l + 16#80#, error);
+      word : uint16 := self.port.readm2(self.address, out_y_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_rotation_z(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
-      word : uint16 := self.port.read(self.address, out_z_l + 16#80#, error);
+      word : uint16 := self.port.readm2(self.address, out_z_l + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;

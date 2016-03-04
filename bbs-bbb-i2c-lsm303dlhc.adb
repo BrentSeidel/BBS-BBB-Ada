@@ -86,13 +86,8 @@ package body BBS.BBB.i2c.LSM303DLHC is
    -- 20C too low.
    --
    function get_temperature(error : out integer) return integer is
-      byte : uint8;
-      word : uint16;
+      word : uint16 := BBS.BBB.i2c.readm1(addr_mag, mag_temp_h, error);
    begin
-      byte := BBS.BBB.i2c.read(addr_mag, mag_temp_h, error);
-      word := uint16(byte) * 256;
-      byte := BBS.BBB.i2c.read(addr_mag, mag_temp_l, error);
-      word := word + uint16(byte);
       return integer(BBS.BBB.uint16_to_int16(word)/16);
    end;
    --
@@ -109,19 +104,19 @@ package body BBS.BBB.i2c.LSM303DLHC is
    end;
    --
    function get_acceleration_x(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_accel, accel_out_x_h + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr_accel, accel_out_x_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_acceleration_y(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_accel, accel_out_y_h + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr_accel, accel_out_y_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_acceleration_z(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_accel, accel_out_z_h + 16#80#, error);
+      word : uint16 := BBS.BBB.i2c.readm2(addr_accel, accel_out_z_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
@@ -182,19 +177,19 @@ package body BBS.BBB.i2c.LSM303DLHC is
    end;
    --
    function get_magnet_x(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_mag, mag_out_x_h, error);
+      word : uint16 := BBS.BBB.i2c.readm1(addr_mag, mag_out_x_h, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_magnet_y(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_mag, mag_out_y_h, error);
+      word : uint16 := BBS.BBB.i2c.readm1(addr_mag, mag_out_y_h, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_magnet_z(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.read(addr_mag, mag_out_z_h, error);
+      word : uint16 := BBS.BBB.i2c.readm1(addr_mag, mag_out_z_h, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
@@ -203,9 +198,9 @@ package body BBS.BBB.i2c.LSM303DLHC is
       mag : magnetism;
    begin
       read(addr_mag, mag_out_x_h, buff'access, 6, error);
-      mag.x := Integer(uint16_to_int16(uint16(buff(0)) + uint16(buff(1))*256));
-      mag.z := Integer(uint16_to_int16(uint16(buff(2)) + uint16(buff(3))*256));
-      mag.y := Integer(uint16_to_int16(uint16(buff(4)) + uint16(buff(5))*256));
+      mag.x := Integer(uint16_to_int16(uint16(buff(1)) + uint16(buff(0))*256));
+      mag.z := Integer(uint16_to_int16(uint16(buff(3)) + uint16(buff(2))*256));
+      mag.y := Integer(uint16_to_int16(uint16(buff(5)) + uint16(buff(4))*256));
       return mag;
    end;
    --
@@ -364,21 +359,21 @@ package body BBS.BBB.i2c.LSM303DLHC is
    --
    function get_acceleration_x(self : not null access LSM303DLHC_record'class;
                                error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_accel, accel_out_x_h + 16#80#, error);
+      word : uint16 := self.port.readm2(self.addr_accel, accel_out_x_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_acceleration_y(self : not null access LSM303DLHC_record'class;
                                error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_accel, accel_out_y_h + 16#80#, error);
+      word : uint16 := self.port.readm2(self.addr_accel, accel_out_y_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
    --
    function get_acceleration_z(self : not null access LSM303DLHC_record'class;
                                error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_accel, accel_out_z_h + 16#80#, error);
+      word : uint16 := self.port.readm2(self.addr_accel, accel_out_z_h + 16#80#, error);
    begin
       return Integer(BBS.BBB.uint16_to_int16(word));
    end;
@@ -448,14 +443,9 @@ package body BBS.BBB.i2c.LSM303DLHC is
    --
    function get_temperature(self : not null access LSM303DLHC_record'class;
                             error : out integer) return integer is
-      byte : uint8;
-      word : uint16;
+      word : uint16 := self.port.readm1(addr_mag, mag_temp_h, error);
    begin
-      byte := self.port.read(addr_mag, mag_temp_h, error);
-      word := uint16(byte) * 256;
-      byte := self.port.read(addr_mag, mag_temp_l, error);
-      word := word + uint16(byte);
-      return integer(BBS.BBB.uint16_to_int16(word)/16);
+      return integer(uint16_to_int16(word)/16);
    end;
    --
    function get_temperature(self : not null access LSM303DLHC_record'class;
@@ -474,23 +464,23 @@ package body BBS.BBB.i2c.LSM303DLHC is
    --
    function get_magnet_x(self : not null access LSM303DLHC_record'class;
                          error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_mag, mag_out_x_h, error);
+      word : uint16 := self.port.readm1(self.addr_mag, mag_out_x_h, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_magnet_y(self : not null access LSM303DLHC_record'class;
                          error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_mag, mag_out_y_h, error);
+      word : uint16 := self.port.readm1(self.addr_mag, mag_out_y_h, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_magnet_z(self : not null access LSM303DLHC_record'class;
                          error : out integer) return integer is
-      word : uint16 := self.port.read(self.addr_mag, mag_out_z_h, error);
+      word : uint16 := self.port.readm1(self.addr_mag, mag_out_z_h, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_magnetism(self : not null access LSM303DLHC_record'class;
@@ -498,12 +488,11 @@ package body BBS.BBB.i2c.LSM303DLHC is
       mag : magnetism;
    begin
       self.port.read(self.addr_mag, mag_out_x_h, buff'access, 6, error);
-      mag.x := Integer(uint16_to_int16(uint16(buff(0)) + uint16(buff(1))*256));
-      mag.z := Integer(uint16_to_int16(uint16(buff(2)) + uint16(buff(3))*256));
-      mag.y := Integer(uint16_to_int16(uint16(buff(4)) + uint16(buff(5))*256));
+      mag.x := Integer(uint16_to_int16(uint16(buff(1)) + uint16(buff(0))*256));
+      mag.z := Integer(uint16_to_int16(uint16(buff(3)) + uint16(buff(2))*256));
+      mag.y := Integer(uint16_to_int16(uint16(buff(5)) + uint16(buff(4))*256));
       return mag;
    end;
-   --
    --
    function get_magnet_x(self : not null access LSM303DLHC_record'class;
                          error : out integer) return gauss is

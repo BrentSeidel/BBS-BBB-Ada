@@ -38,7 +38,20 @@ package BBS.BBB.i2c is
    --
    procedure write(addr : addr7; reg : uint8; data : uint8; error : out integer);
    function read(addr : addr7; reg : uint8; error : out integer) return uint8;
-   function read(addr : addr7; reg : uint8; error : out integer) return uint16;
+   --
+   -- Reading a single byte is straigtforward.  When reading two bytes, is the
+   -- MSB first or second?  There is no standard even within a single device.
+   --
+   -- Read a word with MSB first
+   --
+   function readm1(addr : addr7; reg : uint8; error : out integer) return uint16;
+   --
+   -- Read a word with MSB second (LSB first)
+   --
+   function readm2(addr : addr7; reg : uint8; error : out integer) return uint16;
+   --
+   -- Read the specified number of bytes into a buffer
+   --
    procedure read(addr : addr7; reg : uint8; buff : buff_ptr;
                   size : uint16; error : out integer);
    --
@@ -48,8 +61,13 @@ package BBS.BBB.i2c is
    --
    -- Definitions for object oriented interface.
    --
+   -- The I2C interface object
+   --
    type i2c_interface_record is tagged private;
    type i2c_interface is access i2c_interface_record;
+   --
+   -- The root class for I2C device objects
+   --
    type i2c_device_record is tagged private;
    type i2c_device is access i2c_device_record;
    --
@@ -60,10 +78,27 @@ package BBS.BBB.i2c is
                    data : uint8; error : out integer);
    function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint8;
-   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+   --
+   -- Reading a single byte is straigtforward.  When reading two bytes, is the
+   -- MSB first or second?  There is no standard even within a single device.
+   --
+   -- Read a word with MSB first
+   --
+   function readm1(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint16;
+   --
+   -- Read a word with MSB second (LSB first)
+   --
+   function readm2(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                 error : out integer) return uint16;
+   --
+   -- Read the specified number of bytes into a buffer
+   --
    procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                   buff : buff_ptr; size : uint16; error : out integer);
+   --
+   -- Create a new I2C device.  Each I2C device object should implement these
+   -- two routines.
    --
    function i2c_new return i2c_device;
    procedure configure(self : not null access i2c_device_record'class; port : i2c_interface;
