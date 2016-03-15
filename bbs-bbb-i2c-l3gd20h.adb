@@ -1,3 +1,9 @@
+--
+-- Author: Brent Seidel
+-- Date:   15-Mar-2016
+--
+--  See spec header for more details.
+--
 package body BBS.BBB.i2c.L3GD20H is
    --
    -- Do a basic configuration.  Turn on the three axis gyroscopes and let most
@@ -286,29 +292,66 @@ package body BBS.BBB.i2c.L3GD20H is
       end if;
    end;
    --
-   procedure measure_offsets(self : not null access L3GD20H_record'class) is
+   -- From emperical measurements, if the variance is less than 10_000 for each
+   -- of the three axis, then the offsets should be good.  If not, try again to
+   -- get good results.  For example, here are results that I got:
+   -- Good results < 4990,  2630,  1814>
+   -- Bad results < 34077436,  3579122, 1290629>
+   --
+   -- In order to prevent infinite loops, this only checks a maximum of three
+   -- times.
+   --
+   function measure_offsets(self : not null access L3GD20H_record'class) return boolean is
       sum_x : integer := 0;
       sum_y : integer := 0;
       sum_z : integer := 0;
+      sum_x2 : float := 0.0;
+      sum_y2 : float := 0.0;
+      sum_z2 : float := 0.0;
+      var_x : float;
+      var_y : float;
+      var_z : float;
       rot : rotations;
       samples : constant integer := 50;
       err : integer;
+      loop_counter : integer := 0;
    begin
-      for i in 1 .. samples loop
-         loop
-            exit when self.data_ready(err);
+      loop
+         for i in 1 .. samples loop
+            loop
+               exit when self.data_ready(err);
+            end loop;
+            rot := self.get_rotations(err);
+            sum_x := sum_x + rot.x;
+            sum_y := sum_y + rot.y;
+            sum_z := sum_z + rot.z;
+            sum_x2 := sum_x2 + float(rot.x*rot.x);
+            sum_y2 := sum_y2 + float(rot.y*rot.y);
+            sum_z2 := sum_z2 + float(rot.z*rot.z);
          end loop;
-         rot := self.get_rotations(err);
-         sum_x := sum_x + rot.x;
-         sum_y := sum_y + rot.y;
-         sum_z := sum_z + rot.z;
+         self.offset_x := sum_x / samples;
+         self.offset_y := sum_y / samples;
+         self.offset_z := sum_z / samples;
+         var_x := (sum_x2 - float(sum_x)*float(sum_x)/float(samples))/(float(samples - 1));
+         var_y := (sum_y2 - float(sum_y)*float(sum_y)/float(samples))/(float(samples - 1));
+         var_z := (sum_z2 - float(sum_z)*float(sum_z)/float(samples))/(float(samples - 1));
+         if debug then
+            Ada.Text_IO.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
+                                   integer'Image(self.offset_y) & ", " &
+                                   integer'Image(self.offset_z) & ">");
+            Ada.Text_IO.Put_Line("Rotation variances are: <" & integer'Image(integer(var_x)) & ", " &
+                                   integer'Image(integer(var_y)) & ", " &
+                                   integer'Image(integer(var_z)) & ">");
+         end if;
+         exit when loop_counter > 3;
+         exit when (var_x < 10000.0) and (var_y < 10000.0) and (var_z < 10000.0);
+         loop_counter := loop_counter + 1;
       end loop;
-      self.offset_x := sum_x / samples;
-      self.offset_y := sum_y / samples;
-      self.offset_z := sum_z / samples;
-      Ada.Text_IO.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
-                    integer'Image(self.offset_y) & ", " &
-                    integer'Image(self.offset_z) & ">");
+      if (var_x < 10000.0) and (var_y < 10000.0) and (var_z < 10000.0) then
+         return true;
+      else
+         return false;
+      end if;
    end;
    --
 end;

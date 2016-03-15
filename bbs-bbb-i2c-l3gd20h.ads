@@ -1,3 +1,15 @@
+--
+-- Author: Brent Seidel
+-- Date:   15-Mar-2016
+--
+-- This package spec and body provide an interface to the L3GD20H gyroscope.  They
+-- are largely based on the datasheet for the device.  Currently, there are both
+-- object oriented and non-object oriented interfaces.  The non-object oriented
+-- interface is depreciated will probably go away at some time in the future.
+--
+-- Additional planned changes are moving the rate_dps and Celcius types into a
+-- new collector package to try and unify units and conversions.
+--
 with BBS.BBB.i2c;
 --
 -- This package contains constants and routines to communicate with the L3GD20H
@@ -59,7 +71,7 @@ package BBS.BBB.i2c.L3GD20H is
    --
    -- Define some datatypes
    --
-   --  Type for scaled rotation in degrees per second
+   --  Type for scaled rotation in degrees per second.
    --
    type rate_dps is new float;
    --
@@ -148,7 +160,11 @@ package BBS.BBB.i2c.L3GD20H is
    -- and averages the results.  This is used to calculate offset values.  Note
    -- that this feature is only available using the object oriented interface.
    --
-   procedure measure_offsets(self : not null access L3GD20H_record'class);
+   -- This function returns true if the measurement was successful - that is all
+   -- of the values measured are reasonably close to the mean.  If it returns false,
+   -- the sensor may be moving.
+   --
+   function measure_offsets(self : not null access L3GD20H_record'class) return boolean;
    --
 private
    buff : aliased buffer;
@@ -172,4 +188,9 @@ private
       offset_z : integer := 0;
       scale : float := 245.0/32767.0;
    end record;
+   --
+   -- Set this to True to display some debugging information.  Set it to False
+   -- to eliminate outputs.
+   --
+   debug : constant boolean := true;
 end;
