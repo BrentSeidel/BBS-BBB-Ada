@@ -15,10 +15,6 @@ package BBS.BBB.i2c.devices is
    --
    addr_LMS303DLHC_accel : constant addr7 := 16#19#; -- Accelerometer
    addr_LMS303DLHC_mag : constant addr7 := 16#1e#; -- Magnetometer
-   addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
-   addr_BMP180 : constant addr7 := 16#77#;
-   --
-   -- Define some useful constants.
    --
    -- Addresses for MCP23008 - 8 Bit I/O Expander
    --
@@ -36,15 +32,9 @@ package BBS.BBB.i2c.devices is
    addr_MCP23008_7 : constant addr7 := 16#26#;
    addr_MCP23008_8 : constant addr7 := 16#27#;
    --
-   MCP23008_IODIR : constant uint8 := 16#00#; -- I/O Direction
-   MCP23008_IPOL : constant uint8 := 16#01#; -- Input polarity
-   MCP23008_GPINTEN : constant uint8 := 16#02#; -- Interrupt-on-change control
-   MCP23008_DEFVAL : constant uint8 := 16#03#; --Default compare
-   MCP23008_INTCON : constant uint8 := 16#04#; -- Interrupt control
-   MCP23008_IOCON : constant uint8 := 16#05#; --Configuration
-   MCP23008_GPPU : constant uint8 := 16#06#; -- Pull-up resistor configuration
-   MCP23008_INTF : constant uint8 := 16#07#; -- Interrupt flag
-   MCP23008_INTCAP : constant uint8 := 16#08#; -- Interrupt capture
-   MCP23008_GPIO : constant uint8 := 16#09#; -- Port register
-   MCP23008_OLAT : constant uint8 := 16#0a#; -- Output latch
+   addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
+   addr_BMP180 : constant addr7 := 16#77#;
+   --
+   -- Define some useful constants.
+   --
 end;

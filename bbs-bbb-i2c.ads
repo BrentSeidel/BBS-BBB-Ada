@@ -2,6 +2,7 @@ with Ada.Text_IO;
 with Ada.Long_Integer_Text_IO;
 with Ada.Strings.Fixed;
 with Interfaces.C;
+use type Interfaces.C.unsigned_long;
 with BBS.BBB;
 with BBS.BBB.pins;
 --
@@ -184,19 +185,28 @@ private
    --  i2c_pec
    --
    function basic_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
-                         options : Interfaces.C.long) return Interfaces.C.int;
+                        options : Interfaces.C.long) return Interfaces.C.int
+   with
+     pre => (command = i2c_slave) or
+     (command = i2c_slave_force) or
+     (command = i2c_tenbit) or
+     (command = i2c_pec);
    pragma Import(C, basic_ioctl, "ioctl");
    --
    -- funcs_ioctl supports the i2c_funcs command.
    --
    function funcs_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
-                         value : out Interfaces.C.long) return Interfaces.C.int;
+                        value : out Interfaces.C.long) return Interfaces.C.int
+   with
+     pre => (command = i2c_funcs);
    pragma Import(C, funcs_ioctl, "ioctl");
    --
    -- rdwr_ioctl supports the i2c_rdwr command.
    --
    function rdwr_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
-                       value : in out i2c_rdwr_ioctl_data) return Interfaces.C.int;
+                       value : in out i2c_rdwr_ioctl_data) return Interfaces.C.int
+   with
+     pre => (command = i2c_rdwr);
    pragma Import(C, rdwr_ioctl, "ioctl");
    --
    -- Now some C functions for getting errno and error messages
