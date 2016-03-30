@@ -298,7 +298,7 @@ package body BBS.BBB.i2c.L3GD20H is
    -- Good results < 4990,  2630,  1814>
    -- Bad results < 34077436,  3579122, 1290629>
    --
-   -- In order to prevent infinite loops, this only checks a maximum of three
+   -- In order to prevent infinite loops, this only checks a maximum of five
    -- times.
    --
    function measure_offsets(self : not null access L3GD20H_record'class) return boolean is
@@ -325,9 +325,9 @@ package body BBS.BBB.i2c.L3GD20H is
             sum_x := sum_x + rot.x;
             sum_y := sum_y + rot.y;
             sum_z := sum_z + rot.z;
-            sum_x2 := sum_x2 + float(rot.x*rot.x);
-            sum_y2 := sum_y2 + float(rot.y*rot.y);
-            sum_z2 := sum_z2 + float(rot.z*rot.z);
+            sum_x2 := sum_x2 + float(rot.x)*float(rot.x);
+            sum_y2 := sum_y2 + float(rot.y)*float(rot.y);
+            sum_z2 := sum_z2 + float(rot.z)*float(rot.z);
          end loop;
          self.offset_x := sum_x / samples;
          self.offset_y := sum_y / samples;
@@ -343,11 +343,11 @@ package body BBS.BBB.i2c.L3GD20H is
                                    integer'Image(integer(var_y)) & ", " &
                                    integer'Image(integer(var_z)) & ">");
          end if;
-         exit when loop_counter > 3;
+         exit when loop_counter > 5;
          exit when (var_x < 10000.0) and (var_y < 10000.0) and (var_z < 10000.0);
          loop_counter := loop_counter + 1;
       end loop;
-      if (var_x < 10000.0) and (var_y < 10000.0) and (var_z < 10000.0) then
+      if (abs(var_x) < 10000.0) and (abs(var_y) < 10000.0) and (abs(var_z) < 10000.0) then
          return true;
       else
          return false;

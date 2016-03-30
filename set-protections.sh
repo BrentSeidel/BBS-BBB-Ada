@@ -7,6 +7,7 @@
 #
 # LED Control files
 #
+echo "LED Control files"
 chmod 666 /sys/class/leds/beaglebone:green:usr0/brightness
 chmod 666 /sys/class/leds/beaglebone:green:usr1/brightness
 chmod 666 /sys/class/leds/beaglebone:green:usr2/brightness
@@ -15,6 +16,7 @@ chmod 666 /sys/class/leds/beaglebone:green:usr3/brightness
 # Pin control files.  These are used to set what the particular pin is used
 # for.
 #
+echo "Pin control files"
 chmod 666 /sys/devices/platform/ocp/ocp:P*_pinmux/state
 #
 # Options for each pin can be found in the of_node/pinctrl-names file in the
@@ -32,6 +34,7 @@ chmod 666 /sys/devices/platform/ocp/ocp:P*_pinmux/state
 # only a single use.  The following exports them and creates the /sys/class/gpio*
 # file structure for them.
 #
+echo "Additional GPIO"
 echo 110 > /sys/class/gpio/export
 echo 111 > /sys/class/gpio/export
 echo 113 > /sys/class/gpio/export
@@ -49,5 +52,28 @@ echo 117 > /sys/class/gpio/export
 # Set direction to "in" or "out" for input or output.
 # Set value to "0" or "1" for output or read "0" or "1" for input.
 #
+echo "GPIO control files"
 chmod 666 /sys/class/gpio/*/direction
 chmod 666 /sys/class/gpio/*/value
+#
+# Build the directory structures for PWMs
+#
+echo "PWM Directory structures"
+echo 0 > /sys/class/pwm/pwmchip0/export # EHRPWM0A
+echo 1 > /sys/class/pwm/pwmchip0/export # EHRPWM0B
+echo 0 > /sys/class/pwm/pwmchip2/export # EHRPWM1A
+echo 1 > /sys/class/pwm/pwmchip2/export # EHRPWM1B
+echo 0 > /sys/class/pwm/pwmchip5/export # EHRPWM2A
+echo 1 > /sys/class/pwm/pwmchip5/export # EHRPWM2B
+echo 0 > /sys/class/pwm/pwmchip4/export # ECAPPWM0
+#echo 0 > /sys/class/pwm/pwmchip4/export # ECAPPWM2
+# Note that ECAPPWM2 is on P9_28 and there is no *pinumx/state file for this
+# pin.  So this PWM currently can't be used.
+#
+# Set protections for the PWM control files
+#
+echo "Set PWM protections"
+chmod 666 /sys/class/pwm/pwmchip*/pwm*/enable
+chmod 666 /sys/class/pwm/pwmchip*/pwm*/duty_cycle
+chmod 666 /sys/class/pwm/pwmchip*/pwm*/period
+#

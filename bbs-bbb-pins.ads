@@ -157,4 +157,16 @@ package BBS.BBB.pins is
    LED_1 : aliased constant string := "/sys/class/leds/beaglebone:green:usr1/";
    LED_2 : aliased constant string := "/sys/class/leds/beaglebone:green:usr2/";
    LED_3 : aliased constant string := "/sys/class/leds/beaglebone:green:usr3/";
+--
+-- PWM Pins
+--
+--   EHRPWM2B := P8_13; -- or P8_46 (pwmchip5/pwm1)
+--   EHRPWM2A := P8_19; -- or P8_45 (pwmchip5/pwm0)
+--   EHRPWM1A := P9_14; -- or P8_34 (pwmchip2/pwm0)
+--   EHRPWM1B := P9_16; -- or P8_36 (pwmchip2/pwm1)
+--   EHRPWM0B := P9_21; -- or P9_29 (pwmchip0/pwm1)
+--   EHRPWM0A := P9_22; -- or P9_31 (pwmchip0/pwm0)
+--   ECAPPWM2 := P9_28; (pwmchip7) No pinmux for this pin
+--   ECAPPWM0 := P9_42; (pwmchip4)
+--
 end;
