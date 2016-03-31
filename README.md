@@ -60,3 +60,9 @@ This is an object oriented interface to the GPIO pins.  It allows setting or
 testing a pin.  This uses the /sys filesystem interface and this is not particularly
 high performance.  It should be adequate for lighting indicators or checking the
 state of switches.
+
+## PWM
+This is an object oriented interface to the PWM controllers.  The BeagleBone
+Black processor has 8 PWM controllers.  Due to the lack of a pinmux structure
+for P8_28, one of the PWMs is not really usable.  The interface allows control
+of the period (or rate) and the time high (or duty cycle) of the PWM output.
