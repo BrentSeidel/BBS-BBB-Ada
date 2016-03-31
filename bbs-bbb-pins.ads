@@ -158,24 +158,40 @@ package BBS.BBB.pins is
    LED_2 : aliased constant string := "/sys/class/leds/beaglebone:green:usr2/";
    LED_3 : aliased constant string := "/sys/class/leds/beaglebone:green:usr3/";
 --
--- PWM units
+-- PWM units !!! These can change everytime the unit boots !!!
 --
-   EHRPWM0A : aliased constant string := "/sys/class/pwm/pwmchip0/pwm0";
-   EHRPWM0B : aliased constant string := "/sys/class/pwm/pwmchip0/pwm1";
-   EHRPWM1A : aliased constant string := "/sys/class/pwm/pwmchip2/pwm0";
-   EHRPWM1B : aliased constant string := "/sys/class/pwm/pwmchip2/pwm1";
-   EHRPWM2A : aliased constant string := "/sys/class/pwm/pwmchip5/pwm0";
-   EHRPWM2B : aliased constant string := "/sys/class/pwm/pwmchip5/pwm1";
-   ECAPPWM0 : aliased constant string := "/sys/class/pwm/pwmchip4/pwm0";
-   ECAPPWM2 : aliased constant string := "/sys/class/pwm/pwmchip7/pwm0";
+-- The fixed paths seem to be:
+-- /sys/devices/platform/ocp/48300000.epwmss/48300200.ehrpwm/pwm/pwmchip* # EHRPWM0A
+-- /sys/devices/platform/ocp/48300000.epwmss/48300200.ehrpwm/pwm/pwmchip* # EHRPWM0B
+-- /sys/devices/platform/ocp/48302000.epwmss/48302200.ehrpwm/pwm/pwmchip* # EHRPWM1A
+-- /sys/devices/platform/ocp/48302000.epwmss/48302200.ehrpwm/pwm/pwmchip* # EHRPWM1B
+-- /sys/devices/platform/ocp/48304000.epwmss/48304200.ehrpwm/pwm/pwmchip* # EHRPWM2A
+-- /sys/devices/platform/ocp/48304000.epwmss/48304200.ehrpwm/pwm/pwmchip* # EHRPWM2B
+-- /sys/devices/platform/ocp/48300000.epwmss/48300100.ecap/pwm/pwmchip*   # ECAPPWM0
 --
---   EHRPWM2B := P8_13; -- or P8_46
---   EHRPWM2A := P8_19; -- or P8_45
+-- The problem is that there is still a wildcard in the pathname that can be
+-- some number 0 .. 7(?).  To fix this, the set-protections.sh scrip needs to
+-- be run on system startup.  It matches the wildcards and creates the PWM strutures
+-- and sets the protections on them.  It also creates a set of links to the PWMs
+-- that are numbered appropriately.
+--
+   EHRPWM0A : aliased constant string := "/links/pwm0";
+   EHRPWM0B : aliased constant string := "/links/pwm1";
+   EHRPWM1A : aliased constant string := "/links/pwm2";
+   EHRPWM1B : aliased constant string := "/links/pwm3";
+   EHRPWM2A : aliased constant string := "/links/pwm4";
+   EHRPWM2B : aliased constant string := "/links/pwm5";
+   ECAPPWM0 : aliased constant string := "/links/pwm6";
+   ECAPPWM2 : aliased constant string := "/links/pwm7";
+--
+-- The pins for the PWM controllers are:
+--   EHRPWM0A := P9_22; -- or P9_31
+--   EHRPWM0B := P9_21; -- or P9_29
 --   EHRPWM1A := P9_14; -- or P8_34
 --   EHRPWM1B := P9_16; -- or P8_36
---   EHRPWM0B := P9_21; -- or P9_29
---   EHRPWM0A := P9_22; -- or P9_31
---   ECAPPWM2 := P9_28; -- No pinmux for this pin
+--   EHRPWM2A := P8_19; -- or P8_45
+--   EHRPWM2B := P8_13; -- or P8_46
 --   ECAPPWM0 := P9_42;
+--   ECAPPWM2 := P9_28; -- No pinmux for this pin
 --
 end;

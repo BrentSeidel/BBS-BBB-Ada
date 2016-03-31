@@ -26,7 +26,6 @@ package body BBS.BBB.PWM is
    procedure enable(self : not null access PWM_record'class; state : boolean) is
       temp : Ada.Text_IO.File_Type;
    begin
-      Ada.Text_IO.put_line("Enabling PWM pin");
       Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, pwm_ctrl(self.pwm_index).all & "/enable");
       if state then
          Ada.Text_IO.Put_Line(temp, "1");

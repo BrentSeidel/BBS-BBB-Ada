@@ -56,24 +56,69 @@ echo "GPIO control files"
 chmod 666 /sys/class/gpio/*/direction
 chmod 666 /sys/class/gpio/*/value
 #
-# Build the directory structures for PWMs
+# Build the directory structures for PWMs.  As the PWMs can be rearranged each
+# time the unit is booted, this script has to figure out which pwm is where and
+# create some symbolic links that can be used.
+#
+# First see if /links is present and create it if not.  If it does exist, empty
+# it.
+#
+if [ -d "/links" ]
+then
+  rm /links/*
+else
+  mkdir /links
+fi
 #
 echo "PWM Directory structures"
-echo 0 > /sys/class/pwm/pwmchip0/export # EHRPWM0A
-echo 1 > /sys/class/pwm/pwmchip0/export # EHRPWM0B
-echo 0 > /sys/class/pwm/pwmchip2/export # EHRPWM1A
-echo 1 > /sys/class/pwm/pwmchip2/export # EHRPWM1B
-echo 0 > /sys/class/pwm/pwmchip5/export # EHRPWM2A
-echo 1 > /sys/class/pwm/pwmchip5/export # EHRPWM2B
-echo 0 > /sys/class/pwm/pwmchip4/export # ECAPPWM0
-#echo 0 > /sys/class/pwm/pwmchip4/export # ECAPPWM2
+echo "PWM0 and PWM1"
+for f in /sys/devices/platform/ocp/48300000.epwmss/48300200.ehrpwm/pwm/pwmchip*
+do
+  echo 0 > $f/export
+  echo 1 > $f/export
+  ln -s $f/pwm0 /links/pwm0 # EHRPWM0A
+  ln -s $f/pwm1 /links/pwm1 # EHRPWM0B
+done
+#
+echo "PWM2 and PWM3"
+for f in /sys/devices/platform/ocp/48302000.epwmss/48302200.ehrpwm/pwm/pwmchip*
+do
+  echo 0 > $f/export
+  echo 1 > $f/export
+  ln -s $f/pwm0 /links/pwm2 # EHRPWM1A
+  ln -s $f/pwm1 /links/pwm3 # EHRPWM1B
+done
+#
+echo "PWM4 and PWM5"
+for f in /sys/devices/platform/ocp/48304000.epwmss/48304200.ehrpwm/pwm/pwmchip*
+do
+  echo 0 > $f/export
+  echo 1 > $f/export
+  ln -s $f/pwm0 /links/pwm4 # EHRPWM2A
+  ln -s $f/pwm1 /links/pwm5 # EHRPWM2B
+done
+#
+echo "PWM6"
+for f in /sys/devices/platform/ocp/48300000.epwmss/48300100.ecap/pwm/pwmchip*
+do
+  echo 0 > $f/export
+  ln -s $f/pwm0 /links/pwm6 # ECAPPWM0
+done
+#
+echo "PWM7"
+for f in /sys/devices/platform/ocp/48304000.epwmss/48304100.ecap/pwm/pwmchip*
+do
+  echo 0 > $f/export
+  ln -s $f/pwm0 /links/pwm7 # ECAPPWM2
+done
+#
 # Note that ECAPPWM2 is on P9_28 and there is no *pinumx/state file for this
 # pin.  So this PWM currently can't be used.
 #
 # Set protections for the PWM control files
 #
 echo "Set PWM protections"
-chmod 666 /sys/class/pwm/pwmchip*/pwm*/enable
-chmod 666 /sys/class/pwm/pwmchip*/pwm*/duty_cycle
-chmod 666 /sys/class/pwm/pwmchip*/pwm*/period
+chmod 666 /links/pwm*/enable
+chmod 666 /links/pwm*/duty_cycle
+chmod 666 /links/pwm*/period
 #
