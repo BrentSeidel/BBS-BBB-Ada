@@ -122,3 +122,8 @@ chmod 666 /links/pwm*/enable
 chmod 666 /links/pwm*/duty_cycle
 chmod 666 /links/pwm*/period
 #
+# Enable analog inputs.  This requires adding a device tree overlay.  Fortunately,
+# everything exists, so the following should be all that is needed:
+#
+echo "BB-ADC" > /sys/devices/platform/bone_capemgr/slots
+#

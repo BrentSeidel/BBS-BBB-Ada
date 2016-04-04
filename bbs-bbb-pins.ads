@@ -185,13 +185,38 @@ package BBS.BBB.pins is
    ECAPPWM2 : aliased constant string := "/links/pwm7";
 --
 -- The pins for the PWM controllers are:
---   EHRPWM0A := P9_22; -- or P9_31
---   EHRPWM0B := P9_21; -- or P9_29
---   EHRPWM1A := P9_14; -- or P8_34
---   EHRPWM1B := P9_16; -- or P8_36
---   EHRPWM2A := P8_19; -- or P8_45
---   EHRPWM2B := P8_13; -- or P8_46
---   ECAPPWM0 := P9_42;
---   ECAPPWM2 := P9_28; -- No pinmux for this pin
+--   EHRPWM0A: P9_22; -- or P9_31
+--   EHRPWM0B: P9_21; -- or P9_29
+--   EHRPWM1A: P9_14; -- or P8_34
+--   EHRPWM1B: P9_16; -- or P8_36
+--   EHRPWM2A: P8_19; -- or P8_45
+--   EHRPWM2B: P8_13; -- or P8_46
+--   ECAPPWM0: P9_42;
+--   ECAPPWM2: P9_28; -- No pinmux for this pin
+--
+--
+-- Analog inputs
+-- There are seven analog inputs.  To use them, "BBB-ADC" needs to be written
+-- to bone_capemgr/slots.  This is done by the set-protections.sh script.  To
+-- read the analog values, use the following paths:
+--
+   AIN0 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage0_raw";
+   AIN1 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage1_raw";
+   AIN2 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage2_raw";
+   AIN3 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage3_raw";
+   AIN4 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage4_raw";
+   AIN5 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage5_raw";
+   AIN6 : aliased constant string := "/sys/bus/iio/devices/iio:device0/in_voltage6_raw";
+--
+-- The analog related pins are:
+-- AIN0 - P9_39
+-- AIN1 - P9_40
+-- AIN2 - P9_37
+-- AIN3 - P9_38
+-- AIN4 - P9_33
+-- AIN5 - P9_36
+-- AIN6 - P9_35
+-- Vdd_ADC - P9_32
+-- Gnd_ADC - P9_34
 --
 end;

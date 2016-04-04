@@ -292,19 +292,18 @@ package body BBS.BBB.i2c.L3GD20H is
       end if;
    end;
    --
-   -- From emperical measurements, if the variance is less than 10_000 for each
+   -- From emperical measurements, if the variance is less than 100_000 for each
    -- of the three axis, then the offsets should be good.  If not, try again to
-   -- get good results.  For example, here are results that I got:
-   -- Good results < 4990,  2630,  1814>
-   -- Bad results < 34077436,  3579122, 1290629>
+   -- get good results.
    --
    -- In order to prevent infinite loops, this only checks a maximum of five
    -- times.
    --
    function measure_offsets(self : not null access L3GD20H_record'class) return boolean is
-      sum_x : integer := 0;
-      sum_y : integer := 0;
-      sum_z : integer := 0;
+      threshold : constant float := 400_000.0;
+      sum_x : float := 0.0;
+      sum_y : float := 0.0;
+      sum_z : float := 0.0;
       sum_x2 : float := 0.0;
       sum_y2 : float := 0.0;
       sum_z2 : float := 0.0;
@@ -322,19 +321,19 @@ package body BBS.BBB.i2c.L3GD20H is
                exit when self.data_ready(err);
             end loop;
             rot := self.get_rotations(err);
-            sum_x := sum_x + rot.x;
-            sum_y := sum_y + rot.y;
-            sum_z := sum_z + rot.z;
+            sum_x := sum_x + float(rot.x);
+            sum_y := sum_y + float(rot.y);
+            sum_z := sum_z + float(rot.z);
             sum_x2 := sum_x2 + float(rot.x)*float(rot.x);
             sum_y2 := sum_y2 + float(rot.y)*float(rot.y);
             sum_z2 := sum_z2 + float(rot.z)*float(rot.z);
          end loop;
-         self.offset_x := sum_x / samples;
-         self.offset_y := sum_y / samples;
-         self.offset_z := sum_z / samples;
-         var_x := (sum_x2 - float(sum_x)*float(sum_x)/float(samples))/(float(samples - 1));
-         var_y := (sum_y2 - float(sum_y)*float(sum_y)/float(samples))/(float(samples - 1));
-         var_z := (sum_z2 - float(sum_z)*float(sum_z)/float(samples))/(float(samples - 1));
+         self.offset_x := integer(sum_x / float(samples));
+         self.offset_y := integer(sum_y / float(samples));
+         self.offset_z := integer(sum_z / float(samples));
+         var_x := (sum_x2 - float(self.offset_x)*float(self.offset_x))/(float(samples - 1));
+         var_y := (sum_y2 - float(self.offset_y)*float(self.offset_y))/(float(samples - 1));
+         var_z := (sum_z2 - float(self.offset_z)*float(self.offset_z))/(float(samples - 1));
          if debug then
             Ada.Text_IO.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
                                    integer'Image(self.offset_y) & ", " &
@@ -344,10 +343,10 @@ package body BBS.BBB.i2c.L3GD20H is
                                    integer'Image(integer(var_z)) & ">");
          end if;
          exit when loop_counter > 5;
-         exit when (var_x < 10000.0) and (var_y < 10000.0) and (var_z < 10000.0);
+         exit when (var_x < threshold) and (var_y < threshold) and (var_z < threshold);
          loop_counter := loop_counter + 1;
       end loop;
-      if (abs(var_x) < 10000.0) and (abs(var_y) < 10000.0) and (abs(var_z) < 10000.0) then
+      if (var_x < threshold) and (var_y < threshold) and (var_z < threshold) then
          return true;
       else
          return false;
