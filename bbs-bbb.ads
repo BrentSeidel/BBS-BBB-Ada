@@ -18,6 +18,8 @@ package BBS.BBB is
      with size => 8;
    type uint8 is mod 2**8
      with size => 8;
+   type uint12 is mod 2**12
+     with size => 12;
    type int16 is range -32768 .. 32767
      with size => 16;
    type uint16 is mod 2**16

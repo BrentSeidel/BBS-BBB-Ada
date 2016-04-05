@@ -1,5 +1,6 @@
 with Ada.Text_IO;
 with Ada.Direct_IO;
+with Ada.IO_Exceptions;
 --
 -- This is a high level object-oriented interface to some of the AIN pins on
 -- the BeagleBone Black.  This uses the control files in the /sys directory
@@ -46,7 +47,7 @@ package BBS.BBB.AIN is
    -- Read the value of an input AIN.  The ADC has 12 bits of resolution, so the
    -- returned value would be in the range 0-4095.
    --
-   function get(self : not null access AIN_record'class) return integer;
+   function get(self : not null access AIN_record'class) return uint12;
    --
    -- Close the file for the pin.  Once this is called, the AIN object will
    -- need to be re-configured.
