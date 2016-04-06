@@ -48,11 +48,11 @@ package body BBS.BBB.AIN is
          raise;
    end;
    --
-   function get(self : not null access AIN_record'class) return volts is
+   function get(self : not null access AIN_record'class) return BBS.units.emf_v is
       reading : uint12;
    begin
       reading := self.get;
-      return max_volts*volts(reading)/volts(uint12'Last);
+      return max_volts*BBS.units.emf_v(reading)/BBS.units.emf_v(uint12'Last);
    end;
    --
    procedure close(self : not null access AIN_record'class) is

@@ -1,3 +1,5 @@
+with "../BBS-Ada/bbs.gpr";
+
 project I2C is
 
    for Source_Dirs use ("./**");

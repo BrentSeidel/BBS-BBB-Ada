@@ -1,6 +1,8 @@
 with Ada.Text_IO;
 with Ada.Direct_IO;
 with Ada.IO_Exceptions;
+with BBS.units;
+use type BBS.units.emf_v;
 --
 -- This is a high level object-oriented interface to some of the AIN pins on
 -- the BeagleBone Black.  This uses the control files in the /sys directory
@@ -33,8 +35,7 @@ package BBS.BBB.AIN is
 --
    type AIN_record is tagged limited private;
    type AIN is access AIN_record;
-   type volts is new float;
-   max_volts : constant volts := 1.8;
+   max_volts : constant BBS.units.emf_v := 1.8;
    --
    -- Create a new AIN object
    --
@@ -54,7 +55,7 @@ package BBS.BBB.AIN is
    -- Read the value of an input AIN in volts.  The maximum value is 1.8 so the
    -- result is equal to 1.8*(reading in uint12)/uint12'last;
    --
-   function get(self : not null access AIN_record'class) return volts;
+   function get(self : not null access AIN_record'class) return BBS.units.emf_v;
    --
    -- Close the file for the pin.  Once this is called, the AIN object will
    -- need to be re-configured.

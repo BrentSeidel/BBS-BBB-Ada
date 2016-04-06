@@ -109,37 +109,37 @@ package body BBS.BBB.i2c.L3GD20H is
       end if;
    end;
    --
-   function get_temperature(error : out integer) return Celsius is
+   function get_temperature(error : out integer) return BBS.units.temp_c is
       raw : integer := get_temperature(error);
    begin
-      return Celsius(temperature_offset - raw);
+      return BBS.units.temp_c(temperature_offset - raw);
    end;
    --
-   function get_rotation_x(error : out integer) return rate_dps is
+   function get_rotation_x(error : out integer) return BBS.units.rot_d_s is
       raw : integer := get_rotation_x(error);
    begin
-      return rate_dps(float(raw) * dps_scale);
+      return BBS.units.rot_d_s(float(raw) * dps_scale);
    end;
    --
-   function get_rotation_y(error : out integer) return rate_dps is
+   function get_rotation_y(error : out integer) return BBS.units.rot_d_s is
       raw : integer := get_rotation_y(error);
    begin
-      return rate_dps(float(raw) * dps_scale);
+      return BBS.units.rot_d_s(float(raw) * dps_scale);
    end;
    --
-   function get_rotation_z(error : out integer) return rate_dps is
+   function get_rotation_z(error : out integer) return BBS.units.rot_d_s is
       raw : integer := get_rotation_z(error);
    begin
-      return rate_dps(float(raw) * dps_scale);
+      return BBS.units.rot_d_s(float(raw) * dps_scale);
    end;
    --
    function get_rotations(error : out integer) return rotations_dps is
       raw : rotations := get_rotations(error);
       rot : rotations_dps;
    begin
-      rot.x := rate_dps(float(raw.x) * dps_scale);
-      rot.y := rate_dps(float(raw.y) * dps_scale);
-      rot.z := rate_dps(float(raw.z) * dps_scale);
+      rot.x := BBS.units.rot_d_s(float(raw.x) * dps_scale);
+      rot.y := BBS.units.rot_d_s(float(raw.y) * dps_scale);
+      rot.z := BBS.units.rot_d_s(float(raw.z) * dps_scale);
       return rot;
    end;
    --
@@ -234,31 +234,31 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    --
    function get_temperature(self : not null access L3GD20H_record'class;
-                            error : out integer) return Celsius is
+                            error : out integer) return BBS.units.temp_c is
       raw : integer := self.get_temperature(error);
    begin
-      return Celsius(self.temp_offset - raw);
+      return BBS.units.temp_c(self.temp_offset - raw);
    end;
    --
    function get_rotation_x(self : not null access L3GD20H_record'class;
-                           error : out integer) return rate_dps is
+                           error : out integer) return BBS.units.rot_d_s is
       raw : integer := self.get_rotation_x(error);
    begin
-      return rate_dps(float(raw) * self.scale);
+      return BBS.units.rot_d_s(float(raw) * self.scale);
    end;
    --
    function get_rotation_y(self : not null access L3GD20H_record'class;
-                           error : out integer) return rate_dps is
+                           error : out integer) return BBS.units.rot_d_s is
       raw : integer := self.get_rotation_y(error);
    begin
-      return rate_dps(float(raw) * self.scale);
+      return BBS.units.rot_d_s(float(raw) * self.scale);
    end;
    --
    function get_rotation_z(self : not null access L3GD20H_record'class;
-                           error : out integer) return rate_dps is
+                           error : out integer) return BBS.units.rot_d_s is
       raw : integer := self.get_rotation_z(error);
    begin
-      return rate_dps(float(raw) * self.scale);
+      return BBS.units.rot_d_s(float(raw) * self.scale);
    end;
    --
    function get_rotations(self : not null access L3GD20H_record'class;
@@ -266,9 +266,9 @@ package body BBS.BBB.i2c.L3GD20H is
       raw : rotations := self.get_rotations(error);
       rot : rotations_dps;
    begin
-      rot.x := rate_dps(float(raw.x - self.offset_x) * self.scale);
-      rot.y := rate_dps(float(raw.y - self.offset_y) * self.scale);
-      rot.z := rate_dps(float(raw.z - self.offset_z) * self.scale);
+      rot.x := BBS.units.rot_d_s(float(raw.x - self.offset_x) * self.scale);
+      rot.y := BBS.units.rot_d_s(float(raw.y - self.offset_y) * self.scale);
+      rot.z := BBS.units.rot_d_s(float(raw.z - self.offset_z) * self.scale);
       return rot;
    end;
    --

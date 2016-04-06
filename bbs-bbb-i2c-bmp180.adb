@@ -6,87 +6,20 @@ package body BBS.BBB.i2c.BMP180 is
    function "**"(Left, Right : float) return float
                  renames float_functions."**";
    --
-   -- Unit conversion routines.  At some point, these may be moved into a
-   -- separate package.
-   --
-   -- Pressure conversions
-   --
-   function to_milliBar(pressure : Pascal) return milliBar is
-   begin
-      return milliBar(float(pressure) / 100.0);
-   end;
-   --
-   function to_Atmosphere(pressure : Pascal) return Atmosphere is
-   begin
-      return Atmosphere(float(pressure) / 101325.0);
-   end;
-   --
-   function to_inHg(pressure : Pascal) return inHg is
-   begin
-      return inHg(float(pressure) / 3386.39);
-   end;
-   --
-   function to_Pascal(pressure : milliBar) return Pascal is
-   begin
-      return Pascal(float(pressure) * 100.0);
-   end;
-   --
-   function to_Pascal(pressure : Atmosphere) return Pascal is
-   begin
-      return Pascal(float(pressure) * 101325.0);
-   end;
-   --
-   function to_Pascal(pressure : inHg) return Pascal is
-   begin
-      return Pascal(float(pressure) * 3386.39);
-   end;
-   --
-   -- Temperature conversions
-   --
-   function to_Farenheit(temp : Celsius) return Farenheit is
-   begin
-      return Farenheit(float(temp)*9.0/5.0 + 32.0);
-   end;
-   --
-   function to_Kelvin(temp : Celsius) return Kelvin is
-   begin
-      return Kelvin(float(temp) + 273.15);
-   end;
-   --
-   function to_Celsius(temp : Farenheit) return Celsius is
-   begin
-      return Celsius(float(temp - 32.0)*5.0/9.0);
-   end;
-   --
-   function to_Celsius(temp : Kelvin) return Celsius is
-   begin
-      return Celsius(float(temp) - 273.15);
-   end;
-   --
-   -- Distance conversions
-   --
-   function to_feet(dist : meters) return feet is
-   begin
-      return feet(float(dist) * 3.28084);
-   end;
-   --
-   function to_meters(dist : feet) return meters is
-   begin
-      return meters(float(dist) / 3.28084);
-   end;
-   --
    -- Given local pressure and altimeter setting, determine the pressure
    -- altitude.  Given local pressure and altitude, determine the altimeter
    -- setting.
    --
-   function pressure_altitude(pressure : Pascal; altm : Pascal) return meters is
+   function pressure_altitude(pressure : BBS.units.press_p; altm : BBS.units.press_p)
+                              return BBS.units.len_m is
    begin
-      return meters(44330.0 * (1.0 - (float(pressure)/float(altm))**float(1.0/5.255)));
+      return BBS.units.len_m(44330.0 * (1.0 - (float(pressure)/float(altm))**float(1.0/5.255)));
    end;
    --
-   function altimeter(pressure : Pascal; altitude : meters) return Pascal is
+   function altimeter(pressure : BBS.units.press_p; altitude : BBS.units.len_m) return
+     BBS.units.press_p is
    begin
-      return Pascal(float(pressure)/(1.0 - float(altitude/44330.0)**float(5.255)));
+      return BBS.units.press_p(float(pressure)/(1.0 - float(altitude/44330.0)**float(5.255)));
    end;
    --
    -- Procedures to work with the BMP180 pressure and temperature sensor
@@ -166,22 +99,22 @@ package body BBS.BBB.i2c.BMP180 is
       return float(int_temp) / 10.0;
    end;
    --
-   function get_temp(error : out integer) return Celsius is
+   function get_temp(error : out integer) return BBS.units.temp_c is
       int_temp : integer := get_temp(error);
    begin
-      return Celsius(float(int_temp) / 10.0);
+      return BBS.units.temp_c(float(int_temp) / 10.0);
    end;
    --
-   function get_temp(error : out integer) return Farenheit is
+   function get_temp(error : out integer) return BBS.units.temp_f is
       int_temp : integer := get_temp(error);
    begin
-      return to_Farenheit(Celsius(float(int_temp) / 10.0));
+      return BBS.units.to_Farenheit(BBS.units.temp_c(float(int_temp) / 10.0));
    end;
    --
-   function get_temp(error : out integer) return Kelvin is
+   function get_temp(error : out integer) return BBS.units.temp_k is
       int_temp : integer := get_temp(error);
    begin
-      return to_Kelvin(Celsius(float(int_temp) / 10.0));
+      return BBS.units.to_Kelvin(BBS.units.temp_c(float(int_temp) / 10.0));
    end;
    --
    function get_press(error : out integer) return integer is
@@ -248,32 +181,32 @@ package body BBS.BBB.i2c.BMP180 is
       return press;
    end;
    --
-   function get_press(error : out integer) return Pascal is
+   function get_press(error : out integer) return BBS.units.press_p is
       int_press : integer;
    begin
       int_press := get_press(error);
-      return Pascal(int_press);
+      return BBS.units.press_p(int_press);
    end;
    --
-   function get_press(error : out integer) return milliBar is
+   function get_press(error : out integer) return BBS.units.press_mb is
       int_press : integer;
    begin
       int_press := get_press(error);
-      return to_millibar(Pascal(int_press));
+      return BBS.units.to_milliBar(BBS.units.press_p(int_press));
    end;
    --
-   function get_press(error : out integer) return Atmosphere is
+   function get_press(error : out integer) return BBS.units.press_atm is
       int_press : integer;
    begin
       int_press := get_press(error);
-      return to_Atmosphere(Pascal(int_press));
+      return BBS.units.to_Atmosphere(BBS.units.press_p(int_press));
    end;
    --
-   function get_press(error : out integer) return inHg is
+   function get_press(error : out integer) return BBS.units.press_inHg is
       int_press : integer;
    begin
       int_press := get_press(error);
-      return to_inHg(Pascal(int_press));
+      return BBS.units.to_inHg(BBS.units.press_p(int_press));
    end;
    --
    -- Object oriented interface
@@ -355,24 +288,24 @@ package body BBS.BBB.i2c.BMP180 is
    end;
    --
    function get_temp(self : not null access BMP180_record'class;
-                     error : out integer) return Celsius is
+                     error : out integer) return BBS.units.temp_c is
       int_temp : integer := self.get_temp(error);
    begin
-      return Celsius(float(int_temp) / 10.0);
+      return BBS.units.temp_c(float(int_temp) / 10.0);
    end;
    --
    function get_temp(self : not null access BMP180_record'class;
-                     error : out integer) return Farenheit is
+                     error : out integer) return BBS.units.temp_f is
       int_temp : integer := self.get_temp(error);
    begin
-      return to_Farenheit(Celsius(float(int_temp) / 10.0));
+      return BBS.units.to_Farenheit(BBS.units.temp_c(float(int_temp) / 10.0));
    end;
    --
    function get_temp(self : not null access BMP180_record'class;
-                     error : out integer) return Kelvin is
+                     error : out integer) return BBS.units.temp_k is
       int_temp : integer := self.get_temp(error);
    begin
-      return to_Kelvin(Celsius(float(int_temp) / 10.0));
+      return BBS.units.to_Kelvin(BBS.units.temp_c(float(int_temp) / 10.0));
    end;
    --
    function get_press(self : not null access BMP180_record'class;
@@ -441,31 +374,31 @@ package body BBS.BBB.i2c.BMP180 is
    end;
    --
    function get_press(self : not null access BMP180_record'class;
-                      error : out integer) return Pascal is
+                      error : out integer) return BBS.units.press_p is
       int_press : integer := self.get_press(error);
    begin
-      return Pascal(int_press);
+      return BBS.units.press_p(int_press);
    end;
    --
    function get_press(self : not null access BMP180_record'class;
-                      error : out integer) return milliBar is
+                      error : out integer) return BBS.units.press_mb is
       int_press : integer := self.get_press(error);
    begin
-      return to_millibar(Pascal(int_press));
+      return BBS.units.to_milliBar(BBS.units.press_p(int_press));
    end;
    --
    function get_press(self : not null access BMP180_record'class;
-                      error : out integer) return Atmosphere is
+                      error : out integer) return BBS.units.press_atm is
       int_press : integer := self.get_press(error);
    begin
-      return to_Atmosphere(Pascal(int_press));
+      return BBS.units.to_Atmosphere(BBS.units.press_p(int_press));
    end;
    --
    function get_press(self : not null access BMP180_record'class;
-                      error : out integer) return inHg is
+                      error : out integer) return BBS.units.press_inHg is
       int_press : integer := self.get_press(error);
    begin
-      return to_inHg(Pascal(int_press));
+      return BBS.units.to_inHg(BBS.units.press_p(int_press));
    end;
 
 end;

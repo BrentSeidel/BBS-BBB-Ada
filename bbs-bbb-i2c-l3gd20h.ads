@@ -11,6 +11,7 @@
 -- new collector package to try and unify units and conversions.
 --
 with BBS.BBB.i2c;
+with BBS.units;
 --
 -- This package contains constants and routines to communicate with the L3GD20H
 -- gyroscope on the i2c bus.
@@ -71,9 +72,6 @@ package BBS.BBB.i2c.L3GD20H is
    --
    -- Define some datatypes
    --
-   --  Type for scaled rotation in degrees per second.
-   --
-   type rate_dps is new float;
    --
    -- Record to hold all three rotation values in sensor values
    --
@@ -88,15 +86,11 @@ package BBS.BBB.i2c.L3GD20H is
    --
    type rotations_dps is
       record
-         x : rate_dps;
-         y : rate_dps;
-         z : rate_dps;
+         x : BBS.units.rot_d_s;
+         y : BBS.units.rot_d_s;
+         z : BBS.units.rot_d_s;
       end record;
    --
-   -- Temperature.  If you need more temperature datatypes than just Celsius,
-   -- you can copy them from the BMP180 package.
-   --
-   type Celsius is new integer;
    --
    -- Configure the device
    --
@@ -119,10 +113,10 @@ package BBS.BBB.i2c.L3GD20H is
    -- Get values in engineering units.  These have been scaled and offset to
    -- convert them into standard units.
    --
-   function get_temperature(error : out integer) return Celsius;
-   function get_rotation_x(error : out integer) return rate_dps;
-   function get_rotation_y(error : out integer) return rate_dps;
-   function get_rotation_z(error : out integer) return rate_dps;
+   function get_temperature(error : out integer) return BBS.units.temp_c;
+   function get_rotation_x(error : out integer) return BBS.units.rot_d_s;
+   function get_rotation_y(error : out integer) return BBS.units.rot_d_s;
+   function get_rotation_z(error : out integer) return BBS.units.rot_d_s;
    function get_rotations(error : out integer) return rotations_dps;
    --
    function get_status(error : out integer) return uint8;
@@ -146,10 +140,10 @@ package BBS.BBB.i2c.L3GD20H is
    function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return integer;
    function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations;
    --
-   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return Celsius;
-   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
-   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
-   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return rate_dps;
+   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.temp_c;
+   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
+   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
+   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
    function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations_dps;
    --
    function get_status(self : not null access L3GD20H_record'class; error : out integer) return uint8;

@@ -3,14 +3,27 @@ This repository contains a collection of Ada sources for working with the
 BeagleBone Black Linux computer.  Some of these could probably be easily ported
 to similar systems such as the Raspberry PI.
 
-# Notice
+# Notices
+## Note
 Due to changes in the way that various I/O is handled, these routines are pretty much
 guarenteed not to work on some versions of Linux.  The I2C routines were developed on
 Debian Jessie, Linux V4.1.12-ti-r29 and use Ada 2012.
 
+##Note
 Some of the system files that control I/O are owned by root and do not allow world
 write access.  A shell script is provided to set the permissions so that the Ada
 program does not need to run as root.
+
+##Note
+I finally got around to developing a centralized units system.  The types for
+many physical units are now defined in the BBS.units package.  This can be fetched
+from the https://github.com/BrentSeidel/BBS-Ada.git repository on GitHub.  While
+this adds an external dependancy for this repository, the result is that by using
+it, all packages will have access to the same units, conversions, and functions.
+
+An advantage of this approach is that if you use the proper units in your
+calculations, the compiler will be able to catch mismatches between feet and
+meters before you crash your probe into Mars.
 
 # Contents
 ## LEDs

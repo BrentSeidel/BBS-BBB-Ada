@@ -97,10 +97,10 @@ package body BBS.BBB.i2c.LSM303DLHC is
       return float(temperature_offset + temp)/8.0;
    end;
    --
-   function get_temperature(error : out integer) return Celsius is
+   function get_temperature(error : out integer) return BBS.units.temp_c is
       temp : integer := get_temperature(error);
    begin
-      return Celsius(float(temperature_offset + temp)/8.0);
+      return BBS.units.temp_c(float(temperature_offset + temp)/8.0);
    end;
    --
    function get_acceleration_x(error : out integer) return integer is
@@ -131,31 +131,31 @@ package body BBS.BBB.i2c.LSM303DLHC is
       return accel;
    end;
    --
-   function get_acceleration_x(error : out integer) return accel_g is
+   function get_acceleration_x(error : out integer) return BBS.units.accel_g is
       accel : integer := get_acceleration_x(error);
    begin
-      return accel_g(float(accel) * accel_scale);
+      return BBS.units.accel_g(float(accel) * accel_scale);
    end;
    --
-   function get_acceleration_y(error : out integer) return accel_g is
+   function get_acceleration_y(error : out integer) return BBS.units.accel_g is
       accel : integer := get_acceleration_y(error);
    begin
-      return accel_g(float(accel) * accel_scale);
+      return BBS.units.accel_g(float(accel) * accel_scale);
    end;
    --
-   function get_acceleration_z(error : out integer) return accel_g is
+   function get_acceleration_z(error : out integer) return BBS.units.accel_g is
       accel : integer := get_acceleration_z(error);
    begin
-      return accel_g(float(accel) * accel_scale);
+      return BBS.units.accel_g(float(accel) * accel_scale);
    end;
    --
    function get_accelerations(error : out integer) return accelerations_g is
       accel : accelerations := get_accelerations(error);
       accel_gs : accelerations_g;
    begin
-      accel_gs.x := accel_g(float(accel.x) * accel_scale);
-      accel_gs.y := accel_g(float(accel.y) * accel_scale);
-      accel_gs.z := accel_g(float(accel.z) * accel_scale);
+      accel_gs.x := BBS.units.accel_g(float(accel.x) * accel_scale);
+      accel_gs.y := BBS.units.accel_g(float(accel.y) * accel_scale);
+      accel_gs.z := BBS.units.accel_g(float(accel.z) * accel_scale);
       return accel_gs;
    end;
    --
@@ -204,31 +204,31 @@ package body BBS.BBB.i2c.LSM303DLHC is
       return mag;
    end;
    --
-   function get_magnet_x(error : out integer) return gauss is
+   function get_magnet_x(error : out integer) return BBS.units.mag_g is
       mag : integer := get_magnet_x(error);
    begin
-      return gauss(float(mag) * mag_scale_xy);
+      return BBS.units.mag_g(float(mag) * mag_scale_xy);
    end;
    --
-   function get_magnet_y(error : out integer) return gauss is
+   function get_magnet_y(error : out integer) return BBS.units.mag_g is
       mag : integer := get_magnet_y(error);
    begin
-      return gauss(float(mag) * mag_scale_xy);
+      return BBS.units.mag_g(float(mag) * mag_scale_xy);
    end;
    --
-   function get_magnet_z(error : out integer) return gauss is
+   function get_magnet_z(error : out integer) return BBS.units.mag_g is
       mag : integer := get_magnet_z(error);
    begin
-      return gauss(float(mag) * mag_scale_z);
+      return BBS.units.mag_g(float(mag) * mag_scale_z);
    end;
    --
    function get_magnetism(error : out integer) return magnetism_gauss is
       mag : magnetism := get_magnetism(error);
       mag_g : magnetism_gauss;
    begin
-      mag_g.x := gauss(float(mag.x) * mag_scale_xy);
-      mag_g.y := gauss(float(mag.y) * mag_scale_xy);
-      mag_g.z := gauss(float(mag.z) * mag_scale_z);
+      mag_g.x := BBS.units.mag_g(float(mag.x) * mag_scale_xy);
+      mag_g.y := BBS.units.mag_g(float(mag.y) * mag_scale_xy);
+      mag_g.z := BBS.units.mag_g(float(mag.z) * mag_scale_z);
       return mag_g;
    end;
    --
@@ -391,24 +391,24 @@ package body BBS.BBB.i2c.LSM303DLHC is
    --
    --
    function get_acceleration_x(self : not null access LSM303DLHC_record'class;
-                               error : out integer) return accel_g is
+                               error : out integer) return BBS.units.accel_g is
       accel : integer := self.get_acceleration_x(error);
    begin
-      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
+      return BBS.units.accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_acceleration_y(self : not null access LSM303DLHC_record'class;
-                               error : out integer) return accel_g is
+                               error : out integer) return BBS.units.accel_g is
       accel : integer := self.get_acceleration_y(error);
    begin
-      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
+      return BBS.units.accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_acceleration_z(self : not null access LSM303DLHC_record'class;
-                               error : out integer) return accel_g is
+                               error : out integer) return BBS.units.accel_g is
       accel : integer := self.get_acceleration_z(error);
    begin
-      return accel_g(float(accel) * self.accel_scale * self.accel_calib);
+      return BBS.units.accel_g(float(accel) * self.accel_scale * self.accel_calib);
    end;
    --
    function get_accelerations(self : not null access LSM303DLHC_record'class;
@@ -416,9 +416,9 @@ package body BBS.BBB.i2c.LSM303DLHC is
       accel : accelerations := self.get_accelerations(error);
       accel_gs : accelerations_g;
    begin
-      accel_gs.x := accel_g(float(accel.x) * self.accel_scale * self.accel_calib);
-      accel_gs.y := accel_g(float(accel.y) * self.accel_scale * self.accel_calib);
-      accel_gs.z := accel_g(float(accel.z) * self.accel_scale * self.accel_calib);
+      accel_gs.x := BBS.units.accel_g(float(accel.x) * self.accel_scale * self.accel_calib);
+      accel_gs.y := BBS.units.accel_g(float(accel.y) * self.accel_scale * self.accel_calib);
+      accel_gs.z := BBS.units.accel_g(float(accel.z) * self.accel_scale * self.accel_calib);
       return accel_gs;
    end;
    --
@@ -456,10 +456,10 @@ package body BBS.BBB.i2c.LSM303DLHC is
    end;
    --
    function get_temperature(self : not null access LSM303DLHC_record'class;
-                            error : out integer) return Celsius is
+                            error : out integer) return BBS.units.temp_c is
       temp : integer := self.get_temperature(error);
    begin
-      return Celsius(float(self.temp_offset + temp)/8.0);
+      return BBS.units.temp_c(float(self.temp_offset + temp)/8.0);
    end;
    --
    function get_magnet_x(self : not null access LSM303DLHC_record'class;
@@ -495,24 +495,24 @@ package body BBS.BBB.i2c.LSM303DLHC is
    end;
    --
    function get_magnet_x(self : not null access LSM303DLHC_record'class;
-                         error : out integer) return gauss is
+                         error : out integer) return BBS.units.mag_g is
       mag : integer := self.get_magnet_x(error);
    begin
-      return gauss(float(mag) * self.mag_scale_xy);
+      return BBS.units.mag_g(float(mag) * self.mag_scale_xy);
    end;
    --
    function get_magnet_y(self : not null access LSM303DLHC_record'class;
-                         error : out integer) return gauss is
+                         error : out integer) return BBS.units.mag_g is
       mag : integer := self.get_magnet_y(error);
    begin
-      return gauss(float(mag) * self.mag_scale_xy);
+      return BBS.units.mag_g(float(mag) * self.mag_scale_xy);
    end;
    --
       function get_magnet_z(self : not null access LSM303DLHC_record'class;
-                            error : out integer) return gauss is
+                            error : out integer) return BBS.units.mag_g is
       mag : integer := self.get_magnet_z(error);
    begin
-      return gauss(float(mag) * self.mag_scale_z);
+      return BBS.units.mag_g(float(mag) * self.mag_scale_z);
    end;
    --
       function get_magnetism(self : not null access LSM303DLHC_record'class;
@@ -520,9 +520,9 @@ package body BBS.BBB.i2c.LSM303DLHC is
       mag : magnetism := self.get_magnetism(error);
       mag_g : magnetism_gauss;
    begin
-      mag_g.x := gauss(float(mag.x) * self.mag_scale_xy);
-      mag_g.y := gauss(float(mag.y) * self.mag_scale_xy);
-      mag_g.z := gauss(float(mag.z) * self.mag_scale_z);
+      mag_g.x := BBS.units.mag_g(float(mag.x) * self.mag_scale_xy);
+      mag_g.y := BBS.units.mag_g(float(mag.y) * self.mag_scale_xy);
+      mag_g.z := BBS.units.mag_g(float(mag.z) * self.mag_scale_z);
       return mag_g;
    end;
    --
