@@ -34,8 +34,25 @@ package body BBS.BBB.AIN is
       -- an immediate exit to the while loop.  I think that it is happening
       -- when the first read has an end of file.  This probably means that the
       -- return value should be zero.
+      --
       when Ada.IO_Exceptions.End_Error =>
          return 0;
+      --
+      -- The 12 bit A/D converter should not be returning values greater than
+      -- 4095.  However, I have seen this happen and a constraint exception is
+      -- thrown.  This handler just prints out the value of buff and then passes
+      -- the exception on.  This provides a little bit of debugging information.
+      --
+      when Constraint_Error =>
+         Ada.Text_IO.Put_Line("Analog input conversion failed on value <" & buff & ">");
+         raise;
+   end;
+   --
+   function get(self : not null access AIN_record'class) return volts is
+      reading : uint12;
+   begin
+      reading := self.get;
+      return max_volts*volts(reading)/volts(uint12'Last);
    end;
    --
    procedure close(self : not null access AIN_record'class) is

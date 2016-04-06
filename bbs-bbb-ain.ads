@@ -33,6 +33,8 @@ package BBS.BBB.AIN is
 --
    type AIN_record is tagged limited private;
    type AIN is access AIN_record;
+   type volts is new float;
+   max_volts : constant volts := 1.8;
    --
    -- Create a new AIN object
    --
@@ -48,6 +50,11 @@ package BBS.BBB.AIN is
    -- returned value would be in the range 0-4095.
    --
    function get(self : not null access AIN_record'class) return uint12;
+   --
+   -- Read the value of an input AIN in volts.  The maximum value is 1.8 so the
+   -- result is equal to 1.8*(reading in uint12)/uint12'last;
+   --
+   function get(self : not null access AIN_record'class) return volts;
    --
    -- Close the file for the pin.  Once this is called, the AIN object will
    -- need to be re-configured.
