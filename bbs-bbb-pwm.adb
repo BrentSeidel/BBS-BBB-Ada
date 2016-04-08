@@ -46,6 +46,17 @@ package body BBS.BBB.PWM is
       Ada.Text_IO.Close(temp);
    end;
    --
+   procedure set_period(self : not null access PWM_record'class; period : Duration) is
+      temp : Ada.Text_IO.File_Type;
+      value : constant string := Ada.Strings.Fixed.Trim(integer'Image(integer(period*1_000_000_000.0)),
+                                                          Ada.Strings.Left);
+   begin
+      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, pwm_ctrl(self.pwm_index).all & "/period");
+      Ada.Text_IO.Put_Line(temp, value);
+      self.period := nanoseconds(period*1_000_000_000.0);
+      Ada.Text_IO.Close(temp);
+   end;
+   --
    procedure set_high(self : not null access PWM_record'class; high : nanoseconds) is
       temp : Ada.Text_IO.File_Type;
       value : constant string := Ada.Strings.Fixed.Trim(integer'Image(integer(high)),
@@ -57,9 +68,20 @@ package body BBS.BBB.PWM is
       Ada.Text_IO.Close(temp);
    end;
    --
-   procedure set_rate(self : not null access PWM_record'class; rate : float) is
+   procedure set_high(self : not null access PWM_record'class; high : Duration) is
       temp : Ada.Text_IO.File_Type;
-      period : constant nanoseconds := nanoseconds(1_000_000_000.0/rate);
+      value : constant string := Ada.Strings.Fixed.Trim(integer'Image(integer(high*1_000_000_000.0)),
+                                                          Ada.Strings.Left);
+   begin
+      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, pwm_ctrl(self.pwm_index).all & "/duty_cycle");
+      Ada.Text_IO.Put_Line(temp, value);
+      self.high_time := nanoseconds(high*1_000_000_000.0);
+      Ada.Text_IO.Close(temp);
+   end;
+   --
+   procedure set_rate(self : not null access PWM_record'class; rate : BBS.units.freq_hz) is
+      temp : Ada.Text_IO.File_Type;
+      period : constant nanoseconds := nanoseconds(1_000_000_000.0/float(rate));
       value : constant string := Ada.Strings.Fixed.Trim(integer'Image(integer(period)),
                                                           Ada.Strings.Left);
    begin

@@ -8,6 +8,7 @@
 -- tree.
 --
 with BBS.BBB.pins;
+with BBS.units;
 with Ada.Text_IO;
 with Ada.Strings.Fixed;
 package BBS.BBB.PWM is
@@ -76,22 +77,35 @@ package BBS.BBB.PWM is
    --
    procedure set_period(self : not null access PWM_record'class; period : nanoseconds);
    --
+   -- Set the period of the PWM.  This is the value used by Linux in Nanoseconds.
+   -- Must be zero or positive.  Some of the PWM devices may have additional
+   -- restrictions on the range.
+   --
+   procedure set_period(self : not null access PWM_record'class; period : Duration);
+   --
    -- Set the time that the output is in the high state.  This must be between
    -- zero and the period.
    --
    procedure set_high(self : not null access PWM_record'class; high : nanoseconds);
    --
+   -- Set the time that the output is in the high state.  This must be between
+   -- zero and the period.
+   --
+   procedure set_high(self : not null access PWM_record'class; high : Duration);
+   --
    -- Sets the rate in Hz.  This is essentially the inverse of set_period.  The
    -- rate is given as a floating point number and is converted to an integer
    -- number of nanoseconds.
    --
-   procedure set_rate(self : not null access PWM_record'class; rate : float);
+   procedure set_rate(self : not null access PWM_record'class; rate : BBS.units.freq_hz);
    --
    -- Sets the duty cycle.  The duty cycle is a percentage of the period that
    -- the output is high.  The input is a floating point number and is converted
    -- to the appropriate number of nanoseconds.
    --
-   procedure set_duty(self : not null access PWM_record'class; duty : float);
+   procedure set_duty(self : not null access PWM_record'class; duty : float)
+     with
+     pre => (duty >= 0.0) and (duty <= 100.0);
 
 private
    type PWM_record is tagged limited
