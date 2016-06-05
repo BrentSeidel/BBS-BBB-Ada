@@ -187,8 +187,8 @@ package BBS.BBB.pins is
 -- The pins for the PWM controllers are:
 --   EHRPWM0A: P9_22; -- or P9_31
 --   EHRPWM0B: P9_21; -- or P9_29
---   EHRPWM1A: P9_14; -- or P8_34
---   EHRPWM1B: P9_16; -- or P8_36
+--   EHRPWM1A: P9_14; -- or P8_36
+--   EHRPWM1B: P9_16; -- or P8_34
 --   EHRPWM2A: P8_19; -- or P8_45
 --   EHRPWM2B: P8_13; -- or P8_46
 --   ECAPPWM0: P9_42;
