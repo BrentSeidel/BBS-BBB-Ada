@@ -32,6 +32,11 @@ package BBS.BBB.i2c.devices is
    addr_MCP23008_7 : constant addr7 := 16#26#;
    addr_MCP23008_8 : constant addr7 := 16#27#;
    --
+   -- Addresses for PCA9685 PWM Controllers.  This has 6 address select pins so
+   -- it can have 64 different addresses (apparently only 62 are usable.
+   --
+   addr_PCA9685_00 : constant addr7 := 16#40#;
+   --
    addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
    addr_BMP180 : constant addr7 := 16#77#;
    --

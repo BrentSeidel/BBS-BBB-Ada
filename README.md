@@ -65,6 +65,12 @@ rotations in a single record.
 
 The chip also contains an temperature sensor and a routine is provided to access it.
 
+### PCA9685
+This is a 16 channel, 12 bit PWM controller.  Basic functions seem to work, but
+this should be considered to be under development and even more experimental than
+every thing else.  The basic function is available, more features are expected
+to be added as I have time and energy.
+
 ### Devices
 This package contains constants for other devices that do not yet have individual packages.
 

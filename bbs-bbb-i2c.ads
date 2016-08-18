@@ -59,7 +59,7 @@ package BBS.BBB.i2c is
    -- Set to true to print error messages.
    --
    debug : boolean := true;
-   --
+   -- -------------------------------------------------------
    -- Definitions for object oriented interface.
    --
    -- The I2C interface object
@@ -74,14 +74,17 @@ package BBS.BBB.i2c is
    --
    function i2c_new return i2c_interface;
    procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
-                      SCL : string; SDA : string);
+                       SCL : string; SDA : string);
+   --
+   -- Reading or writing a single byte is straigtforward.
+   --
    procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                    data : uint8; error : out integer);
    function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint8;
    --
-   -- Reading a single byte is straigtforward.  When reading two bytes, is the
-   -- MSB first or second?  There is no standard even within a single device.
+   -- When reading two bytes, is the MSB first or second?  There is no standard
+   -- even within a single device.
    --
    -- Read a word with MSB first
    --
@@ -93,11 +96,16 @@ package BBS.BBB.i2c is
    function readm2(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint16;
    --
+   -- Write an arbitrary number of bytes to a device on the i2c bus.
+   --
+   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                   buff : buff_ptr; size : uint16; error : out integer);
+   --
    -- Read the specified number of bytes into a buffer
    --
    procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                   buff : buff_ptr; size : uint16; error : out integer);
-   --
+   -- -------------------------------------------------------
    -- Create a new I2C device.  Each I2C device object should implement these
    -- two routines.
    --

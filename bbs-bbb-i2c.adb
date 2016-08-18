@@ -255,6 +255,37 @@ package body BBS.BBB.i2c is
       end if;
    end;
    --
+   --
+   -- Write an arbitrary number of bytes to a device on the i2c bus.
+   --
+   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
+                   buff : buff_ptr; size : uint16; error : out integer) is
+      status : interfaces.C.int;
+      err : integer;
+   begin
+      msg(0).addr := uint16(addr);
+      msg(0).flags := 0; -- write
+      msg(0).len := size + 1;
+      msg(0).buff := buff1'Access;
+      ioctl_msg.messages := msg'Access;
+      ioctl_msg.nmsgs := 1;
+      buff1(0) := reg;
+      for x in 0 .. size loop
+         buff1(integer(x + 1)) := buff(integer(x));
+      end loop;
+      status := rdwr_ioctl(self.port, i2c_rdwr, ioctl_msg);
+      if (integer(status) < 0) then
+         err := get_errno;
+         if (debug) then
+            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
+            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+         end if;
+         error := err;
+      else
+         error := 0;
+      end if;
+   end;
+   --
    function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                  error : out integer) return uint8 is
       status : interfaces.C.int;

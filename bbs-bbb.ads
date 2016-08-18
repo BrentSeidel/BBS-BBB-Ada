@@ -12,7 +12,7 @@ package BBS.BBB is
    --
    type bit is range 0 .. 1
      with Size => 1;
-   type addr7 is range 0 .. 127
+   type addr7 is mod 2**7
      with size => 7;
    type int8 is range -128 .. 127
      with size => 8;
