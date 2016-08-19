@@ -61,17 +61,35 @@ package body BBS.BBB.i2c.PCA9685 is
    end;
 
    procedure set(self : not null access PS9685_record'class; chan : channel;
-                 on : uint12; off : uint12) is
-      error : integer;
+                 on : uint12; off : uint12; error : out integer) is
    begin
       i2c_buff(0) := uint8(on and 16#ff#);
       i2c_buff(1) := uint8(on / 16#100#);
       i2c_buff(2) := uint8(off and 16#ff#);
       i2c_buff(3) := uint8(off / 16#100#);
---      self.port.write(self.address, LED_ON_L(chan), i2c_buff(0), error);
---      self.port.write(self.address, LED_ON_H(chan), i2c_buff(1), error);
---      self.port.write(self.address, LED_OFF_L(chan), i2c_buff(2), error);
---      self.port.write(self.address, LED_OFF_H(chan), i2c_buff(3), error);
       self.port.write(self.address, LED_ON_L(chan), i2c_buff'access, 4, error);
    end;
+   --
+   procedure set_full_on(self : not null access PS9685_record'class; chan : channel;
+                         error : out integer) is
+   begin
+      self.port.write(self.address, LED_ON_H(chan), 16#10#, error);
+   end;
+   --
+   procedure set_full_off(self : not null access PS9685_record'class; chan : channel;
+                          error : out integer) is
+   begin
+      self.port.write(self.address, LED_OFF_H(chan), 16#10#, error);
+   end;
+   --
+   procedure sleep(self : not null access PS9685_record'class; state : boolean;
+                  error : out integer) is
+   begin
+      if state then
+         self.port.write(self.address, MODE1, 16#10#, error); -- Put PCA9685 to sleep
+      else
+         self.port.write(self.address, MODE1, 16#20#, error); -- Wake up with auto increment
+      end if;
+   end;
+   --
 end;

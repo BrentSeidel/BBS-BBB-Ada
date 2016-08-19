@@ -10,9 +10,11 @@ package BBS.BBB.i2c.PCA9685 is
    -- any duty cycle is valid, servos are controlled by the pulse width which
    -- should range from 1.5 to 2.5 mS.
    --
-   -- Servo position scaled from -1.0 to +1.0
-   --
-   type servo_pos is new float range -1.0 .. 1.0;
+   -- Note that after playing with some servos, it appears that each servo may
+   -- have a different range.  Thus, one will have to do some experimenting to
+   -- find the correct upper and lower range for each servo.  Good starting points
+   -- are 1275 for the lower limit and 2125 for the upper limit of counts to the
+   -- pulse high time.
    --
    -- PWM channels are 0 to 15.  Channel 16 is the all call channel.
    --
@@ -80,7 +82,18 @@ package BBS.BBB.i2c.PCA9685 is
                        addr : addr7; error : out integer);
    --
    procedure set(self : not null access PS9685_record'class; chan : channel;
-                 on : uint12; off : uint12);
+                 on : uint12; off : uint12; error : out integer);
+   --
+   procedure set_full_on(self : not null access PS9685_record'class; chan : channel;
+                  error : out integer);
+   --
+   procedure set_full_off(self : not null access PS9685_record'class; chan : channel;
+                  error : out integer);
+   --
+   -- State = true for sleep or false for wake.
+   --
+   procedure sleep(self : not null access PS9685_record'class; state : boolean;
+                  error : out integer);
 
 private
    --
