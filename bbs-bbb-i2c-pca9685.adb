@@ -55,6 +55,9 @@ package body BBS.BBB.i2c.PCA9685 is
    begin
       self.port := port;
       self.address := addr;
+      self.servo_min := (others => 0);
+      self.servo_max := (others => 0);
+      self.servo_set := (others => false);
       port.write(addr, MODE1, 16#10#, error); -- Put PCA9685 to sleep
       port.write(addr, PRESCALE, 16#1E#, error); -- Set prescale to 30
       port.write(addr, MODE1, 16#20#, error); -- Wake up with auto increment
@@ -89,6 +92,30 @@ package body BBS.BBB.i2c.PCA9685 is
          self.port.write(self.address, MODE1, 16#10#, error); -- Put PCA9685 to sleep
       else
          self.port.write(self.address, MODE1, 16#20#, error); -- Wake up with auto increment
+      end if;
+   end;
+   --
+   procedure set_servo_range(self : not null access PS9685_record'class; chan : channel;
+                         min : uint12; max : uint12) is
+   begin
+      self.servo_min(chan) := min;
+      self.servo_max(chan) := max;
+      self.servo_set(chan) := true;
+   end;
+   --
+   -- Once the servo range has been set, a servo can be controlled by set_servo.
+   --
+   procedure set_servo(self : not null access PS9685_record'class; chan : channel;
+                       position : servo_range; error : out integer) is
+      temp : uint12;
+   begin
+      if (self.servo_set(chan)) then
+         temp := uint12(float(position)*float(self.servo_max(chan) - self.servo_min(chan))/2.0)
+           + self.servo_min(chan);
+         self.set(chan, 0, temp, error);
+         null;
+      else
+         raise program_error;
       end if;
    end;
    --

@@ -10,15 +10,35 @@ package BBS.BBB.i2c.PCA9685 is
    -- any duty cycle is valid, servos are controlled by the pulse width which
    -- should range from 1.5 to 2.5 mS.
    --
-   -- Note that after playing with some servos, it appears that each servo may
-   -- have a different range.  Thus, one will have to do some experimenting to
-   -- find the correct upper and lower range for each servo.  Good starting points
-   -- are 1275 for the lower limit and 2125 for the upper limit of counts to the
-   -- pulse high time.
+   -- Measured values for some servos in my testing are:
+   -- Servo       Min   Max
+   -- SG90        500  2100
+   -- SG5010      500  2100
+   --
+   -- For a continuous rotation servo from Parallax, I got the following:
+   -- Null:  1290 - 1350
+   -- CW:   <1290
+   -- CCW:  >1350
+   --
+   -- Note that all measured numbers are approximate.  There are probably a few
+   -- counts left before hitting full scale movement.  It's also entirely possible
+   -- that these values may vary with time, temperature, or other factors.
+   --
+   -- There are two things to keep in mind:
+   -- 1. Test your own servos to determin their appropriate values.
+   -- 2. If you want any sort of precision, you need some sort of position feed-
+   --    back to the program.
+   -- 3. The documentation that says that the pulse width for servos should range
+   --    from 1.5 to 2.5 mS may not be accurate.
    --
    -- PWM channels are 0 to 15.  Channel 16 is the all call channel.
    --
    type channel is new integer range 0 .. 16;
+   --
+   -- The servo range type maps the servo position into a floating point number
+   -- in the range -1.0 to 1.0.
+   --
+   type servo_range is new float range -1.0 .. 1.0;
    --
    ALL_CHAN : constant channel := 16;
    --
@@ -94,13 +114,31 @@ package BBS.BBB.i2c.PCA9685 is
    --
    procedure sleep(self : not null access PS9685_record'class; state : boolean;
                   error : out integer);
-
+   --
+   -- Methods for servos
+   --
+   procedure set_servo_range(self : not null access PS9685_record'class; chan : channel;
+                         min : uint12; max : uint12);
+   --
+   -- Once the servo range has been set, a servo can be controlled by set_servo.
+   --
+   procedure set_servo(self : not null access PS9685_record'class; chan : channel;
+                       position : servo_range; error : out integer);
+   --
 private
+   --
+   -- Array type definitions
+   --
+   type servo_array is array (channel) of uint12;
+   type servo_set_array is array (channel) of boolean;
    --
    -- Object definition
    --
    type PS9685_record is new i2c_device_record with record
       addr : addr7;
+      servo_min : servo_array;
+      servo_max : servo_array;
+      servo_set : servo_set_array;
    end record;
    --
    -- Buffer for writes
