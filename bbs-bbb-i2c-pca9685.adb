@@ -108,10 +108,10 @@ package body BBS.BBB.i2c.PCA9685 is
    procedure set_servo(self : not null access PS9685_record'class; chan : channel;
                        position : servo_range; error : out integer) is
       temp : uint12;
+      scale : float := float(self.servo_max(chan) - self.servo_min(chan)) / 2.0;
    begin
       if (self.servo_set(chan)) then
-         temp := uint12(float(position)*float(self.servo_max(chan) - self.servo_min(chan))/2.0)
-           + self.servo_min(chan);
+         temp := uint12((float(position) + 1.0)*scale) + self.servo_min(chan);
          self.set(chan, 0, temp, error);
          null;
       else
