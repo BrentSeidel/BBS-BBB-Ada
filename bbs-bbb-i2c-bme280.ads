@@ -19,9 +19,10 @@ package BBS.BBB.i2c.BME280 is
    --
    -- Addresses for the BME280 pressure and temperature sensor
    --
-   addr : constant addr7 := 16#77#;
-   ut : constant uint8 := 16#f7#; -- uncomponsated temperature (msb, lsb, xlsb)
-   up : constant uint8 := 16#fa#; -- uncomponsated pressure (msb, lsb, xlsb)
+   addr : constant addr7 := 16#77#; -- Device address on I2C bus
+   data_start : constant uint8 := 16#f7#;
+   up : constant uint8 := 16#f7#; -- uncomponsated pressure (msb, lsb, xlsb)
+   ut : constant uint8 := 16#fa#; -- uncomponsated temperature (msb, lsb, xlsb)
    uh : constant uint8 := 16#fd#; -- uncomponsated humidity (msb, lsb)
    ctrl_hum : constant uint8 := 16#f2#;
    status : constant uint8 := 16#f3#;
@@ -48,26 +49,61 @@ package BBS.BBB.i2c.BME280 is
    dig_H5 : constant uint8 := 16#e5#; -- int16
    dig_H6 : constant uint8 := 16#e7#; -- uint8
    --
-   -- Command constants
+   -- Mode constants
    --
-   start_cvt : constant uint8 := 16#20#;
+   mode_sleep  : constant uint8 := 2#000_000_00#;
+   mode_force  : constant uint8 := 2#000_000_10#; -- 2#01# also works
+   mode_normal : constant uint8 := 2#000_000_11#;
+   --
+   -- Oversampling constants
+   -- Humidity
+   --
+   hum_over_0  : constant uint8 := 2#000#; -- datasheet says skipped
+   hum_over_1  : constant uint8 := 2#001#;
+   hum_over_2  : constant uint8 := 2#010#;
+   hum_over_4  : constant uint8 := 2#011#;
+   hum_over_8  : constant uint8 := 2#100#;
+   hum_over_16 : constant uint8 := 2#101#; -- apparently the other values work as well
+   --
+   -- Pressure
+   --
+   press_over_0  : constant uint8 := 2#000_000_00#;
+   press_over_1  : constant uint8 := 2#001_000_00#;
+   press_over_2  : constant uint8 := 2#010_000_00#;
+   press_over_4  : constant uint8 := 2#011_000_00#;
+   press_over_8  : constant uint8 := 2#100_000_00#;
+   press_over_16 : constant uint8 := 2#101_000_00#;
+   --
+   -- Temperature
+   --
+   temp_over_0  : constant uint8 := 2#000_000_00#;
+   temp_over_1  : constant uint8 := 2#000_001_00#;
+   temp_over_2  : constant uint8 := 2#000_010_00#;
+   temp_over_4  : constant uint8 := 2#000_011_00#;
+   temp_over_8  : constant uint8 := 2#000_100_00#;
+   temp_over_16 : constant uint8 := 2#000_101_00#;
+   --
+   -- Status bits
+   --
+   stat_measuring : constant uint8 := 2#0000_1000#;
+   stat_im_update : constant uint8 := 2#0000_0001#;
    --
    -- Conversion types
    --
-   cvt_temp : constant uint8 := 16#2e#;
-   cvt_press0 : constant uint8 := 16#34#;
-   cvt_press1 : constant uint8 := 16#74#;
-   cvt_press2 : constant uint8 := 16#b4#;
-   cvt_press3 : constant uint8 := 16#f4#;
+--   cvt_temp : constant uint8 := 16#2e#;
+--   cvt_press0 : constant uint8 := 16#34#;
+--   cvt_press1 : constant uint8 := 16#74#;
+--   cvt_press2 : constant uint8 := 16#b4#;
+--   cvt_press3 : constant uint8 := 16#f4#;
    --
    -- Given local pressure and altimeter setting, determine the pressure
    -- altitude.  Given local pressure and altitude, determine the altimeter
    -- setting.
    --
-   function pressure_altitude(pressure : BBS.units.press_p;
-                              altm : BBS.units.press_p) return BBS.units.len_m;
-   function altimeter(pressure : BBS.units.press_p;
-                      altitude : BBS.units.len_m) return BBS.units.press_p;
+--   function pressure_altitude(pressure : BBS.units.press_p;
+--                              altm : BBS.units.press_p) return BBS.units.len_m;
+--   function altimeter(pressure : BBS.units.press_p;
+--                      altitude : BBS.units.len_m) return BBS.units.press_p;
    --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
@@ -82,7 +118,7 @@ package BBS.BBB.i2c.BME280 is
    -- get_temp or get_press is called, the type is checked to ensure that the
    -- proper reading was started.
    --
-   procedure configure(error : out integer);
+--   procedure configure(error : out integer);
    --
    -- Starts the BME280 converting data.  The conversion types are listed above.
    -- Note that the conversion type must match the get value function.  An
@@ -98,30 +134,30 @@ package BBS.BBB.i2c.BME280 is
    -- Return a calibrated temperature value.  Temperature is returned in units
    -- of degrees Celsius.
    --
-   function get_temp(error : out integer) return float;
+--   function get_temp(error : out integer) return float;
    --
    -- Return calibrated temperature in units of 0.1 degrees Celsius.
    --
-   function get_temp(error : out integer) return integer;
+--   function get_temp(error : out integer) return integer;
    --
    -- Return temperature in various units.
    --
-   function get_temp(error : out integer) return BBS.units.temp_c;
-   function get_temp(error : out integer) return BBS.units.temp_f;
-   function get_temp(error : out integer) return BBS.units.temp_k;
+--   function get_temp(error : out integer) return BBS.units.temp_c;
+--   function get_temp(error : out integer) return BBS.units.temp_f;
+--   function get_temp(error : out integer) return BBS.units.temp_k;
    --
    -- Return a calibrated pressure value.  Note that a temperature reading must
    -- be made before calibrated pressure can be successfully computed.  Pressure
    -- is returned in units of Pascals.
    --
-   function get_press(error : out integer) return integer;
+--   function get_press(error : out integer) return integer;
    --
    -- Return pressure in various units.
    --
-   function get_press(error : out integer) return BBS.units.press_p;
-   function get_press(error : out integer) return BBS.units.press_mb;
-   function get_press(error : out integer) return BBS.units.press_atm;
-   function get_press(error : out integer) return BBS.units.press_inHg;
+--   function get_press(error : out integer) return BBS.units.press_p;
+--   function get_press(error : out integer) return BBS.units.press_mb;
+--   function get_press(error : out integer) return BBS.units.press_atm;
+--   function get_press(error : out integer) return BBS.units.press_inHg;
    --
    -- Stuff for object oriented interface.  These basically emulate the function
    -- of the conventional routines above.
@@ -133,8 +169,9 @@ package BBS.BBB.i2c.BME280 is
    procedure configure(self : not null access BME280_record'class; port : i2c_interface;
                        addr : addr7; error : out integer);
    --
-   procedure start_conversion(self : not null access BME280_record'class; kind : uint8; error : out integer);
+   procedure start_conversion(self : not null access BME280_record'class; error : out integer);
    function data_ready(self : not null access BME280_record'class; error : out integer) return boolean;
+   procedure read_data(self : not null access BME280_record'class; error : out integer);
    function get_temp(self : not null access BME280_record'class; error : out integer) return float;
    function get_temp(self : not null access BME280_record'class; error : out integer) return integer;
    function get_temp(self : not null access BME280_record'class; error : out integer) return BBS.units.temp_c;
@@ -176,7 +213,6 @@ private
    x2 : integer;
    b5 : integer;
    --
-   last_cvt : uint8 := 0;
    --
    -- Some unchecked conversions are needed in pressure conversion.
    --
@@ -205,10 +241,23 @@ private
       H4 : int16 := 0;
       H5 : int16 := 0;
       H6 : uint8 := 0;
+      --
+      --  Values from temperature conversion (from BMP180 may now be different)
+      --
       x1 : integer;
       x2 : integer;
       b5 : integer;
-      last_cvt : uint8 := 0;
+      --
+      -- Data read from device
+      --
+      press_msb : uint8;
+      press_lsb : uint8;
+      press_xlsb : uint8;
+      temp_msb : uint8;
+      temp_lsb : uint8;
+      temp_xlsb : uint8;
+      hum_msb : uint8;
+      hum_lsb : uint8;
    end record;
 
 end;
