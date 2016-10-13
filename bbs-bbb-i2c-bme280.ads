@@ -172,16 +172,15 @@ package BBS.BBB.i2c.BME280 is
    procedure start_conversion(self : not null access BME280_record'class; error : out integer);
    function data_ready(self : not null access BME280_record'class; error : out integer) return boolean;
    procedure read_data(self : not null access BME280_record'class; error : out integer);
-   function get_temp(self : not null access BME280_record'class; error : out integer) return float;
-   function get_temp(self : not null access BME280_record'class; error : out integer) return integer;
-   function get_temp(self : not null access BME280_record'class; error : out integer) return BBS.units.temp_c;
-   function get_temp(self : not null access BME280_record'class; error : out integer) return BBS.units.temp_f;
-   function get_temp(self : not null access BME280_record'class; error : out integer) return BBS.units.temp_k;
-   function get_press(self : not null access BME280_record'class; error : out integer) return integer;
-   function get_press(self : not null access BME280_record'class; error : out integer) return BBS.units.press_p;
-   function get_press(self : not null access BME280_record'class; error : out integer) return BBS.units.press_mb;
-   function get_press(self : not null access BME280_record'class; error : out integer) return BBS.units.press_atm;
-   function get_press(self : not null access BME280_record'class; error : out integer) return BBS.units.press_inHg;
+   function get_temp(self : not null access BME280_record'class) return integer;
+   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_c;
+   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_f;
+   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_k;
+   function get_press(self : not null access BME280_record'class) return integer;
+   function get_press(self : not null access BME280_record'class) return BBS.units.press_p;
+   function get_press(self : not null access BME280_record'class) return BBS.units.press_mb;
+   function get_press(self : not null access BME280_record'class) return BBS.units.press_atm;
+   function get_press(self : not null access BME280_record'class) return BBS.units.press_inHg;
    --
 private
    buff : aliased buffer;
@@ -250,14 +249,9 @@ private
       --
       -- Data read from device
       --
-      press_msb : uint8;
-      press_lsb : uint8;
-      press_xlsb : uint8;
-      temp_msb : uint8;
-      temp_lsb : uint8;
-      temp_xlsb : uint8;
-      hum_msb : uint8;
-      hum_lsb : uint8;
+      raw_press : uint32;
+      raw_temp : uint32;
+      raw_hum : uint32;
    end record;
 
 end;
