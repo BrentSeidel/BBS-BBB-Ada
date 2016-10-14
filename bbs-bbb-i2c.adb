@@ -219,10 +219,10 @@ package body BBS.BBB.i2c is
       --
       -- Set the pins to the proper state.  This may need root access.
       --
-      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SCL_Ctrl);
+      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SCL);
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
-      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SDA_Ctrl);
+      Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SDA);
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
       self.port := C_open(i2c_file, O_RDWR, 8#666#);
