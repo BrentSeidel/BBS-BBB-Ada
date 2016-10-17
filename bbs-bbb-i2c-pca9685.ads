@@ -13,6 +13,7 @@ package BBS.BBB.i2c.PCA9685 is
    -- Measured values for some servos in my testing are:
    -- Servo       Min   Max
    -- SG90        500  2100
+   -- SG92        450  2050
    -- SG5010      500  2100
    --
    -- For a continuous rotation servo from Parallax, I got the following:
