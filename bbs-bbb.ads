@@ -18,19 +18,29 @@ package BBS.BBB is
      with size => 8;
    type uint8 is mod 2**8
      with size => 8;
+   type int12 is range -(2**11) .. 2**11 - 1
+     with size => 12;
    type uint12 is mod 2**12
      with size => 12;
-   type int16 is range -32768 .. 32767
+   type int16 is range -(2**15) .. 2**15 - 1
      with size => 16;
    type uint16 is mod 2**16
      with Size => 16;
+   type int32 is range -(2**31) .. 2**31 - 1
+     with Size => 32;
    type uint32 is mod 2**32
      with Size => 32;
+   type int64 is range -(2**63) .. 2**63 - 1
+     with Size => 64;
+   type uint64 is mod 2**64
+     with Size => 64;
    --
    -- A couple of unchecked conversions to convert unsigned into signed values.
    --
    function uint8_to_int8 is
      new Ada.Unchecked_Conversion(source => uint8, target => int8);
+   function uint12_to_int12 is
+     new Ada.Unchecked_Conversion(source => uint12, target => int12);
    function uint16_to_int16 is
      new Ada.Unchecked_Conversion(source => uint16, target => int16);
    --

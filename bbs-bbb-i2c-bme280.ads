@@ -45,8 +45,12 @@ package BBS.BBB.i2c.BME280 is
    dig_H1 : constant uint8 := 16#a1#; -- uint8
    dig_H2 : constant uint8 := 16#e2#; -- int16
    dig_H3 : constant uint8 := 16#e3#; -- uint8
-   dig_H4 : constant uint8 := 16#e4#; -- int16
-   dig_H5 : constant uint8 := 16#e5#; -- int16
+--
+-- Note that H4 and H5 are actually 12 bit integers packed into 3 bytes.
+--
+   dig_H4 : constant uint8 := 16#e4#; -- int12
+   dig_H45 : constant uint8 := 16#e5#; -- uint8
+   dig_H5 : constant uint8 := 16#e6#; -- int12
    dig_H6 : constant uint8 := 16#e7#; -- uint8
    --
    -- Mode constants
@@ -87,14 +91,6 @@ package BBS.BBB.i2c.BME280 is
    --
    stat_measuring : constant uint8 := 2#0000_1000#;
    stat_im_update : constant uint8 := 2#0000_0001#;
-   --
-   -- Conversion types
-   --
---   cvt_temp : constant uint8 := 16#2e#;
---   cvt_press0 : constant uint8 := 16#34#;
---   cvt_press1 : constant uint8 := 16#74#;
---   cvt_press2 : constant uint8 := 16#b4#;
---   cvt_press3 : constant uint8 := 16#f4#;
    --
    -- Given local pressure and altimeter setting, determine the pressure
    -- altitude.  Given local pressure and altitude, determine the altimeter
@@ -181,6 +177,7 @@ package BBS.BBB.i2c.BME280 is
    function get_press(self : not null access BME280_record'class) return BBS.units.press_mb;
    function get_press(self : not null access BME280_record'class) return BBS.units.press_atm;
    function get_press(self : not null access BME280_record'class) return BBS.units.press_inHg;
+   function get_hum(self : not null access BME280_record'class) return integer;
    --
 private
    buff : aliased buffer;
@@ -205,12 +202,6 @@ private
    H4 : int16 := 0;
    H5 : int16 := 0;
    H6 : uint8 := 0;
-   --
-   --  Values from temperature conversion
-   --
-   x1 : integer;
-   x2 : integer;
-   b5 : integer;
    --
    --
    -- Some unchecked conversions are needed in pressure conversion.
@@ -241,17 +232,14 @@ private
       H5 : int16 := 0;
       H6 : uint8 := 0;
       --
-      --  Values from temperature conversion (from BMP180 may now be different)
-      --
-      x1 : integer;
-      x2 : integer;
-      b5 : integer;
-      --
       -- Data read from device
       --
       raw_press : uint32;
       raw_temp : uint32;
       raw_hum : uint32;
+      --
+      -- Compensated values
+      t_fine : int32;
    end record;
 
 end;
