@@ -158,8 +158,55 @@ package body BBS.BBB.i2c.BME280 is
    -- total
    --
    procedure read_data(self : not null access BME280_record'class; error : out integer) is
-      var1 : int32;
-      var2 : int32;
+      --
+      -- Nested functions to do conversion of the temperature, pressure, and
+      -- humidity values.  These are based on the example C code in the datasheet
+      -- and are not the clearest code.
+      --
+      -- Temperature conversion (t_fine needs a little more processing before
+      -- generating the final temperature, but it is used in other processing)
+      --
+      function cal_temp(self : not null access BME280_record'class) return int32 is
+         var1 : int32;
+         var2 : int32;
+      begin
+         var1 := ((int32(self.raw_temp)/2**3 - int32(self.T1)*2) * int32(self.T2))/2**11;
+         var2 := (((int32(self.raw_temp)/2**4 - int32(self.T1))*
+                  (int32(self.raw_temp)/2**4 - int32(self.T1)))/2**12 *
+                    int32(self.T3))/2**14;
+         return var1 + var2;
+      end;
+      --
+      -- Pressure conversion
+      --
+      function cal_press(self : not null access BME280_record'class) return uint32 is
+         var1 : int64;
+         var2 : int64;
+         p : int64;
+      begin
+         var1 := int64(self.t_fine) - 128000;
+         var2 := var1*var1*int64(self.P6);
+         var2 := var2 + var1*int64(self.P5)*2**17;
+         var2 := var2 + int64(self.P4)*2**35;
+         var1 := var1*var1*int64(self.P3)/2**8 + var1*int64(self.P2)*2**12;
+         var1 := (var1 + 2**47)*int64(self.P1)/2**33;
+         if (var1 = 0) then
+            return 0;
+         end if;
+         p := 1048576 - int64(self.raw_press);
+         p := (p*2**31 - var2)*3125/var1;
+         var1 := int64(self.P9)*(p/2**13)*(p/2**13)/2**25;
+         var2 := int64(self.P8)*p/2**19;
+         p := (p + var1 + var2)/2**8 + int64(self.P7)*2**4;
+         return uint32(p);
+      end;
+      --
+      -- Humidity conversion
+      --
+      function cal_hum(self : not null access BME280_record'class) return uint32 is
+      begin
+         return self.raw_hum;
+      end;
    begin
       self.port.read(addr, data_start, buff'access, 8, error);
       self.raw_press := (uint32(buff(0))*2**16 + uint32(buff(1))*2**8 + uint32(buff(2)))/16;
@@ -168,12 +215,9 @@ package body BBS.BBB.i2c.BME280 is
       --
       -- Compute the calibrated values based on the algorithms in the datasheet.
       --
-      -- Temperature conversion
-      --
-      var1 := (((int32(self.raw_temp/2**3) - (int32(self.T1)*2)) * int32(T2))*2**11);
-      var2 := ((((int32(self.raw_temp/2**4) - (int32(self.T1)) * (int32(self.raw_temp/2**4)
-                    - int32(self.T1)))/2**12 * int32(self.T3))/2**14));
-      self.t_fine := var1 + var2;
+      self.t_fine := cal_temp(self);
+      self.p_cal := cal_press(self);
+      self.h_cal := cal_hum(self);
    end;
    --
    function get_temp(self : not null access BME280_record'class) return integer is
@@ -231,6 +275,6 @@ package body BBS.BBB.i2c.BME280 is
    function get_hum(self : not null access BME280_record'class) return integer is
    begin
       return integer(self.raw_hum);
-   end;
+   end get_hum;
 
 end;

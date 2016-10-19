@@ -182,27 +182,6 @@ package BBS.BBB.i2c.BME280 is
 private
    buff : aliased buffer;
    --
-   -- Calibration constants.  These are read from the BME280.
-   --
-   T1 : uint16 := 0;
-   T2 : int16 := 0;
-   T3 : int16 := 0;
-   P1 : uint16 := 0;
-   P2 : int16 := 0;
-   P3 : int16 := 0;
-   P4 : int16 := 0;
-   P5 : int16 := 0;
-   P6 : int16 := 0;
-   P7 : int16 := 0;
-   P8 : int16 := 0;
-   P9 : int16 := 0;
-   H1 : uint8 := 0;
-   H2 : int16 := 0;
-   H3 : uint8 := 0;
-   H4 : int16 := 0;
-   H5 : int16 := 0;
-   H6 : uint8 := 0;
-   --
    --
    -- Some unchecked conversions are needed in pressure conversion.
    --
@@ -240,6 +219,8 @@ private
       --
       -- Compensated values
       t_fine : int32;
+      p_cal : uint32; -- LSB = Pa/256
+      h_cal : uint32; -- LSB = %/1024
    end record;
 
 end;
