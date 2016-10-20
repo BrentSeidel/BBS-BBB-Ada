@@ -45,6 +45,6 @@ package BBS.BBB is
      new Ada.Unchecked_Conversion(source => uint16, target => int16);
    --
    -- It's possible that some of this could easily be ported to the Raspberry
-   -- PI.
+   -- PI.  Note that the I2C interface is now working on a Raspberry PI 3.
    --
 end;

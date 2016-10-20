@@ -170,14 +170,13 @@ package body BBS.BBB.i2c.BME280 is
          var1 : int32;
          var2 : int32;
       begin
-         var1 := ((int32(self.raw_temp)/2**3 - int32(self.T1)*2) * int32(self.T2))/2**11;
-         var2 := (((int32(self.raw_temp)/2**4 - int32(self.T1))*
-                  (int32(self.raw_temp)/2**4 - int32(self.T1)))/2**12 *
-                    int32(self.T3))/2**14;
+         var1 := (int32(self.raw_temp)/2**3 - int32(self.T1)*2)*int32(self.T2)/2**11;
+         var2 := (int32(self.raw_temp)/2**4 - int32(self.T1))*
+           (int32(self.raw_temp)/2**4 - int32(self.T1))/2**12*int32(self.T3)/2**14;
          return var1 + var2;
       end;
       --
-      -- Pressure conversion
+      -- Pressure conversion.  The result is in Pascals * 256.
       --
       function cal_press(self : not null access BME280_record'class) return uint32 is
          var1 : int64;
@@ -189,11 +188,11 @@ package body BBS.BBB.i2c.BME280 is
          var2 := var2 + var1*int64(self.P5)*2**17;
          var2 := var2 + int64(self.P4)*2**35;
          var1 := var1*var1*int64(self.P3)/2**8 + var1*int64(self.P2)*2**12;
-         var1 := (var1 + 2**47)*int64(self.P1)/2**33;
+         var1 := (2**47 + var1)*int64(self.P1)/2**33;
          if (var1 = 0) then
             return 0;
          end if;
-         p := 1048576 - int64(self.raw_press);
+         p := 1_048_576 - int64(self.raw_press);
          p := (p*2**31 - var2)*3125/var1;
          var1 := int64(self.P9)*(p/2**13)*(p/2**13)/2**25;
          var2 := int64(self.P8)*p/2**19;
@@ -201,11 +200,22 @@ package body BBS.BBB.i2c.BME280 is
          return uint32(p);
       end;
       --
-      -- Humidity conversion
+      -- Humidity conversion.  The result is in % * 1024.
       --
       function cal_hum(self : not null access BME280_record'class) return uint32 is
+         v_x1 : int32;
       begin
-         return self.raw_hum;
+         v_x1 := self.t_fine - 76800;
+         v_x1 := ((int32(self.raw_hum)*2**14 - int32(self.H4)*2**20 - int32(self.H5)*v_x1 + 16384)/2**15)*
+           ((((v_x1*int32(self.H6)/2**10)*
+            (v_x1*int32(self.H3)/2**11 + 32768)/2**10 + 2_097_152)*int32(self.H2) + 8192)/2**14);
+         v_x1 := v_x1 - (v_x1/2**15)*(v_x1/2**15)/2**7*int32(self.H1)/2**4;
+         if (v_x1 < 0) then
+            v_x1 := 0;
+         elsif (v_x1 > 419_430_400) then
+            v_x1 := 419_430_400;
+         end if;
+         return uint32(v_x1/2**12);
       end;
    begin
       self.port.read(addr, data_start, buff'access, 8, error);
@@ -245,36 +255,42 @@ package body BBS.BBB.i2c.BME280 is
    --
    function get_press(self : not null access BME280_record'class) return integer is
    begin
-      return integer(self.raw_press);
+      return integer(self.p_cal);
    end;
    --
    function get_press(self : not null access BME280_record'class) return BBS.units.press_p is
       int_press : integer := self.get_press;
    begin
-      return BBS.units.press_p(int_press);
+      return BBS.units.press_p(int_press)/256.0;
    end;
    --
    function get_press(self : not null access BME280_record'class) return BBS.units.press_mb is
       int_press : integer := self.get_press;
    begin
-      return BBS.units.to_milliBar(BBS.units.press_p(int_press));
+      return BBS.units.to_milliBar(BBS.units.press_p(int_press)/256.0);
    end;
    --
    function get_press(self : not null access BME280_record'class) return BBS.units.press_atm is
       int_press : integer := self.get_press;
    begin
-      return BBS.units.to_Atmosphere(BBS.units.press_p(int_press));
+      return BBS.units.to_Atmosphere(BBS.units.press_p(int_press)/256.0);
    end;
    --
    function get_press(self : not null access BME280_record'class) return BBS.units.press_inHg is
       int_press : integer := self.get_press;
    begin
-      return BBS.units.to_inHg(BBS.units.press_p(int_press));
+      return BBS.units.to_inHg(BBS.units.press_p(int_press)/256.0);
    end;
    --
    function get_hum(self : not null access BME280_record'class) return integer is
    begin
-      return integer(self.raw_hum);
+      return integer(self.h_cal);
+   end get_hum;
+   --
+   function get_hum(self : not null access BME280_record'class) return float is
+      int_value : integer := self.get_hum;
+   begin
+      return float(int_value)/1024.0;
    end get_hum;
 
 end;

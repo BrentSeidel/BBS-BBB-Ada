@@ -5,6 +5,7 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with BBS.BBB.i2c;
 with BBS.units;
 use type BBS.units.len_m;
+use type BBS.units.press_p;
 --
 -- This package contains constants and routines to communicate with the BME280
 -- temperature, pressure, and humidity sensor on the i2c bus.
@@ -92,103 +93,72 @@ package BBS.BBB.i2c.BME280 is
    stat_measuring : constant uint8 := 2#0000_1000#;
    stat_im_update : constant uint8 := 2#0000_0001#;
    --
-   -- Given local pressure and altimeter setting, determine the pressure
-   -- altitude.  Given local pressure and altitude, determine the altimeter
-   -- setting.
    --
---   function pressure_altitude(pressure : BBS.units.press_p;
---                              altm : BBS.units.press_p) return BBS.units.len_m;
---   function altimeter(pressure : BBS.units.press_p;
---                      altitude : BBS.units.len_m) return BBS.units.press_p;
-   --
-   -- The configure procedure needs to be called first to initialize the
-   -- calibration constants from the device.
-   --
-   -- Note that a temperature value need to be processed before any pressure
-   -- values are read.  Processing the temperature produces some values that
-   -- are needed to produce the calibrated pressure.
-   --
-   -- The temperature and pressure are read out of the same registers.  The value
-   -- in the registers is determined by the start conversion procedure.  The
-   -- start_conversion routine records the type of reading requested.  Then when
-   -- get_temp or get_press is called, the type is checked to ensure that the
-   -- proper reading was started.
-   --
---   procedure configure(error : out integer);
-   --
-   -- Starts the BME280 converting data.  The conversion types are listed above.
-   -- Note that the conversion type must match the get value function.  An
-   -- exception will be thrown if it doesn't match.
-   --
---   procedure start_conversion(kind : uint8; error : out integer);
-   --
-   -- Check for data ready.  Reading a value before data is ready will have
-   -- undesirable results.
-   --
---   function data_ready(error : out integer) return boolean;
-   --
-   -- Return a calibrated temperature value.  Temperature is returned in units
-   -- of degrees Celsius.
-   --
---   function get_temp(error : out integer) return float;
-   --
-   -- Return calibrated temperature in units of 0.1 degrees Celsius.
-   --
---   function get_temp(error : out integer) return integer;
-   --
-   -- Return temperature in various units.
-   --
---   function get_temp(error : out integer) return BBS.units.temp_c;
---   function get_temp(error : out integer) return BBS.units.temp_f;
---   function get_temp(error : out integer) return BBS.units.temp_k;
-   --
-   -- Return a calibrated pressure value.  Note that a temperature reading must
-   -- be made before calibrated pressure can be successfully computed.  Pressure
-   -- is returned in units of Pascals.
-   --
---   function get_press(error : out integer) return integer;
-   --
-   -- Return pressure in various units.
-   --
---   function get_press(error : out integer) return BBS.units.press_p;
---   function get_press(error : out integer) return BBS.units.press_mb;
---   function get_press(error : out integer) return BBS.units.press_atm;
---   function get_press(error : out integer) return BBS.units.press_inHg;
-   --
-   -- Stuff for object oriented interface.  These basically emulate the function
-   -- of the conventional routines above.
+   -- Stuff for object oriented interface.  A non-object oriented interface
+   -- is not provided for this device.  If you need one, it should be fairly
+   -- easy to write one.
    --
    type BME280_record is new i2c_device_record with private;
    type BME280_ptr is access BME280_record;
    --
    function i2c_new return BME280_ptr;
+   --
+   -- The configure procedure needs to be called first to initialize the
+   -- calibration constants from the device.
+   --
    procedure configure(self : not null access BME280_record'class; port : i2c_interface;
                        addr : addr7; error : out integer);
    --
+   -- Starts the BME280 converting data.  Temperature, pressure, and humidity
+   -- are converted at the same time.
+   --
    procedure start_conversion(self : not null access BME280_record'class; error : out integer);
+   --
+   -- Check for data ready.  Reading a value before data is ready will have
+   -- undesirable results.
+   --
    function data_ready(self : not null access BME280_record'class; error : out integer) return boolean;
+   --
+   -- Read the temperature, pressure, and humidity value (there's less overhead
+   -- to read all three value than to try and read each individually) and compute
+   -- the calibrated values
+   --
    procedure read_data(self : not null access BME280_record'class; error : out integer);
+   --
+   -- Return the calibrated temperature value.  Temperature is returned in units
+   -- of 0.01 degrees Celsius.
+   --
    function get_temp(self : not null access BME280_record'class) return integer;
+   --
+   -- Return temperature in various units.
+   --
    function get_temp(self : not null access BME280_record'class) return BBS.units.temp_c;
    function get_temp(self : not null access BME280_record'class) return BBS.units.temp_f;
    function get_temp(self : not null access BME280_record'class) return BBS.units.temp_k;
+   --
+   -- Return the calibrated pressure value.  Pressure is returned in units of
+   -- 1/256 Pascals.
+   --
    function get_press(self : not null access BME280_record'class) return integer;
+   --
+   -- Return pressure in various units.
+   --
    function get_press(self : not null access BME280_record'class) return BBS.units.press_p;
    function get_press(self : not null access BME280_record'class) return BBS.units.press_mb;
    function get_press(self : not null access BME280_record'class) return BBS.units.press_atm;
    function get_press(self : not null access BME280_record'class) return BBS.units.press_inHg;
+   --
+   -- Return the calibrated relative humidity.  The result is in units of
+   -- 1/1024 %.
+   --
    function get_hum(self : not null access BME280_record'class) return integer;
+   --
+   -- Return the relative humidity in percent.
+   --
+   function get_hum(self : not null access BME280_record'class) return float;
    --
 private
    buff : aliased buffer;
-   --
-   --
-   -- Some unchecked conversions are needed in pressure conversion.
-   --
-   function int_to_uint32 is
-     new Ada.Unchecked_Conversion(source => integer, target => uint32);
-   function uint32_to_int is
-     new Ada.Unchecked_Conversion(source => uint32, target => integer);
    --
    type BME280_record is new i2c_device_record with record
       buff : aliased buffer;
