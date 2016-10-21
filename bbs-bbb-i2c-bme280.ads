@@ -72,7 +72,7 @@ package BBS.BBB.i2c.BME280 is
    --
    -- Pressure
    --
-   press_over_0  : constant uint8 := 2#000_000_00#;
+   press_over_0  : constant uint8 := 2#000_000_00#; -- skipped
    press_over_1  : constant uint8 := 2#001_000_00#;
    press_over_2  : constant uint8 := 2#010_000_00#;
    press_over_4  : constant uint8 := 2#011_000_00#;
@@ -81,7 +81,7 @@ package BBS.BBB.i2c.BME280 is
    --
    -- Temperature
    --
-   temp_over_0  : constant uint8 := 2#000_000_00#;
+   temp_over_0  : constant uint8 := 2#000_000_00#; -- skipped
    temp_over_1  : constant uint8 := 2#000_001_00#;
    temp_over_2  : constant uint8 := 2#000_010_00#;
    temp_over_4  : constant uint8 := 2#000_011_00#;

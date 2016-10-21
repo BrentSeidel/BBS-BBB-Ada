@@ -205,10 +205,10 @@ package body BBS.BBB.i2c.BME280 is
       function cal_hum(self : not null access BME280_record'class) return uint32 is
          v_x1 : int32;
       begin
-         v_x1 := self.t_fine - 76800;
-         v_x1 := ((int32(self.raw_hum)*2**14 - int32(self.H4)*2**20 - int32(self.H5)*v_x1 + 16384)/2**15)*
+         v_x1 := self.t_fine - 76_800;
+         v_x1 := ((int32(self.raw_hum)*2**14 - int32(self.H4)*2**20 - int32(self.H5)*v_x1 + 16_384)/2**15)*
            ((((v_x1*int32(self.H6)/2**10)*
-            (v_x1*int32(self.H3)/2**11 + 32768)/2**10 + 2_097_152)*int32(self.H2) + 8192)/2**14);
+            (v_x1*int32(self.H3)/2**11 + 32_768)/2**10 + 2_097_152)*int32(self.H2) + 8192)/2**14);
          v_x1 := v_x1 - (v_x1/2**15)*(v_x1/2**15)/2**7*int32(self.H1)/2**4;
          if (v_x1 < 0) then
             v_x1 := 0;
@@ -222,6 +222,17 @@ package body BBS.BBB.i2c.BME280 is
       self.raw_press := (uint32(buff(0))*2**16 + uint32(buff(1))*2**8 + uint32(buff(2)))/16;
       self.raw_temp  := (uint32(buff(3))*2**16 + uint32(buff(4))*2**8 + uint32(buff(5)))/16;
       self.raw_hum   := uint32(buff(6))*2**8  + uint32(buff(7));
+      if (debug) then
+         Ada.Text_IO.Put("p_raw: ");
+         Ada.Integer_Text_IO.Put(integer(self.raw_press), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("t_raw: ");
+         Ada.Integer_Text_IO.Put(integer(self.raw_temp), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("h_raw: ");
+         Ada.Integer_Text_IO.Put(integer(self.raw_hum), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
+      end if;
       --
       -- Compute the calibrated values based on the algorithms in the datasheet.
       --
