@@ -103,6 +103,15 @@ package body BBS.BBB.i2c.BME280 is
          Ada.Text_IO.Put("H3 = ");
          Ada.Integer_Text_IO.Put(integer(self.H3), width => 9, base => 16);
          Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("temp_1 = ");
+         Ada.Integer_Text_IO.Put(integer(temp_1), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("temp_2 = ");
+         Ada.Integer_Text_IO.Put(integer(temp_2), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("temp_3 = ");
+         Ada.Integer_Text_IO.Put(integer(temp_3), width => 9, base => 16);
+         Ada.Text_IO.New_Line;
          Ada.Text_IO.Put("H4 = ");
          Ada.Integer_Text_IO.Put(integer(self.H4), width => 9, base => 16);
          Ada.Text_IO.New_Line;
@@ -217,6 +226,7 @@ package body BBS.BBB.i2c.BME280 is
          end if;
          return uint32(v_x1/2**12);
       end;
+      --
    begin
       self.port.read(addr, data_start, buff'access, 8, error);
       self.raw_press := (uint32(buff(0))*2**16 + uint32(buff(1))*2**8 + uint32(buff(2)))/16;

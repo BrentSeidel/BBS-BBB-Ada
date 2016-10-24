@@ -10,17 +10,18 @@ package body BBS.BBB.i2c.BMP180 is
    -- altitude.  Given local pressure and altitude, determine the altimeter
    -- setting.
    --
-   function pressure_altitude(pressure : BBS.units.press_p; altm : BBS.units.press_p)
-                              return BBS.units.len_m is
-   begin
-      return BBS.units.len_m(44330.0 * (1.0 - (float(pressure)/float(altm))**float(1.0/5.255)));
-   end;
+   -- *** The following two functions have moved to BBS.units.
+--   function pressure_altitude(pressure : BBS.units.press_p; altm : BBS.units.press_p)
+--                              return BBS.units.len_m is
+--   begin
+--      return BBS.units.len_m(44330.0 * (1.0 - (float(pressure)/float(altm))**float(1.0/5.255)));
+--   end;
    --
-   function altimeter(pressure : BBS.units.press_p; altitude : BBS.units.len_m) return
-     BBS.units.press_p is
-   begin
-      return BBS.units.press_p(float(pressure)/(1.0 - (float(altitude)/44330.0)**float(5.255)));
-   end;
+--   function altimeter(pressure : BBS.units.press_p; altitude : BBS.units.len_m) return
+--     BBS.units.press_p is
+--   begin
+--      return BBS.units.press_p(float(pressure)/(1.0 - (float(altitude)/44330.0)**float(5.255)));
+--   end;
    --
    -- Procedures to work with the BMP180 pressure and temperature sensor
    --

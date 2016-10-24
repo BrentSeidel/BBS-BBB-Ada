@@ -44,11 +44,11 @@ package BBS.BBB.i2c.BMP180 is
    -- Given local pressure and altimeter setting, determine the pressure
    -- altitude.  Given local pressure and altitude, determine the altimeter
    -- setting.
-   --
-   function pressure_altitude(pressure : BBS.units.press_p;
-                              altm : BBS.units.press_p) return BBS.units.len_m;
-   function altimeter(pressure : BBS.units.press_p;
-                      altitude : BBS.units.len_m) return BBS.units.press_p;
+   -- *** The following two functions have moved to the package BBS.units.
+--   function pressure_altitude(pressure : BBS.units.press_p;
+--                              altm : BBS.units.press_p) return BBS.units.len_m;
+--   function altimeter(pressure : BBS.units.press_p;
+--                      altitude : BBS.units.len_m) return BBS.units.press_p;
    --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
