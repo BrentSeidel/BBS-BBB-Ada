@@ -44,7 +44,7 @@ package BBS.BBB.i2c.BME280 is
    dig_P8 : constant uint8 := 16#9e#; -- int16
    dig_P9 : constant uint8 := 16#9f#; -- int16
    dig_H1 : constant uint8 := 16#a1#; -- uint8
-   dig_H2 : constant uint8 := 16#e2#; -- int16
+   dig_H2 : constant uint8 := 16#e1#; -- int16
    dig_H3 : constant uint8 := 16#e3#; -- uint8
 --
 -- Note that H4 and H5 are actually 12 bit integers packed into 3 bytes.
@@ -124,6 +124,17 @@ package BBS.BBB.i2c.BME280 is
    -- the calibrated values
    --
    procedure read_data(self : not null access BME280_record'class; error : out integer);
+   --
+   -- Return the raw uncompensated values.  Used for debugging purposes after
+   -- read_data() has been called.
+   --
+   procedure get_raw(self : not null access BME280_record'class; raw_temp : out uint32;
+                     raw_press : out uint32; raw_hum : out uint32);
+   --
+   -- Return the t_fine value.  Used for debugging purposes after
+   -- read_data() has been called.
+   --
+   function get_t_fine(self : not null access BME280_record'class) return int32;
    --
    -- Return the calibrated temperature value.  Temperature is returned in units
    -- of 0.01 degrees Celsius.

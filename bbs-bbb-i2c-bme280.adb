@@ -251,6 +251,19 @@ package body BBS.BBB.i2c.BME280 is
       self.h_cal := cal_hum(self);
    end;
    --
+   procedure get_raw(self : not null access BME280_record'class; raw_temp : out uint32;
+                     raw_press : out uint32; raw_hum : out uint32) is
+   begin
+      raw_temp := self.raw_temp;
+      raw_press := self.raw_press;
+      raw_hum := self.raw_hum;
+   end;
+   --
+   function get_t_fine(self : not null access BME280_record'class) return int32 is
+   begin
+      return self.t_fine;
+   end;
+   --
    function get_temp(self : not null access BME280_record'class) return integer is
    begin
       return integer((self.t_fine*5 + 128)/2**8);
