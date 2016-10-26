@@ -77,12 +77,14 @@ package body BBS.BBB.i2c.PCA9685 is
                          error : out integer) is
    begin
       self.port.write(self.address, LED_ON_H(chan), 16#10#, error);
+      self.port.write(self.address, LED_OFF_H(chan), 16#0#, error);
    end;
    --
    procedure set_full_off(self : not null access PS9685_record'class; chan : channel;
                           error : out integer) is
    begin
       self.port.write(self.address, LED_OFF_H(chan), 16#10#, error);
+      self.port.write(self.address, LED_ON_H(chan), 16#0#, error);
    end;
    --
    procedure sleep(self : not null access PS9685_record'class; state : boolean;
