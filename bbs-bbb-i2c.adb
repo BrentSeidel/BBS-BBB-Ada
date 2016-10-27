@@ -231,6 +231,15 @@ package body BBS.BBB.i2c is
       self.msg(1).buff := self.buff2'Access;
    end;
    --
+   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string) is
+      ctrl_file : Ada.Text_IO.File_Type;
+   begin
+      self.port := C_open(i2c_file, O_RDWR, 8#666#);
+      self.msg(0).buff := self.buff1'Access;
+      self.ioctl_msg.messages := self.msg'Access;
+      self.msg(1).buff := self.buff2'Access;
+   end;
+   --
    procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
                    data : uint8; error : out integer) is
       status : interfaces.C.int;

@@ -73,8 +73,19 @@ package BBS.BBB.i2c is
    type i2c_device is access i2c_device_record;
    --
    function i2c_new return i2c_interface;
+   --
+   -- Configure the I2C interface on a BeagleBone Black or other systems that
+   -- have multiple functions on the I2C pins.  This configureation procedure
+   -- sets the pins to the I2C function.
+   --
    procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
                        SCL : string; SDA : string);
+   --
+   -- Configure the I2C interface on a Raspberry PI or other systems that have
+   -- dedicated pins for the I2C interface.  This would also work on a system
+   -- with shared pins if the pins had already been set to the I2C function.
+   --
+   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string);
    --
    -- Reading or writing a single byte is straigtforward.
    --

@@ -42,20 +42,24 @@ interface with the exception that the object oriented interface will allow for
 mutliple devices of the same kind on an I2C bus.
 
 **Note** after a bug fix, the I2C interface works on a Raspberry PI 3.  It should
-work on other models as well.  Just pass "/dev/null" as the pin control files.  At
-some point, this may get cleaned up.  The Linux version used is: Linux
-raspberrypi 4.4.13-v7+ #894 SMP Mon Jun 13 13:13:27 BST 2016 armv7l GNU/Linux
+work on other models as well.  Just pass "/dev/null" as the pin control files.  A
+configuration routine has been provided that omits the pin control parameters.
+The Linux version used is: Linux raspberrypi 4.4.13-v7+ #894 SMP
+Mon Jun 13 13:13:27 BST 2016 armv7l GNU/Linux
 
 
 ## i2c subpackages
 Subpackages have been created for the following devices to provide a higher level interface.
 
+### BME280
+This chip contains pressure, temperature, and humidity sensora along with calibration
+values.  The package contains an object oriented interface to retrieve calibrated
+measurements from the sensors.
+
 ### BMP180
 This chip contains a pressure sensor and a temperature sensor along with calibration
-values.  The package also contains type definitions for a number of pressure,
-temperature, and distance values with conversions between.  In addition routines
-have been provided to return altitude given current pressure and altimeter setting
-as well as altimeter setting given current pressure and altitude.
+values.  The package contains both an object oriented and non-object oriented
+interface to the sensors to retrieve calibrated measurements.
 
 ### LSM303DLHC
 This chip contains a 3 axis accelerometer and a 3 axis magnetometer.  Routines are provided
