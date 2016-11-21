@@ -2,7 +2,7 @@ with Ada.Text_IO;
 with Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
 with Ada.Numerics.Generic_Elementary_Functions;
-with BBS.BBB.i2c;
+with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.len_m;
 use type BBS.units.press_p;
@@ -16,7 +16,7 @@ use type BBS.units.press_p;
 --
 -- Please refer to the BME280 datasheet for more information.
 --
-package BBS.BBB.i2c.BME280 is
+package BBS.embed.i2c.BME280 is
    --
    -- Addresses for the BME280 pressure and temperature sensor
    --

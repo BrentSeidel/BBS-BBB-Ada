@@ -1,4 +1,4 @@
-package body BBS.BBB.i2c.MCP23008 is
+package body BBS.embed.i2c.MCP23008 is
    --
    --
    -- Object oriented interface

@@ -1,6 +1,6 @@
-with BBS.BBB.i2c;
+with BBS.embed.i2c;
 
-package BBS.BBB.i2c.PCA9685 is
+package BBS.embed.i2c.PCA9685 is
    --
    -- Define constants and types used by the PCA9685 Pulse Width Modulation LED
    -- controller (16-channels, 12-bit PWM, I2C Bus).
@@ -43,17 +43,17 @@ package BBS.BBB.i2c.PCA9685 is
    --
    ALL_CHAN : constant channel := 16;
    --
-   addr_0 : constant BBS.BBB.addr7 := 16#40#;
-   addr_1 : constant BBS.BBB.addr7 := 16#41#;
-   addr_2 : constant BBS.BBB.addr7 := 16#42#;
-   addr_3 : constant BBS.BBB.addr7 := 16#43#;
+   addr_0 : constant addr7 := 16#40#;
+   addr_1 : constant addr7 := 16#41#;
+   addr_2 : constant addr7 := 16#42#;
+   addr_3 : constant addr7 := 16#43#;
    --
-   MODE1 : constant BBS.BBB.uint8 := 16#00#;
-   MODE2 : constant BBS.BBB.uint8 := 16#01#;
-   SUBADR1 : constant BBS.BBB.uint8 := 16#02#;
-   SUBADR2 : constant BBS.BBB.uint8 := 16#03#;
-   SUBADR3 : constant BBS.BBB.uint8 := 16#04#;
-   ALLCALLADDR : constant BBS.BBB.uint8 := 16#05#;
+   MODE1 : constant uint8 := 16#00#;
+   MODE2 : constant uint8 := 16#01#;
+   SUBADR1 : constant uint8 := 16#02#;
+   SUBADR2 : constant uint8 := 16#03#;
+   SUBADR3 : constant uint8 := 16#04#;
+   ALLCALLADDR : constant uint8 := 16#05#;
    --
    LED_ON_L : constant array (channel) of uint8 := (16#06#, 16#0A#, 16#0E#, 16#12#,
                                                     16#16#, 16#1A#, 16#1E#, 16#22#,
@@ -77,8 +77,8 @@ package BBS.BBB.i2c.PCA9685 is
                                                      16#FD#);
 
    --
-   PRESCALE : constant BBS.BBB.uint8 := 16#FE#;
-   RESERVED : constant BBS.BBB.uint8 := 16#FF#;
+   PRESCALE : constant uint8 := 16#FE#;
+   RESERVED : constant uint8 := 16#FF#;
    --
    -- For each channel there is a 12 bit counter and two thresholds: the on and
    -- the off threshold.  When the counter is equal to the on threshold, the
@@ -88,8 +88,8 @@ package BBS.BBB.i2c.PCA9685 is
    --
    -- Simple non-object oriented interface to get started.
    --
-   procedure setup(port : BBS.BBB.i2c.i2c_interface; addr : addr7);
-   procedure set(port : BBS.BBB.i2c.i2c_interface; addr : addr7; chan : channel;
+   procedure setup(port : i2c_interface; addr : addr7);
+   procedure set(port : i2c_interface; addr : addr7; chan : channel;
                  on : uint12; off : uint12);
    -- --------------------------------------------------------
    -- Stuff for object oriented interface.  These basically emulate the function

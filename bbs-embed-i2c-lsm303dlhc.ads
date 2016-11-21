@@ -1,4 +1,4 @@
-with BBS.BBB.i2c;
+with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.accel_g;
 with Ada.Numerics.Generic_Elementary_Functions;
@@ -13,7 +13,7 @@ with Ada.Integer_Text_IO;
 -- device.  If you wish a more sophisticated interface, this could provide a
 -- useful starting point.
 --
-package BBS.BBB.i2c.LSM303DLHC is
+package BBS.embed.i2c.LSM303DLHC is
    package Math is new Ada.Numerics.Generic_Elementary_Functions(float);
    --
    -- Addresses for LSM303DLHC - accelerometer and magnetometer

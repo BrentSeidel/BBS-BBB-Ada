@@ -1,4 +1,4 @@
-package body BBS.BBB.GPIO is
+package body BBS.embed.GPIO is
 
    function gpio_new return GPIO is
    begin

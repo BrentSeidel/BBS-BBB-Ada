@@ -1,4 +1,4 @@
-package body BBS.BBB.i2c.BME280 is
+package body BBS.embed.i2c.BME280 is
    --
    -- Get elementary math functions for floating point numbers
    --

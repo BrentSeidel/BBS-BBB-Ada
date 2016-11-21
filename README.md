@@ -90,6 +90,25 @@ testing a pin.  This uses the /sys filesystem interface and this is not particul
 high performance.  It should be adequate for lighting indicators or checking the
 state of switches.
 
+The GPIO have now been tested to work on a Raspberry PI 3 as well as a BeagleBone
+Black.  Using the following code to toggle a gpio as fast as possible:
+~~~~
+loop
+   gpio.set(1);
+   gpio.set(0);
+end loop;
+~~~~
+
+I got the following results:
+| System | Frequency |
+|--------|-----------|
+| BeagleBone Black | 60 kHz |
+| Raspberry PI 3 | 160 kHz |
+
+Note that the times are only approximate and can vary greatly depending on other
+processing on the processor.
+
+
 ## PWM
 This is an object oriented interface to the PWM controllers.  The BeagleBone
 Black processor has 8 PWM controllers.  Due to the lack of a pinmux structure

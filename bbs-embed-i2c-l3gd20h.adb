@@ -4,7 +4,7 @@
 --
 --  See spec header for more details.
 --
-package body BBS.BBB.i2c.L3GD20H is
+package body BBS.embed.i2c.L3GD20H is
    --
    -- Do a basic configuration.  Turn on the three axis gyroscopes and let most
    -- everything else in the default state.  Any application specific setup can
@@ -13,7 +13,7 @@ package body BBS.BBB.i2c.L3GD20H is
    procedure configure(error : out integer) is
    begin
       dps_scale := 245.0/32767.0;
-      BBS.BBB.i2c.write(addr, ctrl1, 16#ff#, error);
+      write(addr, ctrl1, 16#ff#, error);
       --
       -- Data rate = 50Hz (or 800Hz if low_odr is 0)
       -- Bandwidth is 16.6Hz or 100Hz
@@ -35,8 +35,8 @@ package body BBS.BBB.i2c.L3GD20H is
             Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
             raise Program_Error;
       end case;
-      BBS.BBB.i2c.write(addr, ctrl4, deflection, error);
-      BBS.BBB.i2c.write(addr, ctrl1, 16#ff#, error);
+      write(addr, ctrl4, deflection, error);
+      write(addr, ctrl1, 16#ff#, error);
       --
       -- Data rate = 50Hz (or 800Hz if low_odr is 0)
       -- Bandwidth is 16.6Hz or 100Hz
@@ -56,27 +56,27 @@ package body BBS.BBB.i2c.L3GD20H is
    -- raw value from the sensor.
    --
    function get_temperature(error : out integer) return integer is
-      byte : uint8 := BBS.BBB.i2c.read(addr, out_temp, error);
+      byte : uint8 := read(addr, out_temp, error);
    begin
-      return Integer(BBS.BBB.uint8_to_int8(byte));
+      return Integer(uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.readm2(addr, out_x_l + 16#80#, error);
+      word : uint16 := readm2(addr, out_x_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_rotation_y(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.readm2(addr, out_y_l + 16#80#, error);
+      word : uint16 := readm2(addr, out_y_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_rotation_z(error : out integer) return integer is
-      word : uint16 := BBS.BBB.i2c.readm2(addr, out_z_l + 16#80#, error);
+      word : uint16 := readm2(addr, out_z_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    -- This function reads all three rotation values in a single i2c transaction
@@ -94,12 +94,12 @@ package body BBS.BBB.i2c.L3GD20H is
    --
    function get_status(error : out integer) return uint8 is
    begin
-      return BBS.BBB.i2c.read(addr, status, error);
+      return read(addr, status, error);
    end;
    --
    function data_ready(error : out integer) return boolean is
       err : integer;
-      byte : uint8 := BBS.BBB.i2c.read(addr, status, err);
+      byte : uint8 := read(addr, status, err);
    begin
       error := err;
       if ((byte and zyxda) = zyxda) and (err = 0) then
@@ -197,28 +197,28 @@ package body BBS.BBB.i2c.L3GD20H is
                             error : out integer) return integer is
       byte : uint8 := self.port.read(self.address, out_temp, error);
    begin
-      return Integer(BBS.BBB.uint8_to_int8(byte));
+      return Integer(uint8_to_int8(byte));
    end;
    --
    function get_rotation_x(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
       word : uint16 := self.port.readm2(self.address, out_x_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_rotation_y(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
       word : uint16 := self.port.readm2(self.address, out_y_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_rotation_z(self : not null access L3GD20H_record'class;
                            error : out integer) return integer is
       word : uint16 := self.port.readm2(self.address, out_z_l + 16#80#, error);
    begin
-      return Integer(BBS.BBB.uint16_to_int16(word));
+      return Integer(uint16_to_int16(word));
    end;
    --
    function get_rotations(self : not null access L3GD20H_record'class;

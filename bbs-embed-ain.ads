@@ -12,7 +12,7 @@ use type BBS.units.emf_v;
 -- directly through /dev/kmem.  It should be possible to change the underlaying
 -- implementation here without impacting code that uses this package.
 --
-package BBS.BBB.AIN is
+package BBS.embed.AIN is
 --
 -- The analog related pins are:
 -- AIN0 - P9_39

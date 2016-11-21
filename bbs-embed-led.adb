@@ -1,4 +1,4 @@
-package body BBS.BBB.LED is
+package body BBS.embed.LED is
 
    procedure open(l : in led_num) is
    begin

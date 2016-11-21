@@ -1,4 +1,4 @@
-with BBS.BBB.i2c;
+with BBS.embed.i2c;
 --
 -- Constants for various devices on the I2C bus.
 -- Device addresses and register addresses within the device are provided.
@@ -8,7 +8,7 @@ with BBS.BBB.i2c;
 -- into its own package.  This is especially true if some special logic of data
 -- structures are used in the interface.
 --
-package BBS.BBB.i2c.devices is
+package BBS.embed.i2c.devices is
    --
    -- List of addresses for devices in separate packages.  These are listed here
    -- in address order to help check for duplicate addresses.

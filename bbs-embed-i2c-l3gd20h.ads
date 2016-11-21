@@ -10,7 +10,7 @@
 -- Additional planned changes are moving the rate_dps and Celcius types into a
 -- new collector package to try and unify units and conversions.
 --
-with BBS.BBB.i2c;
+with BBS.embed.i2c;
 with BBS.units;
 --
 -- This package contains constants and routines to communicate with the L3GD20H
@@ -20,7 +20,7 @@ with BBS.units;
 -- device.  If you wish a more sophisticated interface, this could provide a
 -- useful starting point.
 --
-package BBS.BBB.i2c.L3GD20H is
+package BBS.embed.i2c.L3GD20H is
    --
    -- Addresses for L3GD20H - gyroscope
    --

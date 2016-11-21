@@ -1,4 +1,4 @@
-package body BBS.BBB.i2c.BMP180 is
+package body BBS.embed.i2c.BMP180 is
    --
    -- Get elementary math functions for floating point numbers
    --
@@ -51,7 +51,7 @@ package body BBS.BBB.i2c.BMP180 is
    --
    procedure start_conversion(kind : uint8; error : out integer) is
    begin
-      BBS.BBB.i2c.write(addr, ctrl, kind, error);
+      write(addr, ctrl, kind, error);
       last_cvt := kind;
    end;
    --
@@ -59,7 +59,7 @@ package body BBS.BBB.i2c.BMP180 is
       byte : uint8;
       err : integer;
    begin
-      byte := BBS.BBB.i2c.read(addr, ctrl, err);
+      byte := read(addr, ctrl, err);
       error := err;
       if ((byte and start_cvt) /= start_cvt) and (err = 0) then
          return true;
@@ -85,8 +85,8 @@ package body BBS.BBB.i2c.BMP180 is
          Ada.Text_IO.Put_Line("Last conversion request was not for temperature");
          raise Program_Error;
       end if;
-      msb_value := BBS.BBB.i2c.read(addr, msb, error);
-      lsb_value := BBS.BBB.i2c.read(addr, lsb, error);
+      msb_value := read(addr, msb, error);
+      lsb_value := read(addr, lsb, error);
       temp := uint16_to_int16(uint16(msb_value) * 256 + uint16(lsb_value));
       x1 := ((integer(temp) - integer(ac6)) * integer(ac5)) / 32768;
       x2 := integer(mc) * 2048 / (x1 + integer(md));
@@ -138,9 +138,9 @@ package body BBS.BBB.i2c.BMP180 is
          Ada.Text_IO.Put_Line("Last conversion request was not for pressure");
          raise Program_Error;
       end if;
-      msb_value := BBS.BBB.i2c.read(addr, msb, error);
-      lsb_value := BBS.BBB.i2c.read(addr, lsb, error);
-      xlsb_value := BBS.BBB.i2c.read(addr, xlsb, error);
+      msb_value := read(addr, msb, error);
+      lsb_value := read(addr, lsb, error);
+      xlsb_value := read(addr, xlsb, error);
       press := uint32_to_int(uint32(msb_value) * 65536 + uint32(lsb_value) * 256 + uint32(xlsb_value));
       oss := (last_cvt / 64) and 3;
       case oss is

@@ -1,4 +1,4 @@
-package body BBS.BBB.PWM is
+package body BBS.embed.PWM is
 	--
    function pwm_new return PWM is
    begin

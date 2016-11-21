@@ -1,4 +1,4 @@
-package body BBS.BBB.AIN is
+package body BBS.embed.AIN is
 
    function AIN_new return AIN is
    begin

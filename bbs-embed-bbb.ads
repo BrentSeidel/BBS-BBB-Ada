@@ -1,4 +1,4 @@
-package BBS.BBB.pins is
+package BBS.embed.BBB is
 --
 -- This package contains definitions for some of the BeagleBone Black pins.  If
 -- nothing else, it can serve as a reference for the pins on the board.

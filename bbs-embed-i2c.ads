@@ -3,8 +3,8 @@ with Ada.Long_Integer_Text_IO;
 with Ada.Strings.Fixed;
 with Interfaces.C;
 use type Interfaces.C.unsigned_long;
-with BBS.BBB;
-with BBS.BBB.pins;
+with BBS.embed;
+with BBS.embed.BBB;
 --
 --   The Linux i2c driver does not seem to be designed to work well using file
 -- read and write calls.  Much of it is based on ioctl calls.  Thus we have to
@@ -17,10 +17,10 @@ with BBS.BBB.pins;
 -- on one of the i2c interfaces at a time.  These restrictions may be eased in
 -- the future.  Right now, the goal is to get the interface to work at all.
 --
-package BBS.BBB.i2c is
+package BBS.embed.i2c is
    --
-   SCL_Ctrl : constant string := BBS.BBB.pins.P9_24;
-   SDA_Ctrl : constant string := BBS.BBB.pins.P9_26;
+   SCL_Ctrl : constant string := BBS.embed.BBB.P9_24;
+   SDA_Ctrl : constant string := BBS.embed.BBB.P9_26;
    --
    -- buffer to use for reading and writing from i2c bus.  In most cases, only
    -- a few bytes are needed.  This should be quite adequate.

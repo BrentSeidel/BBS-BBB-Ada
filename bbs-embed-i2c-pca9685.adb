@@ -1,9 +1,9 @@
-package body BBS.BBB.i2c.PCA9685 is
+package body BBS.embed.i2c.PCA9685 is
 
    --
    -- Simple object oriented interface
    --
-   procedure setup(port : BBS.BBB.i2c.i2c_interface; addr : addr7) is
+   procedure setup(port : i2c_interface; addr : addr7) is
       error : integer;
    begin
       port.write(addr_0, MODE1, 16#10#, error);
@@ -11,7 +11,7 @@ package body BBS.BBB.i2c.PCA9685 is
       port.write(addr_0, MODE1, 16#00#, error);
    end;
    --
-   procedure set(port : BBS.BBB.i2c.i2c_interface; addr : addr7; chan : channel;
+   procedure set(port : i2c_interface; addr : addr7; chan : channel;
                   on : uint12; off : uint12) is
       error : integer;
       t_low : uint8;

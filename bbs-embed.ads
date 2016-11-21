@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package BBS.BBB is
+package BBS.embed is
 --
 -- This package contains useful items for programming the BeagleBone Black in
 -- Ada.  The intention is to include I2C, SPI, and GPIO interfaces.

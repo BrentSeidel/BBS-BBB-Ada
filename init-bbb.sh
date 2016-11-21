@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# Initialization script for the BeagleBone Black
+#
 # Run this shell script as root to set protections on some of the device control files
 # so that non-root users can access them.  It seems that the protection on these gets
 # set back to 644 every time the BeagleBone Black boots.

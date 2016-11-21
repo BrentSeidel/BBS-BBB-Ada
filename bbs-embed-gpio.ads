@@ -9,7 +9,7 @@ with Ada.Direct_IO;
 -- directly through /dev/kmem.  It should be possible to change the underlaying
 -- implementation here without impacting code that uses this package.
 --
-package BBS.BBB.GPIO is
+package BBS.embed.GPIO is
 --
 -- Mapping of GPIO file directories to pins.  Note that not all have an associated
 -- pin.  Also many pins have a GPIO which does not have a GPIO directory.  To create

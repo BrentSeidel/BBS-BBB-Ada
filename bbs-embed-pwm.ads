@@ -7,11 +7,11 @@
 -- the BeagleBone Black.  This uses the control files in the /sys directory
 -- tree.
 --
-with BBS.BBB.pins;
+with BBS.embed.BBB;
 with BBS.units;
 with Ada.Text_IO;
 with Ada.Strings.Fixed;
-package BBS.BBB.PWM is
+package BBS.embed.PWM is
    --
    -- Mapping of PWMs to pins.  Note that there is currently no pinmux directory
    -- for pin P8_28, so the function for this pin cannot be changed (easily.  With
@@ -44,10 +44,10 @@ package BBS.BBB.PWM is
    -- PWMs.
    --
    pwm_ctrl : constant array (pwm_range) of access constant String :=
-     (BBS.BBB.pins.EHRPWM0A'Access, BBS.BBB.pins.EHRPWM0B'Access,
-      BBS.BBB.pins.EHRPWM1A'Access, BBS.BBB.pins.EHRPWM1B'Access,
-      BBS.BBB.pins.EHRPWM2A'Access, BBS.BBB.pins.EHRPWM2B'Access,
-      BBS.BBB.pins.ECAPPWM0'Access);
+     (BBS.embed.BBB.EHRPWM0A'Access, BBS.embed.BBB.EHRPWM0B'Access,
+      BBS.embed.BBB.EHRPWM1A'Access, BBS.embed.BBB.EHRPWM1B'Access,
+      BBS.embed.BBB.EHRPWM2A'Access, BBS.embed.BBB.EHRPWM2B'Access,
+      BBS.embed.BBB.ECAPPWM0'Access);
    --
    -- The PWM object.  Note that while you can create multiple objects pointing
    -- to the same physical PWM, this will probably not be a good idea.
