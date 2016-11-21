@@ -100,6 +100,7 @@ end loop;
 ~~~~
 
 I got the following results:
+
 | System | Frequency |
 |--------|-----------|
 | BeagleBone Black | 60 kHz |
