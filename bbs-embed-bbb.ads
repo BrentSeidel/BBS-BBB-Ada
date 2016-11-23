@@ -219,4 +219,15 @@ package BBS.embed.BBB is
 -- Vdd_ADC - P9_32
 -- Gnd_ADC - P9_34
 --
+--
+-- Serial port definitions
+--
+   I2C_0 : aliased constant string := "/dev/i2c-0";
+   I2C_1 : aliased constant string := "/dev/i2c-1";
+   I2C_2 : aliased constant string := "/dev/i2c-2";
+   --
+   SPI_0 : aliased constant string := "/dev/spidev1.0";
+   SPI_1 : aliased constant string := "/dev/spidev1.1";
+   SPI_2 : aliased constant string := "/dev/spidev2.0";
+   SPI_3 : aliased constant string := "/dev/spidev2.1";
 end;

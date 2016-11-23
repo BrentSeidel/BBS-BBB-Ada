@@ -1,6 +1,6 @@
 with "../BBS-Ada/bbs.gpr";
 
-project I2C is
+project bbs_embed is
 
    for Source_Dirs use ("./**");
    for Main use ();
@@ -23,5 +23,5 @@ project I2C is
       for Default_Switches ("c") use ("-g");
    end Compiler;
 
-end I2C;
+end bbs_embed;
 
