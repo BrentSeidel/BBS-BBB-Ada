@@ -25,6 +25,19 @@ An advantage of this approach is that if you use the proper units in your
 calculations, the compiler will be able to catch mismatches between feet and
 meters before you crash your probe into Mars.
 
+##Note
+Another reoganization is likely in work.  These routines seem to work fairly well on
+Linux based embedded systems.  I am getting interested in trying out Ada on bare
+ARM based systems such as the Arduino Due.  It would be nice to be able to re-use
+some of this software.  The approach that I'm currently thinking of is to use abstract
+base clases for the various types of I/O such as i2c or gpio.  These would define the
+basic interface routines for these I/O.  The concrete classes would contain the
+specific code for these I/O.  Thus, for example, there would be a base gpio class and
+then a concrete gpio.linux class and a concrete gpio.arduion_due class.  This might not
+be a big advantage for gpio, but for i2c it would mean that I don't need to update any
+of the routines for the various i2c devices.  This will require a bit of planning and
+experimentation.
+
 # Contents
 ## LEDs
 The BBS.BBB.LED package contains definitions and routines for controlling the four built-
@@ -109,6 +122,8 @@ I got the following results:
 Note that the times are only approximate and can vary greatly depending on other
 processing on the processor.
 
+By way of comparison, an Adruino Mega 2560 got 126.6kHz or 128.2kHz (it toggled between
+the two as I measured it) in a similar tight loop using digitalWrite().
 
 ## PWM
 This is an object oriented interface to the PWM controllers.  The BeagleBone
