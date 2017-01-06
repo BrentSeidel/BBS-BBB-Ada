@@ -11,9 +11,10 @@ with Ada.Direct_IO;
 --
 package BBS.embed.GPIO is
 --
--- Mapping of GPIO file directories to pins.  Note that not all have an associated
--- pin.  Also many pins have a GPIO which does not have a GPIO directory.  To create
--- missing gpio directory structures, write the pin number to /sys/class/gpio/export
+-- Mapping of GPIO file directories to pins for the BeagleBone Black.  Note that
+-- not all have an associated pin.  Also many pins have a GPIO which does not
+-- have a GPIO directory.  To create missing gpio directory structures, write
+-- the pin number to /sys/class/gpio/export
 --
 --   GPIO_2   - P9_22 (multi)
 --   GPIO_3   - P9_21 (multi)
@@ -59,7 +60,7 @@ package BBS.embed.GPIO is
    -- Configure a new GPIO object.  The pin control file and GPIO directory
    -- must correspond, otherwise things will not work correctly.  Pin should
    -- be one of the pin constants and port should be one of
-   -- the gpio constants from BBS.BBB.pins package.
+   -- the gpio constants from the device specific pins packages.
    --
    procedure configure(self : not null access GPIO_record'class;
                        pin : string; port : string; dir : direction);

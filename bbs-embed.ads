@@ -44,7 +44,10 @@ package BBS.embed is
    function uint16_to_int16 is
      new Ada.Unchecked_Conversion(source => uint16, target => int16);
    --
-   -- It's possible that some of this could easily be ported to the Raspberry
-   -- PI.  Note that the I2C interface is now working on a Raspberry PI 3.
+   -- Get the high and low bytes (uint8) of a 16 bit uint
    --
+   function highByte(x : uint16) return uint8 is
+     (uint8(x / 2**8));
+   function lowByte(x : uint16) return uint8 is
+      (uint8(x and 16#FF#));
 end;

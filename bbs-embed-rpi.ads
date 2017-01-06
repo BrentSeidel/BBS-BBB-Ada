@@ -17,15 +17,15 @@ package BBS.embed.RPI is
    GPIO_6 : aliased constant string := "/sys/class/gpio/gpio7/";
    GPIO_13 : aliased constant string := "/sys/class/gpio/gpio14/";
    GPIO_16 : aliased constant string := "/sys/class/gpio/gpio15/";
-   GPIO_17 : aliased constant string := "/sys/class/gpio/gpio14/";
-   GPIO_18 : aliased constant string := "/sys/class/gpio/gpio15/";
-   GPIO_20 : aliased constant string := "/sys/class/gpio/gpio22/";
-   GPIO_21 : aliased constant string := "/sys/class/gpio/gpio23/";
-   GPIO_22 : aliased constant string := "/sys/class/gpio/gpio26/";
-   GPIO_24 : aliased constant string := "/sys/class/gpio/gpio27/";
-   GPIO_25 : aliased constant string := "/sys/class/gpio/gpio22/";
-   GPIO_26 : aliased constant string := "/sys/class/gpio/gpio23/";
-   GPIO_27 : aliased constant string := "/sys/class/gpio/gpio26/";
+   GPIO_17 : aliased constant string := "/sys/class/gpio/gpio17/";
+   GPIO_18 : aliased constant string := "/sys/class/gpio/gpio18/";
+   GPIO_20 : aliased constant string := "/sys/class/gpio/gpio20/";
+   GPIO_21 : aliased constant string := "/sys/class/gpio/gpio21/";
+   GPIO_22 : aliased constant string := "/sys/class/gpio/gpio22/";
+   GPIO_24 : aliased constant string := "/sys/class/gpio/gpio23/";
+   GPIO_25 : aliased constant string := "/sys/class/gpio/gpio25/";
+   GPIO_26 : aliased constant string := "/sys/class/gpio/gpio26/";
+   GPIO_27 : aliased constant string := "/sys/class/gpio/gpio27/";
 --
 -- Serial port definitions
 --
