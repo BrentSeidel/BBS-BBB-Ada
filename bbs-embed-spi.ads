@@ -7,85 +7,30 @@ package BBS.embed.SPI is
    --
    -- The SPI  object
    --
-   type SPI_record is tagged limited private;
-   type SPI_ptr is access SPI_record;
+   type SPI_record is abstract tagged limited null record;
+   type SPI_ptr is access all SPI_record'Class;
    --
-   function SPI_new return SPI_ptr;
+--   function SPI_new return SPI_record'Class is abstract;
    --
    -- Configure the SPI interface on a BeagleBone Black or other systems that
    -- have multiple functions on the SPI pins.  This configureation procedure
    -- sets the pins to the SPI function.
    --
-   procedure configure(self : not null access SPI_record'class; SPI_file : string;
-                       SCL : string; SDA : string);
+   procedure configure(self : in out SPI_record; SPI_file : string;
+                       SCL : string; SDA : string) is abstract;
    --
    -- Configure the SPI interface on a Raspberry PI or other systems that have
    -- dedicated pins for the SPI interface.  This would also work on a system
    -- with shared pins if the pins had already been set to the SPI function.
    --
-   procedure configure(self : not null access SPI_record'class; SPI_file : string);
+   procedure configure(self : in out SPI_record; SPI_file : string) is abstract;
    --
    -- Write a value to the SPI
    --
-   procedure set(self : not null access SPI_record'class; value : uint8);
+   procedure set(self : SPI_record; value : uint8) is abstract;
    --
    -- Read a value from the SPI
    --
-   function get(self : not null access SPI_record'class) return uint8;
-private
-   --
-   -- Some of the more advanced features of the SPI port require the use of
-   -- IOCTL calls.  So, to be prepared, the use of C/Unix files is needed.  This
-   -- is similar to the approach taken in the BBS.embed.i2c package.
-   --
-   --
-   -- First, declare some bindings to the C library.
-   --
-   -- Since the basic C file and ioctl calls use a file descriptor, define a
-   -- type for it and declare bindings for the C open, read, and write functions.
-   --
-   type file_id is new interfaces.C.int;
-   type mode_t is new integer;
-   type size_t is new long_integer;
-   subtype ssize_t is size_t;
-   --
-   -- File flags for opening a file read/write.  This is the only one used here
-   -- so don't bother to define others.
-   --
-   O_RDWR : integer := 16#02#;
-   --
-   function C_open(name : string; flags : integer; mode : mode_t := 8#666#) return file_id;
-   pragma import(C, C_open, "open");
-   --
-   function C_close(file : file_id) return integer;
-   pragma import(C, C_close, "close");
-   --
-   function C_read(file : file_id; buff : in out uint8; length : size_t) return ssize_t;
-   pragma import(C, C_read, "read");
-   --
-   function C_write(file : file_id; buff : in out uint8; length : size_t) return ssize_t;
-   pragma import(C, C_write, "write");
-   --
-   -- Now some C functions for getting errno and error messages
-   --
-   function get_errno return integer;
-   pragma Import(C, get_errno, "get_errno");
-   --
-   procedure reset_errno;
-   pragma Import(C, reset_errno, "reset_errno");
-   --
-   type err_msg is new string(1 .. 255);
-   type err_msg_ptr is access err_msg;
-   --
-   procedure perror(msg : string);
-   pragma Import(C, perror, "perror");
-   --
-   function strerror(err_num : integer) return err_msg_ptr;
-   pragma Import(C, strerror, "strerror");
-   --
-   type SPI_record is tagged limited
-      record
-         port   : file_id;
-      end record;
+   function get(self : SPI_record) return uint8 is abstract;
 
 end;
