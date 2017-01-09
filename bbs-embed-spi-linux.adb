@@ -1,8 +1,8 @@
 package body BBS.embed.SPI.Linux is
    --
-   function SPI_new return Linux_SPI_record is
+   function SPI_new return SPI_ptr is
    begin
-      return (port => 0);
+      return new Linux_SPI_record;
    end;
    --
    -- Configure the SPI interface on a BeagleBone Black or other systems that

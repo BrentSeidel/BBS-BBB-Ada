@@ -11,7 +11,7 @@ package BBS.embed.SPI.Linux is
    type Linux_SPI_record is new BBS.embed.SPI.SPI_record with private;
    --
 --   overriding
-   function SPI_new return Linux_SPI_record;
+   function SPI_new return SPI_ptr;
    --
    -- Configure the SPI interface on a BeagleBone Black or other systems that
    -- have multiple functions on the SPI pins.  This configureation procedure
