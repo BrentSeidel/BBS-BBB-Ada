@@ -1,7 +1,3 @@
-with Ada.Text_IO;
-with Interfaces.C;
-use type Interfaces.C.unsigned_long;
-
 package BBS.embed.SPI is
 
    --

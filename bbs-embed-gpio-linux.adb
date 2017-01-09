@@ -1,11 +1,11 @@
-package body BBS.embed.GPIO is
+package body BBS.embed.GPIO.Linux is
 
    function gpio_new return GPIO is
    begin
-      return new GPIO_record;
+      return new Linux_GPIO_record;
    end;
    --
-   procedure configure(self : not null access GPIO_record'class;
+   procedure configure(self : in out Linux_GPIO_record;
                        pin : string; port : string; dir : direction) is
       temp : Ada.Text_IO.File_Type;
    begin
@@ -36,7 +36,7 @@ package body BBS.embed.GPIO is
       end if;
    end;
    --
-   procedure configure(self : not null access GPIO_record'class;
+   procedure configure(self : in out Linux_GPIO_record;
                        port : string; dir : direction) is
       temp : Ada.Text_IO.File_Type;
    begin
@@ -61,7 +61,7 @@ package body BBS.embed.GPIO is
       end if;
    end;
    --
-   procedure set(self : not null access GPIO_record'class; value : bit) is
+   procedure set(self : Linux_GPIO_record; value : bit) is
    begin
       if (value = 0) then
          Char_IO.Write(self.gpio_file, '0', 1);
@@ -70,7 +70,7 @@ package body BBS.embed.GPIO is
       end if;
    end;
    --
-   function get(self : not null access GPIO_record'class) return bit is
+   function get(self : Linux_GPIO_record) return bit is
       char : character;
    begin
       Char_IO.Read(self.gpio_file, char, 1);
@@ -81,7 +81,7 @@ package body BBS.embed.GPIO is
       end if;
    end;
    --
-   procedure close(self : not null access GPIO_record'class) is
+   procedure close(self : in out Linux_GPIO_record) is
    begin
       Char_IO.Close(self.gpio_file);
    end;
