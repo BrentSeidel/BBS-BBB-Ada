@@ -30,9 +30,4 @@ package BBS.embed.GPIO is
    -- Read the value of an input GPIO.
    --
    function get(self : GPIO_record) return bit is abstract;
-   --
-   -- Close the file for the pin.  Once this is called, the GPIO object will
-   -- need to be re-configured.
-   --
-   procedure close(self : in out GPIO_record) is abstract;
 end;

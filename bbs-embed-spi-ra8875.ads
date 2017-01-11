@@ -9,6 +9,10 @@ package BBS.embed.SPI.RA8875 is
    type RA8875_record is tagged private;
    type RA8875_ptr is access all RA8875_record;
    --
+   -- Enumeration for supported screen sizes
+   --
+   type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
+   --
    -- Constants for RA8875 registers and bits
    --
    -- Power and display control register
@@ -98,6 +102,12 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Font control register 0
    RA8875_FNCR0 : constant uint8 := 16#21#;
+   RA8875_FNCR0_CGRAM : constant uint8 := 16#80#;
+   RA8875_FNCR0_EXTCR : constant uint8 := 16#20#;
+   RA8875_FNCR0_ISO8859_4 : constant uint8 := 16#03#;
+   RA8875_FNCR0_ISO8859_3 : constant uint8 := 16#02#;
+   RA8875_FNCR0_ISO8859_2 : constant uint8 := 16#01#;
+   RA8875_FNCR0_ISO8859_1 : constant uint8 := 16#00#;
    --
    -- Font control register 1
    RA8875_FNCR1 : constant uint8 := 16#22#;
@@ -352,6 +362,9 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Touch panel X/Y low byte data register
    RA8875_TPXYL : constant uint8 := 16#74#;
+   RA8875_TPXYL_TOUCHED : constant uint8 := 16#80#;
+   RA8875_TPXYL_Y_LSB : constant uint8 := 16#0C#;
+   RA8875_TPXYL_X_LSB : constant uint8 := 16#03#;
    --
    -- Graphic cursor horizontal register 0
    RA8875_GCHP0 : constant uint8 := 16#80#;
@@ -483,6 +496,9 @@ package BBS.embed.SPI.RA8875 is
    -- Draw ellipse/ellipse curve/circle square control register
    RA8875_ELLIPSE : constant uint8 := 16#A0#;
    RA8875_ELLIPSE_STATUS : constant uint8 := 16#80#;
+   RA8875_ELLIPSE_START : constant uint8 := 16#80#;
+   RA8875_ELLIPSE_FILL : constant uint8 := 16#40#;
+   RA8875_ELLIPSE_SQR : constant uint8 := 16#20#;
    --
    -- Draw ellipse/circle square long axis setting register 0
    RA8875_ELL_A0 : constant uint8 := 16#A1#;
@@ -495,9 +511,79 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Draw ellipse/circle square short axis setting register 1
    RA8875_ELL_B1 : constant uint8 := 16#A4#;
-
-
+   --
+   -- Draw ellipse/circle square center horizontal address register 0
+   RA8875_DEHR0 : constant uint8 := 16#A5#;
+   --
+   -- Draw ellipse/circle square center horizontal address register 1
+   RA8875_DEHR1 : constant uint8 := 16#A6#;
+   --
+   -- Draw ellipse/circle square center vertical address register 0
+   RA8875_DEVR0 : constant uint8 := 16#A7#;
+   --
+   -- Draw ellipse/circle square center vertical address register 1
+   RA8875_DEVR1 : constant uint8 := 16#A8#;
+   --
+   -- Draw triangle point 2 horizontal address register 0
+   RA8875_DTPH0 : constant uint8 := 16#A9#;
+   --
+   -- Draw triangle point 2 horizontal address register 1
+   RA8875_DTPH1 : constant uint8 := 16#AA#;
+   --
+   -- Draw triangle point 2 vertical address register 0
+   RA8875_DTPV0 : constant uint8 := 16#AB#;
+   --
+   -- Draw triangle point 2 vertical address register 1
+   RA8875_DTPV1 : constant uint8 := 16#AC#;
+   --
+   -- DMA Source starting address reg 0
+   RA8875_SSAR0 : constant uint8 := 16#B0#;
+   --
+   -- DMA Source starting address reg 1
+   RA8875_SSAR1 : constant uint8 := 16#B1#;
+   --
+   -- DMA Source starting address reg 2
+   RA8875_SSAR2 : constant uint8 := 16#B2#;
+   --
+   -- DMA Block width register 0 / DMA transfer number register 0
+   RA8875_DTNR0 : constant uint8 := 16#B4#;
+   --
+   -- DMA Block width register 1
+   RA8875_BWR1 : constant uint8 := 16#B5#;
+   --
+   -- DMA Block height register 0 / DMA transfer number register 1
+   RA8875_DTNR1 : constant uint8 := 16#B6#;
+   --
+   -- DMA Block height register 1
+   RA8875_BHR1 : constant uint8 := 16#B7#;
+   --
+   -- DMA source picture width register 0 / DMA transfer number register 2
+   RA8875_DNTR2 : constant uint8 := 16#B8#;
+   --
+   -- DMA Source picture register 1
+   RA8875_SPWR1 : constant uint8 := 16#B9#;
+   --
+   -- DMA configuration register
+   RA8875_DMACR : constant uint8 := 16#BF#;
+   --
+   -- Key-Scan control register 1
+   RA8875_KSCR1 : constant uint8 := 16#C0#;
+   --
+   -- Key-Scan control register 2
+   RA8875_KSCR2 : constant uint8 := 16#C1#;
+   --
+   -- Key-Scan data register 0
+   RA8875_KSRD0 : constant uint8 := 16#C2#;
+   --
+   -- Key-Scan data register 1
+   RA8875_KSRD1 : constant uint8 := 16#C3#;
+   --
+   -- Key-Scan data register 2
+   RA8875_KSRD2 : constant uint8 := 16#C4#;
+   --
+   -- Extra general purpose I/O register
    RA8875_GPIOX : constant uint8 := 16#C7#;
+
 
    RA8875_INTC1 : constant uint8 := 16#F0#;
    RA8875_INTC1_KEY : constant uint8 := 16#10#;
@@ -542,6 +628,8 @@ end record;
    --
    function RA8875_new return RA8875_ptr;
    --
+   -- Low level methods
+   --
    procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; screen : SPI_ptr);
    procedure writeCmd(self : RA8875_record; value : uint8);
    procedure writeData(self : RA8875_record; value : uint8);
@@ -550,7 +638,9 @@ end record;
    procedure writeReg(self : RA8875_record; reg : uint8; value : uint8);
    function readReg(self : RA8875_record; reg : uint8) return uint8;
    --
-   procedure spi_configure(self : RA8875_record);
+   -- Configuration methods
+   --
+   procedure configure(self : in out RA8875_record; size : RA8875_sizes);
    procedure set_sleep(self : RA8875_record; state : boolean);
    procedure set_display(self : RA8875_record; state : boolean);
    procedure GPIOX(self : RA8875_record; state : boolean);
@@ -559,14 +649,27 @@ end record;
    procedure PWM1out(self : RA8875_record; value : uint8);
    procedure PWM2out(self : RA8875_record; value : uint8);
    --
-   procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
-   procedure graphicsMode(self : RA8875_record);
+   -- Text methods
+   --
    procedure textMode(self : RA8875_record);
+   procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
    procedure textSetCursor(self : RA8875_record; x : uint16; y : uint16);
    procedure textWrite(self : RA8875_record; str : string);
+   --
+   -- Graphics methods
+   --
+   procedure graphicsMode(self : RA8875_record);
    procedure drawRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
                       h : uint16; color : R5G6B5_color; fill : boolean);
-procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
+   procedure drawRndRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
+                      h : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
+   procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
+   --
+   -- Touch methods
+   --
+   procedure enableTouch(self : RA8875_record; state : boolean);
+   function checkTouched(self : RA8875_record) return boolean;
+   function readTouch(self : RA8875_record; x : out uint16; y : out uint16) return boolean;
 --
 private
    type RA8875_record is tagged
@@ -574,6 +677,8 @@ private
          cs_gpio : BBS.embed.GPIO.GPIO;
          reset_gpio : BBS.embed.GPIO.GPIO;
          lcd_screen : BBS.embed.SPI.SPI_ptr;
+         width : uint16;
+         height : uint16;
       end record;
    --
    -- Constants for pin outputs

@@ -95,7 +95,7 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_P2DCR, value);
    end;
    --
-   procedure spi_configure(self : RA8875_record) is
+   procedure configure(self : in out RA8875_record; size : RA8875_sizes) is
       pixclk : uint8;
       hsync_start : uint8;
       hsync_pw : uint8;
@@ -107,85 +107,72 @@ package body BBS.embed.SPI.RA8875 is
    begin
       Ada.Text_IO.Put_Line("Testing for presence of RA8875");
       Ada.Text_IO.Put_Line("Value expected 117, actual " & integer'Image(integer(self.readReg(0))));
-      Ada.Text_IO.Put_Line("Configuring RA8875 PLL");
-      --  if (_size == RA8875_480x272) {
-      --    writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
-      --    delay(1);
-      --    writeReg(RA8875_PLLC2, RA8875_PLLC2_DIV4);
-      --    delay(1);
-      --  }
-      --  if (_size == RA8875_800x480) {
-      --    writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
-      --    delay(1);
-      --    writeReg(RA8875_PLLC2, RA8875_PLLC2_DIV4);
-      --    delay(1);
-      --  }
-      self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
-      delay 0.001;
-      self.writeReg(RA8875_PLLC2, RA8875_PLLC2_DIV4);
-      delay 0.001;
-      self.writeReg(RA8875_SYSR, RA8875_SYSR_16BPP or RA8875_SYSR_MCU8);
---  if (_size == RA8875_480x272)
---  {
---    pixclk          = RA8875_PCSR_PDATL | RA8875_PCSR_4CLK;
---    hsync_nondisp   = 10;
---    hsync_start     = 8;
---    hsync_pw        = 48;
---    hsync_finetune  = 0;
---    vsync_nondisp   = 3;
---    vsync_start     = 8;
---    vsync_pw        = 10;
---  }
---  else if (_size == RA8875_800x480)
---  {
---    pixclk          = RA8875_PCSR_PDATL | RA8875_PCSR_2CLK;
---    hsync_nondisp   = 26;
---    hsync_start     = 32;
---    hsync_pw        = 96;
---    hsync_finetune  = 0;
---    vsync_nondisp   = 32;
---    vsync_start     = 23;
---    vsync_pw        = 2;
---  }
-      pixclk          := RA8875_PCSR_PDATL or RA8875_PCSR_2CLK;
-      hsync_nondisp   := 26;
-      hsync_start     := 32;
-      hsync_pw        := 96;
-      hsync_finetune  := 0;
-      vsync_nondisp   := 32;
-      vsync_start     := 23;
-      vsync_pw        := 2;
+      case size is
+         when RA8875_480x272 =>
+            self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
+            delay 0.001;
+            self.writeReg(RA8875_PLLC2, RA8875_PLLC2_DIV4);
+            delay 0.001;
+            self.writeReg(RA8875_SYSR, RA8875_SYSR_16BPP or RA8875_SYSR_MCU8);
+            --
+            pixclk          := RA8875_PCSR_PDATL or RA8875_PCSR_4CLK;
+            hsync_nondisp   := 10;
+            hsync_start     := 8;
+            hsync_pw        := 48;
+            hsync_finetune  := 0;
+            vsync_nondisp   := 3;
+            vsync_start     := 8;
+            vsync_pw        := 10;
+            self.width := 480;
+            self.height := 272;
+         when RA8875_800x480 =>
+            self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
+            delay 0.001;
+            self.writeReg(RA8875_PLLC2, RA8875_PLLC2_DIV4);
+            delay 0.001;
+            self.writeReg(RA8875_SYSR, RA8875_SYSR_16BPP or RA8875_SYSR_MCU8);
+            --
+            pixclk          := RA8875_PCSR_PDATL or RA8875_PCSR_2CLK;
+            hsync_nondisp   := 26;
+            hsync_start     := 32;
+            hsync_pw        := 96;
+            hsync_finetune  := 0;
+            vsync_nondisp   := 32;
+            vsync_start     := 23;
+            vsync_pw        := 2;
+            self.width := 800;
+            self.height := 480;
+         when others =>
+            Ada.Text_IO.Put_Line("RA8875 unknown LCD size.");
+            return;
+      end case;
       --
       self.writeReg(RA8875_PCSR, pixclk);
       delay 0.001;
-
-      Ada.Text_IO.Put_Line("Configuring RA8875 horizontal settings");
-      self.writeReg(RA8875_HDWR, uint8((integer(800) / 8) - 1));
+      --
+      self.writeReg(RA8875_HDWR, uint8((integer(self.width) / 8) - 1));
       self.writeReg(RA8875_HNDFTR, RA8875_HNDFTR_DE_HIGH + hsync_finetune);
       self.writeReg(RA8875_HNDR, (hsync_nondisp - hsync_finetune - 2)/8);
       self.writeReg(RA8875_HSTR, hsync_start/8 - 1);
       self.writeReg(RA8875_HPWR, RA8875_HPWR_LOW + (hsync_pw/8 - 1));
       --
-      Ada.Text_IO.Put_Line("Configuring RA8875 vertical settings");
-      self.writeReg(RA8875_VDHR0, lowByte(480 - 1));
-      self.writeReg(RA8875_VDHR1, highByte(480 - 1));
+      self.writeReg(RA8875_VDHR0, lowByte(self.height - 1));
+      self.writeReg(RA8875_VDHR1, highByte(self.height - 1));
       self.writeReg(RA8875_VNDR0, lowByte(vsync_nondisp - 1));
       self.writeReg(RA8875_VNDR1, highByte(vsync_nondisp));
       self.writeReg(RA8875_VSTR0, lowByte(vsync_start - 1));
       self.writeReg(RA8875_VSTR1, highByte(vsync_start));
       self.writeReg(RA8875_VPWR, RA8875_VPWR_LOW + vsync_pw - 1);
       --
-      Ada.Text_IO.Put_Line("Configuring RA8875 active window X");
       self.writeReg(RA8875_HSAW0, 0);
       self.writeReg(RA8875_HSAW1, 0);
-      self.writeReg(RA8875_HEAW0, lowByte(800 - 1));
-      self.writeReg(RA8875_HEAW1, highByte(800 - 1));
+      self.writeReg(RA8875_HEAW0, lowByte(self.width - 1));
+      self.writeReg(RA8875_HEAW1, highByte(self.width - 1));
       --
-      Ada.Text_IO.Put_Line("Configuring RA8875 active window Y");
       self.writeReg(RA8875_VSAW0, 0);
       self.writeReg(RA8875_VSAW1, 0);
-      self.writeReg(RA8875_VEAW0, lowByte(480 - 1));
-      self.writeReg(RA8875_VEAW1, highByte(480 - 1));
+      self.writeReg(RA8875_VEAW0, lowByte(self.height - 1));
+      self.writeReg(RA8875_VEAW1, highByte(self.height - 1));
       --
       self.writeReg(RA8875_MCLR, RA8875_MCLR_START or RA8875_MCLR_FULL);
       delay 0.5;
@@ -217,15 +204,8 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_GPIOX, 0);
       end if;
    end;
-   --
-   procedure graphicsMode(self : RA8875_record) is
-      temp : uint8;
-   begin
-      self.writeCmd(RA8875_MWCR0);
-      temp := self.readData;
-      temp := temp and not RA8875_MWCR0_TXTMODE;
-      self.writeData(temp);
-   end;
+   ----------------------------------------------------------------------------
+   -- Text items
    --
    procedure textMode(self : RA8875_record) is
       temp : uint8;
@@ -240,7 +220,7 @@ package body BBS.embed.SPI.RA8875 is
       -- Select internal font
       self.writeCmd(RA8875_FNCR0);
       temp := self.readData;
-      temp := temp and not (128 + 32);
+      temp := temp and not (RA8875_FNCR0_CGRAM or RA8875_FNCR0_EXTCR);
       self.writeData(temp);
    end;
    --
@@ -280,6 +260,17 @@ package body BBS.embed.SPI.RA8875 is
          delay 0.001;
       end loop;
    end;
+   ---------------------------------------------------------------------------
+   -- Graphics items
+   --
+   procedure graphicsMode(self : RA8875_record) is
+      temp : uint8;
+   begin
+      self.writeCmd(RA8875_MWCR0);
+      temp := self.readData;
+      temp := temp and not RA8875_MWCR0_TXTMODE;
+      self.writeData(temp);
+   end;
    --
    procedure drawRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
                       h : uint16; color : R5G6B5_color; fill : boolean) is
@@ -311,6 +302,41 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
+   procedure drawRndRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
+                         h : uint16; rad : uint16; color : R5G6B5_color; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x));
+      self.writeReg(RA8875_DLHSR1, highByte(x));
+      --
+      self.writeReg(RA8875_DLVSR0, lowByte(y));
+      self.writeReg(RA8875_DLVSR1, highByte(y));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(w));
+      self.writeReg(RA8875_DLHER1, highByte(w));
+      --
+      self.writeReg(RA8875_DLVER0, lowByte(h));
+      self.writeReg(RA8875_DLVER1, highByte(h));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(rad));
+      self.writeReg(RA8875_ELL_A1, highByte(rad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(rad));
+      self.writeReg(RA8875_ELL_B1, highByte(rad));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR
+                      or RA8875_ELLIPSE_FILL);
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR);
+      end if;
+      --
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
+   --
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8) is
       temp : uint8;
    begin
@@ -319,5 +345,53 @@ package body BBS.embed.SPI.RA8875 is
          exit when ((temp and flag) = 0);
       end loop;
    end;
+   ----------------------------------------------------------------------------
+   -- Touch items
+   --
+   procedure enableTouch(self : RA8875_record; state : boolean) is
+      adcClock : uint8;
+   begin
+      case self.width is
+         when 480 =>
+            adcClock := RA8875_TPCR0_ADCCLK_DIV4;
+         when 800 =>
+            adcClock := RA8875_TPCR0_ADCCLK_DIV16;
+         when others =>
+            adcClock := RA8875_TPCR0_ADCCLK_DIV4;
+      end case;
+      if (state) then
+         self.writeReg(RA8875_TPCR0, RA8875_TPCR0_ENABLE or RA8875_TPCR0_WAIT_4096CLK or
+                    RA8875_TPCR0_WAKEENABLE or adcClock);
+         self.writeReg(RA8875_TPCR1, RA8875_TPCR1_AUTO or RA8875_TPCR1_DEBOUNCE);
+      else
+         self.writeReg(RA8875_TPCR0, RA8875_TPCR0_DISABLE);
+      end if;
+   end;
+   --
+   function checkTouched(self : RA8875_record) return boolean is
+      xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
+   begin
+      if ((xy_lsb and RA8875_TPXYL_TOUCHED) = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+   --
+   function readTouch(self : RA8875_record; x : out uint16; y : out uint16) return boolean is
+      x_msb : uint8 := self.readReg(RA8875_TPXH);
+      y_msb : uint8 := self.readReg(RA8875_TPYH);
+      xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
+   begin
+      x := uint16(x_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_X_LSB);
+      y := uint16(y_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_Y_LSB)/4;
+      if ((xy_lsb and RA8875_TPXYL_TOUCHED) = 0) then
+         return true;
+      else
+         return false;
+      end if;
+   end;
+
+
 
 end;
