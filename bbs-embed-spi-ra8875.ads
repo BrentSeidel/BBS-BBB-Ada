@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with Ada.Integer_Text_IO;
 --
 with BBS.embed.GPIO;
 with BBS.embed.SPI;
@@ -111,6 +112,11 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Font control register 1
    RA8875_FNCR1 : constant uint8 := 16#22#;
+   RA8875_FNCR1_ALIGN : constant uint8 := 16#80#;
+   RA8875_FNCR1_TRANS : constant uint8 := 16#40#;
+   RA8875_FNCR1_ROT : constant uint8 := 16#10#;
+   RA8875_FNCR1_HLARGE : constant uint8 := 16#0C#;
+   RA8875_FNCR1_VLARGE : constant uint8 := 16#03#;
    --
    -- CGRAM select register
    RA8875_CGSR : constant uint8 := 16#23#;
@@ -583,14 +589,60 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Extra general purpose I/O register
    RA8875_GPIOX : constant uint8 := 16#C7#;
-
-
+   --
+   -- Floating window start address XA 0
+   RA8875_FWSAXA0 : constant uint8 := 16#D0#;
+   --
+   -- Floating window start address XA 1
+   RA8875_FWSAXA1 : constant uint8 := 16#D1#;
+   --
+   -- Floating window start address YA 0
+   RA8875_FWSAYA0 : constant uint8 := 16#D2#;
+   --
+   -- Floating window start address YA 1
+   RA8875_FWSAYA1 : constant uint8 := 16#D3#;
+   --
+   -- Floating window width 0
+   RA8875_FWW0 : constant uint8 := 16#D4#;
+   --
+   -- Floating window width 1
+   RA8875_FWW1 : constant uint8 := 16#D5#;
+   --
+   -- Floating window height 0
+   RA8875_FWH0 : constant uint8 := 16#D6#;
+   --
+   -- Floating window height 1
+   RA8875_FWH1 : constant uint8 := 16#D7#;
+   --
+   -- Floating window display X address 0
+   RA8875_FWDXA0 : constant uint8 := 16#D8#;
+   --
+   -- Floating window display X address 1
+   RA8875_FWDXA1 : constant uint8 := 16#D9#;
+   --
+   -- Floating window display Y address 0
+   RA8875_FWDYA0 : constant uint8 := 16#DA#;
+   --
+   -- Floating window display Y address 1
+   RA8875_FWDYA1 : constant uint8 := 16#DB#;
+   --
+   -- Serial flash/ROM direct access mode
+   RA8875_SACS_MODE : constant uint8 := 16#E0#;
+   --
+   -- Serial flash/ROM direct access mode address
+   RA8875_SACS_ADDR : constant uint8 := 16#E1#;
+   --
+   -- Serial flash/ROM direct access data read
+   RA8875_SACS_DATA : constant uint8 := 16#E2#;
+   --
+   -- Interrupt control register 1
    RA8875_INTC1 : constant uint8 := 16#F0#;
    RA8875_INTC1_KEY : constant uint8 := 16#10#;
    RA8875_INTC1_DMA : constant uint8 := 16#08#;
    RA8875_INTC1_TP : constant uint8 := 16#04#;
    RA8875_INTC1_BTE : constant uint8 := 16#02#;
-
+   --
+   -- Interrupt control register 2
    RA8875_INTC2 : constant uint8 := 16#F1#;
    RA8875_INTC2_KEY : constant uint8 := 16#10#;
    RA8875_INTC2_DMA : constant uint8 := 16#08#;
@@ -654,6 +706,9 @@ end record;
    procedure textMode(self : RA8875_record);
    procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
    procedure textSetCursor(self : RA8875_record; x : uint16; y : uint16);
+   procedure textSetCodePage(self : RA8875_record; page : uint8);
+   procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
+                              rotate : boolean; h_size : uint8; v_size : uint8);
    procedure textWrite(self : RA8875_record; str : string);
    --
    -- Graphics methods
@@ -663,13 +718,15 @@ end record;
                       h : uint16; color : R5G6B5_color; fill : boolean);
    procedure drawRndRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
                       h : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
+   procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
+                      h : uint16; color : R5G6B5_color);
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
    --
    -- Touch methods
    --
    procedure enableTouch(self : RA8875_record; state : boolean);
    function checkTouched(self : RA8875_record) return boolean;
-   function readTouch(self : RA8875_record; x : out uint16; y : out uint16) return boolean;
+   procedure readTouch(self : RA8875_record; x : out uint16; y : out uint16);
 --
 private
    type RA8875_record is tagged

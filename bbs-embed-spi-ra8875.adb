@@ -105,8 +105,8 @@ package body BBS.embed.SPI.RA8875 is
       vsync_nondisp : uint16;
       vsync_start : uint16;
    begin
-      Ada.Text_IO.Put_Line("Testing for presence of RA8875");
-      Ada.Text_IO.Put_Line("Value expected 117, actual " & integer'Image(integer(self.readReg(0))));
+--      Ada.Text_IO.Put_Line("Testing for presence of RA8875");
+--      Ada.Text_IO.Put_Line("Value expected 117, actual " & integer'Image(integer(self.readReg(0))));
       case size is
          when RA8875_480x272 =>
             self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
@@ -252,6 +252,27 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_F_CURYH, highByte(y));
    end;
    --
+   procedure textSetCodePage(self : RA8875_record; page : uint8) is
+      temp : uint8;
+   begin
+      self.writeCmd(RA8875_FNCR0);
+      temp := self.readData;
+      temp := (temp and 16#FC#) or (page and 16#03#);
+      self.writeData(temp);
+   end;
+   --
+   procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
+                              rotate : boolean; h_size : uint8; v_size : uint8) is
+      temp : uint8 := 0;
+   begin
+      temp := temp or (if (align) then RA8875_FNCR1_ALIGN else 0);
+      temp := temp or (if (transparent) then RA8875_FNCR1_TRANS else 0);
+      temp := temp or (if (rotate) then RA8875_FNCR1_ROT else 0);
+      temp := temp or ((h_size and 16#03#) * 16#04#);
+      temp := temp or (v_size and 16#03#);
+      self.writeReg(RA8875_FNCR1, temp);
+   end;
+   --
    procedure textWrite(self : RA8875_record; str : string) is
    begin
       self.writeCmd(RA8875_MRWC);
@@ -337,6 +358,31 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
+   procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
+                      h : uint16; color : R5G6B5_color) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x));
+      self.writeReg(RA8875_DLHSR1, highByte(x));
+      --
+      self.writeReg(RA8875_DLVSR0, lowByte(y));
+      self.writeReg(RA8875_DLVSR1, highByte(y));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(w));
+      self.writeReg(RA8875_DLHER1, highByte(w));
+      --
+      self.writeReg(RA8875_DLVER0, lowByte(h));
+      self.writeReg(RA8875_DLVER1, highByte(h));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      self.writeCmd(RA8875_DCR);
+      self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWLINE);
+      --
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
+   --
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8) is
       temp : uint8;
    begin
@@ -350,6 +396,7 @@ package body BBS.embed.SPI.RA8875 is
    --
    procedure enableTouch(self : RA8875_record; state : boolean) is
       adcClock : uint8;
+      temp : uint8;
    begin
       case self.width is
          when 480 =>
@@ -363,33 +410,40 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_TPCR0, RA8875_TPCR0_ENABLE or RA8875_TPCR0_WAIT_4096CLK or
                     RA8875_TPCR0_WAKEENABLE or adcClock);
          self.writeReg(RA8875_TPCR1, RA8875_TPCR1_AUTO or RA8875_TPCR1_DEBOUNCE);
+      self.writeCmd(RA8875_INTC1);
+      temp := self.readData;
+      temp := temp and RA8875_INTC1_TP;
+      self.writeData(temp);
       else
          self.writeReg(RA8875_TPCR0, RA8875_TPCR0_DISABLE);
+         self.writeCmd(RA8875_INTC1);
+         temp := self.readData;
+         temp := temp and not RA8875_INTC1_TP;
+         self.writeData(temp);
       end if;
    end;
    --
    function checkTouched(self : RA8875_record) return boolean is
-      xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
+      temp : uint8 := self.readReg(RA8875_INTC2);
    begin
-      if ((xy_lsb and RA8875_TPXYL_TOUCHED) = 0) then
-         return true;
-      else
+--      Ada.Text_IO.Put("INTC2 is ");
+--      Ada.Integer_Text_IO.Put(integer(temp), 6, 16);
+--      Ada.Text_IO.New_Line;
+      self.writeReg(RA8875_INTC2, RA8875_INTC2_TP);
+      if ((temp and RA8875_INTC2_TP) = 0) then
          return false;
+      else
+         return true;
       end if;
    end;
    --
-   function readTouch(self : RA8875_record; x : out uint16; y : out uint16) return boolean is
+   procedure readTouch(self : RA8875_record; x : out uint16; y : out uint16) is
       x_msb : uint8 := self.readReg(RA8875_TPXH);
       y_msb : uint8 := self.readReg(RA8875_TPYH);
       xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
    begin
       x := uint16(x_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_X_LSB);
       y := uint16(y_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_Y_LSB)/4;
-      if ((xy_lsb and RA8875_TPXYL_TOUCHED) = 0) then
-         return true;
-      else
-         return false;
-      end if;
    end;
 
 
