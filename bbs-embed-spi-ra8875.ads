@@ -710,6 +710,8 @@ end record;
    procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
                               rotate : boolean; h_size : uint8; v_size : uint8);
    procedure textWrite(self : RA8875_record; str : string);
+   procedure textSetArea(self : RA8875_record; x1 : uint16; y1 : uint16;
+                        x2 : uint16; y2 : uint16);
    --
    -- Graphics methods
    --
@@ -720,13 +722,21 @@ end record;
                       h : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
    procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
                       h : uint16; color : R5G6B5_color);
+   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                      color : R5G6B5_color; fill : boolean);
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
    --
    -- Touch methods
    --
    procedure enableTouch(self : RA8875_record; state : boolean);
    function checkTouched(self : RA8875_record) return boolean;
-   procedure readTouch(self : RA8875_record; x : out uint16; y : out uint16);
+   procedure readTouchRaw(self : RA8875_record; x : out uint16; y : out uint16);
+   procedure readTouchCal(self : RA8875_record; x : out uint16; y : out uint16);
+   procedure touchCalibrate(self : in out RA8875_record);
+   procedure setTouchCalibration(self : in out RA8875_record; top : uint16;
+                                 bottom : uint16; left : uint16; right : uint16);
+   procedure getTouchCalibration(self : RA8875_record; top : out uint16;
+                                 bottom : out uint16; left : out uint16; right : out uint16);
 --
 private
    type RA8875_record is tagged
@@ -736,6 +746,10 @@ private
          lcd_screen : BBS.embed.SPI.SPI_ptr;
          width : uint16;
          height : uint16;
+         cal_top : uint16;
+         cal_bot : uint16;
+         cal_left : uint16;
+         cal_right : uint16;
       end record;
    --
    -- Constants for pin outputs

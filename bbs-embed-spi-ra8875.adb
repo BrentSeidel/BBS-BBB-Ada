@@ -105,8 +105,6 @@ package body BBS.embed.SPI.RA8875 is
       vsync_nondisp : uint16;
       vsync_start : uint16;
    begin
---      Ada.Text_IO.Put_Line("Testing for presence of RA8875");
---      Ada.Text_IO.Put_Line("Value expected 117, actual " & integer'Image(integer(self.readReg(0))));
       case size is
          when RA8875_480x272 =>
             self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
@@ -146,6 +144,10 @@ package body BBS.embed.SPI.RA8875 is
             Ada.Text_IO.Put_Line("RA8875 unknown LCD size.");
             return;
       end case;
+      self.cal_top := 0;
+      self.cal_bot := self.height;
+      self.cal_left := 0;
+      self.cal_right := self.width;
       --
       self.writeReg(RA8875_PCSR, pixclk);
       delay 0.001;
@@ -281,6 +283,20 @@ package body BBS.embed.SPI.RA8875 is
          delay 0.001;
       end loop;
    end;
+   --
+   procedure textSetArea(self : RA8875_record; x1 : uint16; y1 : uint16;
+                         x2 : uint16; y2 : uint16) is
+   begin
+      self.writeReg(RA8875_HSAW0, lowByte(x1));
+      self.writeReg(RA8875_HSAW1, highByte(x1));
+      self.writeReg(RA8875_VSAW0, lowByte(y1));
+      self.writeReg(RA8875_VSAW1, highByte(y1));
+      --
+      self.writeReg(RA8875_HEAW0, lowByte(x2));
+      self.writeReg(RA8875_HEAW1, highByte(x2));
+      self.writeReg(RA8875_VEAW0, lowByte(y2));
+      self.writeReg(RA8875_VEAW1, highByte(y2));
+   end;
    ---------------------------------------------------------------------------
    -- Graphics items
    --
@@ -319,7 +335,6 @@ package body BBS.embed.SPI.RA8875 is
       else
          self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWSQUARE);
       end if;
-      --
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
@@ -354,7 +369,6 @@ package body BBS.embed.SPI.RA8875 is
       else
          self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR);
       end if;
-      --
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
@@ -381,6 +395,30 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWLINE);
       --
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
+   --
+   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                        color : R5G6B5_color; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DCHR0, lowByte(x));
+      self.writeReg(RA8875_DCHR1, highByte(x));
+      --
+      self.writeReg(RA8875_DCHV0, lowByte(y));
+      self.writeReg(RA8875_DCHV1, highByte(y));
+      --
+      self.writeReg(RA8875_DCRR, lowByte(rad));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      self.writeCmd(RA8875_DCR);
+      if (fill) then
+         self.writeReg(RA8875_DCR, RA8875_DCR_CIRCLE_START or RA8875_DCR_FILL);
+      else
+         self.writeReg(RA8875_DCR, RA8875_DCR_CIRCLE_START);
+      end if;
+      self.waitPoll(RA8875_DCR, RA8875_DCR_CIRCLE_STATUS);
    end;
    --
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8) is
@@ -426,9 +464,6 @@ package body BBS.embed.SPI.RA8875 is
    function checkTouched(self : RA8875_record) return boolean is
       temp : uint8 := self.readReg(RA8875_INTC2);
    begin
---      Ada.Text_IO.Put("INTC2 is ");
---      Ada.Integer_Text_IO.Put(integer(temp), 6, 16);
---      Ada.Text_IO.New_Line;
       self.writeReg(RA8875_INTC2, RA8875_INTC2_TP);
       if ((temp and RA8875_INTC2_TP) = 0) then
          return false;
@@ -437,7 +472,7 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
-   procedure readTouch(self : RA8875_record; x : out uint16; y : out uint16) is
+   procedure readTouchRaw(self : RA8875_record; x : out uint16; y : out uint16) is
       x_msb : uint8 := self.readReg(RA8875_TPXH);
       y_msb : uint8 := self.readReg(RA8875_TPYH);
       xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
@@ -445,7 +480,227 @@ package body BBS.embed.SPI.RA8875 is
       x := uint16(x_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_X_LSB);
       y := uint16(y_msb)*4 + uint16(xy_lsb and RA8875_TPXYL_Y_LSB)/4;
    end;
-
+   --
+   procedure readTouchCal(self : RA8875_record; x : out uint16; y : out uint16) is
+      x_msb : uint8 := self.readReg(RA8875_TPXH);
+      y_msb : uint8 := self.readReg(RA8875_TPYH);
+      xy_lsb : uint8 := self.readReg(RA8875_TPXYL);
+      temp_x : float;
+      temp_y : float;
+   begin
+      temp_x := float(x_msb)*4.0 + float(xy_lsb and RA8875_TPXYL_X_LSB);
+      temp_y := float(y_msb)*4.0 + float((xy_lsb and RA8875_TPXYL_Y_LSB)/4);
+      temp_x := (temp_x - float(self.cal_left))*float(self.width)/float(self.cal_right - self.cal_left);
+      temp_y := (temp_y - float(self.cal_top))*float(self.height)/float(self.cal_bot - self.cal_top);
+      if (temp_x < 0.0) then
+         x := 0;
+      elsif (temp_x > float(self.width)) then
+         x := self.width;
+      else
+         x := uint16(temp_x);
+      end if;
+      if (temp_y < 0.0) then
+         y := 0;
+      elsif (temp_y > float(self.height)) then
+         y := self.height;
+      else
+         y := uint16(temp_y);
+      end if;
+   end;
+   --
+   procedure setTouchCalibration(self : in out RA8875_record; top : uint16;
+                                 bottom : uint16; left : uint16; right : uint16) is
+   begin
+      self.cal_top := top;
+      self.cal_bot := bottom;
+      self.cal_left := left;
+      self.cal_right := right;
+   end;
+   --
+   procedure getTouchCalibration(self : RA8875_record; top : out uint16;
+                                 bottom : out uint16; left : out uint16; right : out uint16) is
+   begin
+      top := self.cal_top;
+      bottom := self.cal_bot;
+      left := self.cal_left;
+      right := self.cal_right;
+   end;
+   --
+   procedure touchCalibrate(self : in out RA8875_record) is
+      temp_x : uint16;
+      temp_y : uint16;
+      found_top : uint16 := 65535;
+      found_bot : uint16 := 0;
+      found_left : uint16 := 65535;
+      found_right : uint16 := 0;
+      count : integer := 0;
+      samples : constant integer := 16;
+      off_count : constant integer := 100;
+   begin
+      self.cal_top := 0;
+      self.cal_bot := self.height;
+      self.cal_left := 0;
+      self.cal_right := self.width;
+      self.graphicsMode;
+      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.enableTouch(true);
+      -- Find top edge
+      self.textMode;
+      self.textSetArea(0, 0, 799, 479);
+      self.textSetAttribute(true, false, false, 0, 0);
+      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
+      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textSetAttribute(true, false, false, 3, 3);
+      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.textWrite("Touch Top Edge");
+      self.graphicsMode;
+      self.drawRect(0, 0, self.width - 1, 10, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      loop
+         if (self.checkTouched) then
+            count := count + 1;
+            self.readTouchRaw(temp_x, temp_y);
+            if (temp_y < found_top) then
+               found_top := temp_y;
+               end if;
+            Ada.Text_IO.Put_Line("Found top touch " & integer'Image(integer(temp_x)) &
+                                   integer'Image(integer(temp_y)));
+         else
+            count := 0;
+         end if;
+         exit when count >= samples;
+      end loop;
+      Ada.Text_IO.Put_Line("Top calibration value is " & integer'Image(integer(found_top)));
+      count := 0;
+      loop
+         if (not self.checkTouched) then
+            count := count + 1;
+         else
+            count := 0;
+         end if;
+         exit when count > off_count;
+      end loop;
+      delay 0.5;
+      -- Find bottom edge
+      self.graphicsMode;
+      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.textMode;
+      self.textSetAttribute(true, false, false, 0, 0);
+      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
+      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textSetAttribute(true, false, false, 3, 3);
+      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.textWrite("Touch Bottom Edge");
+      self.graphicsMode;
+      self.drawRect(0, self.height - 10, self.width - 1, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      count := 0;
+      loop
+         if (self.checkTouched) then
+            count := count + 1;
+            self.readTouchRaw(temp_x, temp_y);
+            if (temp_y > found_bot) then
+               found_bot := temp_y;
+            end if;
+            Ada.Text_IO.Put_Line("Found bottom touch " & integer'Image(integer(temp_x)) &
+                                   integer'Image(integer(temp_y)));
+         else
+            count := 0;
+         end if;
+         exit when count >= samples;
+      end loop;
+      Ada.Text_IO.Put_Line("Bottom calibration value is " & integer'Image(integer(found_bot)));
+      count := 0;
+      loop
+         if (not self.checkTouched) then
+            count := count + 1;
+         else
+            count := 0;
+         end if;
+         exit when count > off_count;
+      end loop;
+      delay 0.5;
+      -- Find left edge
+      self.graphicsMode;
+      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.textMode;
+      self.textSetAttribute(true, false, false, 0, 0);
+      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
+      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textSetAttribute(true, false, false, 3, 3);
+      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.textWrite("Touch Left Edge");
+      self.graphicsMode;
+      self.drawRect(0, 0, 10, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      count := 0;
+      loop
+         if (self.checkTouched) then
+            count := count + 1;
+            self.readTouchRaw(temp_x, temp_y);
+            if (temp_x < found_left) then
+               found_left := temp_x;
+            end if;
+            Ada.Text_IO.Put_Line("Found left value " & integer'Image(integer(temp_x)));
+         else
+            count := 0;
+         end if;
+         exit when count >= samples;
+      end loop;
+      Ada.Text_IO.Put_Line("Left calibration value is " & integer'Image(integer(found_left)));
+      count := 0;
+      loop
+         if (not self.checkTouched) then
+            count := count + 1;
+         else
+            count := 0;
+         end if;
+         exit when count > off_count;
+      end loop;
+      delay 0.5;
+      -- Find right edge
+      self.graphicsMode;
+      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.textMode;
+      self.textSetAttribute(true, false, false, 0, 0);
+      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
+      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textSetAttribute(true, false, false, 3, 3);
+      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.textWrite("Touch Right Edge");
+      self.graphicsMode;
+      self.drawRect(self.width - 10, 0, self.width - 1, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      count := 0;
+      loop
+         if (self.checkTouched) then
+            count := count + 1;
+            self.readTouchRaw(temp_x, temp_y);
+            if (temp_x > found_right) then
+               found_right := temp_x;
+            end if;
+            Ada.Text_IO.Put_Line("Found right value " & integer'Image(integer(temp_x)));
+         else
+            count := 0;
+         end if;
+         exit when count >= samples;
+      end loop;
+      Ada.Text_IO.Put_Line("Right calibration value is " & integer'Image(integer(found_Right)));
+      count := 0;
+      loop
+         if (not self.checkTouched) then
+            count := count + 1;
+         else
+            count := 0;
+         end if;
+         exit when count > off_count;
+      end loop;
+      delay 0.5;
+      Ada.Text_IO.Put_Line("Top calibration : " & integer'Image(integer(found_top)));
+      Ada.Text_IO.Put_Line("Bottom calibration : " & integer'Image(integer(found_bot)));
+      Ada.Text_IO.Put_Line("Left calibration : " & integer'Image(integer(found_left)));
+      Ada.Text_IO.Put_Line("Right calibration : " & integer'Image(integer(found_right)));
+      self.cal_top := found_top;
+      self.cal_bot := found_bot;
+      self.cal_left := found_left;
+      self.cal_right := found_right;
+   end;
 
 
 end;
