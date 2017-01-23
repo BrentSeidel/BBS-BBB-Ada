@@ -135,3 +135,29 @@ of the period (or rate) and the time high (or duty cycle) of the PWM output.
 This is a simple object oriented interface to the analog inputs.  There are seven
 available and the pins that they are on are fixed purpose.  The A/D converted is
 a 12 bit converter, so the result should be in the range 0..4095.
+
+## SPI
+A basic API for the SPI interface is provided.  It does 8 bit reads and writes
+using the default settings from Linux.  It has been tested on a Raspberry PI 3
+and works well enough to interface with the AdaFruit RA8875 breakout board so
+more features have not yet been developed.
+
+### RA8875 LCD driver
+This provides an interface to the RA8875 LCD driver and touchscreen interface.
+It should be considered to be experimental.  Bugs are to be expected and full
+functionality is not provided.  Drawing of most built in geometric shapes is
+supported.  Text drawing is supported, but occasionally gets garbled.  I am
+trying to figure this out.  Touch is supported with calibration, but to be
+really useful will need filtering and debouncing.  If I get ambitious, I may
+build a widget set on top of this.
+
+**Note** When using the AdaFruit breakout board with the Raspberry PI 3 (and
+probably any other 3V system, the power supply needs to be 5V.  The RA8875 itself
+seems to work at 3V, but the backlight driver needs 5V.  This was a pain to debug.
+
+**Note** The RA8875 does not tri-state the MISO line.  Thus it cannot share a SPI
+interface with other devices without an additional tri-state device.
+
+#### RA8875 Widgets
+This is currently only a figment of my imagination.  I hope to eventually provide
+some basic widgets for a touch interface.

@@ -12,46 +12,82 @@ package body BBS.embed.SPI.RA8875 is
    procedure setup(self : in out RA8875_record; CS : BBS.embed.GPIO.GPIO; screen : SPI_ptr) is
    begin
       self.cs_gpio := CS;
+      self.reset_gpio := null;
       self.lcd_screen := screen;
-      self.cs_gpio.set(cs_high);
-      --
-      -- Add code to toggle rst_gpio
-      --
+      self.cs_gpio.set(gpio_high);
+   end;
+   --
+   procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; RST : GPIO.GPIO; screen : SPI_ptr) is
+   begin
+      self.cs_gpio := CS;
+      self.reset_gpio := null;
+      self.lcd_screen := screen;
+      self.cs_gpio.set(gpio_high);
+      self.reset_gpio.set(gpio_high);
+      delay 0.1;
+      self.reset_gpio.set(gpio_low);
+      delay 0.1;
+      self.reset_gpio.set(gpio_high);
+      delay 0.01;
+   end;
+   --
+   procedure hwReset(self : in out RA8875_record) is
+   begin
+      if (self.reset_gpio /= null) then
+         self.reset_gpio.set(gpio_low);
+         delay 0.1;
+         self.reset_gpio.set(gpio_high);
+         delay 0.01;
+      end if;
+   end;
+   --
+   procedure swReset(self : in out RA8875_record) is
+      temp : uint8;
+   begin
+      self.writeCmd(RA8875_PWRR);
+      temp := self.readData;
+      temp := temp or RA8875_PWRR_SOFTRESET;
+      self.writeData(temp);
+      delay 0.1;
+      self.writeCmd(RA8875_PWRR);
+      temp := self.readData;
+      temp := temp and not RA8875_PWRR_SOFTRESET;
+      self.writeData(temp);
    end;
    --
    procedure writeCmd(self : RA8875_record; value : uint8) is
    begin
-      self.cs_gpio.set(cs_low);
+      self.cs_gpio.set(gpio_low);
       self.lcd_screen.set(RA8875_CMDWRITE);
       self.lcd_screen.set(value);
-      self.cs_gpio.set(cs_high);
+      self.cs_gpio.set(gpio_high);
    end;
    --
    procedure writeData(self : RA8875_record; value : uint8) is
    begin
-      self.cs_gpio.set(cs_low);
+      self.cs_gpio.set(gpio_low);
       self.lcd_screen.set(RA8875_DATAWRITE);
       self.lcd_screen.set(value);
-      self.cs_gpio.set(cs_high);
+      self.cs_gpio.set(gpio_high);
    end;
    --
    function readStatus(self : RA8875_record) return uint8 is
       temp : uint8;
    begin
-      self.cs_gpio.set(cs_low);
+      self.cs_gpio.set(gpio_low);
       self.lcd_screen.set(RA8875_CMDREAD);
       temp := self.lcd_screen.get;
-      self.cs_gpio.set(cs_high);
+      self.cs_gpio.set(gpio_high);
       return temp;
    end;
    --
    function readData(self : RA8875_record) return uint8 is
       temp : uint8;
    begin
-      self.cs_gpio.set(cs_low);
+      self.cs_gpio.set(gpio_low);
       self.lcd_screen.set(RA8875_DATAREAD);
       temp := self.lcd_screen.get;
-      self.cs_gpio.set(cs_high);
+      self.cs_gpio.set(gpio_high);
       return temp;
    end;
    --
@@ -180,7 +216,7 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.5;
    end;
    --
-   procedure set_display(self : RA8875_record; state : boolean) is
+   procedure setDisplay(self : RA8875_record; state : boolean) is
    begin
       if (state) then
          self.writeReg(RA8875_PWRR, RA8875_PWRR_NORMAL or RA8875_PWRR_DISPON);
@@ -189,7 +225,7 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
-   procedure set_sleep(self : RA8875_record; state : boolean) is
+   procedure setSleep(self : RA8875_record; state : boolean) is
    begin
       if (state) then
          self.writeReg(RA8875_PWRR, RA8875_PWRR_DISPOFF or RA8875_PWRR_SLEEP);
@@ -205,6 +241,28 @@ package body BBS.embed.SPI.RA8875 is
       else
          self.writeReg(RA8875_GPIOX, 0);
       end if;
+   end;
+   --
+   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
+                             left : uint16; right : uint16) is
+   begin
+      self.writeReg(RA8875_HSAW0, lowByte(left));
+      self.writeReg(RA8875_HSAW1, highByte(left));
+      --
+      self.writeReg(RA8875_VSAW0, lowByte(top));
+      self.writeReg(RA8875_VSAW1, highByte(top));
+      --
+      self.writeReg(RA8875_HEAW0, lowByte(right));
+      self.writeReg(RA8875_HEAW1, highByte(right));
+      --
+      self.writeReg(RA8875_VEAW0, lowByte(bottom));
+      self.writeReg(RA8875_VEAW1, highByte(bottom));
+   end;
+   --
+   procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
+                            vdir : uint8) is
+   begin
+      self.writeReg(RA8875_DPCR, layer or hdir or vdir);
    end;
    ----------------------------------------------------------------------------
    -- Text items
@@ -254,12 +312,12 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_F_CURYH, highByte(y));
    end;
    --
-   procedure textSetCodePage(self : RA8875_record; page : uint8) is
+   procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page) is
       temp : uint8;
    begin
       self.writeCmd(RA8875_FNCR0);
       temp := self.readData;
-      temp := (temp and 16#FC#) or (page and 16#03#);
+      temp := (temp and 16#FC#) or uint8(RA8875_FNCR0_Code_Page'pos(page));
       self.writeData(temp);
    end;
    --
@@ -275,6 +333,20 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_FNCR1, temp);
    end;
    --
+   procedure textSetLineHeight(self : RA8875_record; size : uint8) is
+   begin
+      self.writeReg(RA8875_FLDR, size);
+   end;
+   --
+   procedure textSetFontWidth(self : RA8875_record; size : uint8) is
+      temp : uint8;
+   begin
+      self.writeCmd(RA8875_FWTSR);
+      temp := self.readData;
+      temp := (temp and 16#FC#) or (size and 16#3F#);
+      self.writeData(temp);
+   end;
+   --
    procedure textWrite(self : RA8875_record; str : string) is
    begin
       self.writeCmd(RA8875_MRWC);
@@ -282,20 +354,6 @@ package body BBS.embed.SPI.RA8875 is
          self.writeData(uint8(character'pos(temp)));
          delay 0.001;
       end loop;
-   end;
-   --
-   procedure textSetArea(self : RA8875_record; x1 : uint16; y1 : uint16;
-                         x2 : uint16; y2 : uint16) is
-   begin
-      self.writeReg(RA8875_HSAW0, lowByte(x1));
-      self.writeReg(RA8875_HSAW1, highByte(x1));
-      self.writeReg(RA8875_VSAW0, lowByte(y1));
-      self.writeReg(RA8875_VSAW1, highByte(y1));
-      --
-      self.writeReg(RA8875_HEAW0, lowByte(x2));
-      self.writeReg(RA8875_HEAW1, highByte(x2));
-      self.writeReg(RA8875_VEAW0, lowByte(y2));
-      self.writeReg(RA8875_VEAW1, highByte(y2));
    end;
    ---------------------------------------------------------------------------
    -- Graphics items
@@ -369,7 +427,7 @@ package body BBS.embed.SPI.RA8875 is
       else
          self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR);
       end if;
-      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
    end;
    --
    procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
@@ -419,6 +477,68 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_DCR, RA8875_DCR_CIRCLE_START);
       end if;
       self.waitPoll(RA8875_DCR, RA8875_DCR_CIRCLE_STATUS);
+   end;
+   --
+   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                          color : R5G6B5_color; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      --
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
+      --
+      self.writeReg(RA8875_DTPH0, lowByte(x2));
+      self.writeReg(RA8875_DTPH1, highByte(x2));
+      --
+      self.writeReg(RA8875_DTPV0, lowByte(y2));
+      self.writeReg(RA8875_DTPV1, highByte(y2));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(x3));
+      self.writeReg(RA8875_DLHER1, highByte(x3));
+      --
+      self.writeReg(RA8875_DLVER0, lowByte(y3));
+      self.writeReg(RA8875_DLVER1, highByte(y3));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      if (fill) then
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWTRIANGLE
+                      or RA8875_DCR_FILL);
+      else
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWTRIANGLE);
+      end if;
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
+   --
+   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                          vRad : uint16; color : R5G6B5_color; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DEHR0, lowByte(x));
+      self.writeReg(RA8875_DEHR1, highByte(x));
+      --
+      self.writeReg(RA8875_DEVR0, lowByte(y));
+      self.writeReg(RA8875_DEVR1, highByte(y));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(hRad));
+      self.writeReg(RA8875_ELL_A1, highByte(hRad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(vRad));
+      self.writeReg(RA8875_ELL_B1, highByte(vRad));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_FILL);
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START);
+      end if;
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
    end;
    --
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8) is
@@ -546,7 +666,7 @@ package body BBS.embed.SPI.RA8875 is
       self.enableTouch(true);
       -- Find top edge
       self.textMode;
-      self.textSetArea(0, 0, 799, 479);
+      self.screenActive;
       self.textSetAttribute(true, false, false, 0, 0);
       self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
       self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
@@ -701,6 +821,43 @@ package body BBS.embed.SPI.RA8875 is
       self.cal_left := found_left;
       self.cal_right := found_right;
    end;
+   ----------------------------------------------------------------------------
+   -- Miscellaneous items
+   --
+   procedure scroll(self : RA8875_record; hStart : uint16; vStart : uint16;
+                    hEnd : uint16; vEnd : uint16; hOffset : uint16; vOffset : uint16) is
+   begin
+      self.writeReg(RA8875_HSSW0, lowByte(hStart));
+      self.writeReg(RA8875_HSSW1, highByte(hStart));
+      self.writeReg(RA8875_VSSW0, lowByte(vStart));
+      self.writeReg(RA8875_VSSW1, highByte(vStart));
+      --
+      self.writeReg(RA8875_HEAW0, lowByte(hEnd));
+      self.writeReg(RA8875_HEAW1, highByte(hEnd));
+      self.writeReg(RA8875_VEAW0, lowByte(vEnd));
+      self.writeReg(RA8875_VEAW1, highByte(vEnd));
+      --
+      if (hOffset /= 0) then
+         self.writeReg(RA8875_HOFS0, lowByte(hOffset));
+         self.writeReg(RA8875_HOFS1, highByte(hOffset));
+      end if;
+      if (vOffset /= 0) then
+         self.writeReg(RA8875_VOFS0, lowByte(vOffset));
+         self.writeReg(RA8875_VOFS1, highByte(vOffset));
+      end if;
+   end;
+   --
+   procedure fillScreen(self : RA8875_record; color : R5G6B5_color) is
+   begin
+      self.drawRect(0, 0, self.width - 1, self.height - 1, color, true);
+   end;
+   --
+   procedure screenActive(self : RA8875_record) is
+   begin
+      self.setActiveWindow(0, self.height - 1, 0, self.width - 1);
+   end;
+   --
+
 
 
 end;

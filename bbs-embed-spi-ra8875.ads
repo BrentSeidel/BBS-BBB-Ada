@@ -2,6 +2,7 @@ with Ada.Text_IO;
 with Ada.Integer_Text_IO;
 --
 with BBS.embed.GPIO;
+use type BBS.embed.GPIO.GPIO;
 with BBS.embed.SPI;
 package BBS.embed.SPI.RA8875 is
    --
@@ -12,6 +13,10 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Enumeration for supported screen sizes
    --
+   -- Sizes supported by the RA8875 are 320x240, 320x480, 480x272, 640x480,
+   -- and 800x480.
+   -- Right now I only have an 800x480 panel for testing so nothing is tested
+   -- for other sizes.
    type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
    --
    -- Constants for RA8875 registers and bits
@@ -100,15 +105,20 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Display configuration register
    RA8875_DPCR : constant uint8 := 16#20#;
+   RA8875_DPCR_1LAYER : constant uint8 := 16#00#;
+   RA8875_DPCR_2LAYER : constant uint8 := 16#80#;
+   RA8875_DPCR_HDIR0 : constant uint8 := 16#00#;
+   RA8875_DPCR_HDIR1 : constant uint8 := 16#08#;
+   RA8875_DPCR_VDIR0 : constant uint8 := 16#00#;
+   RA8875_DPCR_VDIR1 : constant uint8 := 16#04#;
    --
    -- Font control register 0
    RA8875_FNCR0 : constant uint8 := 16#21#;
    RA8875_FNCR0_CGRAM : constant uint8 := 16#80#;
    RA8875_FNCR0_EXTCR : constant uint8 := 16#20#;
-   RA8875_FNCR0_ISO8859_4 : constant uint8 := 16#03#;
-   RA8875_FNCR0_ISO8859_3 : constant uint8 := 16#02#;
-   RA8875_FNCR0_ISO8859_2 : constant uint8 := 16#01#;
-   RA8875_FNCR0_ISO8859_1 : constant uint8 := 16#00#;
+   type RA8875_FNCR0_Code_Page is
+     (RA8875_FNCR0_ISO8859_1, RA8875_FNCR0_ISO8859_2,
+      RA8875_FNCR0_ISO8859_3, RA8875_FNCR0_ISO8859_4);
    --
    -- Font control register 1
    RA8875_FNCR1 : constant uint8 := 16#22#;
@@ -678,11 +688,32 @@ end record;
    RA8875_YELLOW : constant R5G6B5_color := (R => 31, G => 63, B => 0);
    RA8875_WHITE : constant R5G6B5_color := (R => 31, G => 63, B => 31);
    --
+   -- Colors (RGB332)
+   --
+   type R3G3B2_color is record
+      R : uint8 range 0 .. 7;
+      G : uint8 range 0 .. 7;
+      B : uint8 range 0 .. 3;
+   end record;
+--
+-- To match the 8 bit definition, add the following:
+--
+--     with pack, size => 8;
+--   for R3G3B2_color use
+--      record
+--         B at 0 range 0 .. 1;
+--         G at 0 range 2 .. 4;
+--         R at 0 range 5 .. 7;
+--      end record;
+   --
    function RA8875_new return RA8875_ptr;
    --
    -- Low level methods
    --
    procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; screen : SPI_ptr);
+   procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; RST : GPIO.GPIO; screen : SPI_ptr);
+   procedure hwReset(self : in out RA8875_record);
+   procedure swReset(self : in out RA8875_record);
    procedure writeCmd(self : RA8875_record; value : uint8);
    procedure writeData(self : RA8875_record; value : uint8);
    function readStatus(self : RA8875_record) return uint8;
@@ -693,25 +724,29 @@ end record;
    -- Configuration methods
    --
    procedure configure(self : in out RA8875_record; size : RA8875_sizes);
-   procedure set_sleep(self : RA8875_record; state : boolean);
-   procedure set_display(self : RA8875_record; state : boolean);
+   procedure setSleep(self : RA8875_record; state : boolean);
+   procedure setDisplay(self : RA8875_record; state : boolean);
    procedure GPIOX(self : RA8875_record; state : boolean);
    procedure PWM1config(self : RA8875_record; state : boolean; clock : uint8);
    procedure PWM2config(self : RA8875_record; state : boolean; clock : uint8);
    procedure PWM1out(self : RA8875_record; value : uint8);
    procedure PWM2out(self : RA8875_record; value : uint8);
+   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
+                             left : uint16; right : uint16);
+   procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
+                            vdir : uint8);
    --
    -- Text methods
    --
    procedure textMode(self : RA8875_record);
    procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
    procedure textSetCursor(self : RA8875_record; x : uint16; y : uint16);
-   procedure textSetCodePage(self : RA8875_record; page : uint8);
+   procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
    procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
                               rotate : boolean; h_size : uint8; v_size : uint8);
+   procedure textSetLineHeight(self : RA8875_record; size : uint8);
+   procedure textSetFontWidth(self : RA8875_record; size : uint8);
    procedure textWrite(self : RA8875_record; str : string);
-   procedure textSetArea(self : RA8875_record; x1 : uint16; y1 : uint16;
-                        x2 : uint16; y2 : uint16);
    --
    -- Graphics methods
    --
@@ -723,7 +758,12 @@ end record;
    procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
                       h : uint16; color : R5G6B5_color);
    procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
-                      color : R5G6B5_color; fill : boolean);
+                        color : R5G6B5_color; fill : boolean);
+   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                          color : R5G6B5_color; fill : boolean);
+   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                        vRad : uint16; color : R5G6B5_color; fill : boolean);
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
    --
    -- Touch methods
@@ -737,6 +777,14 @@ end record;
                                  bottom : uint16; left : uint16; right : uint16);
    procedure getTouchCalibration(self : RA8875_record; top : out uint16;
                                  bottom : out uint16; left : out uint16; right : out uint16);
+   --
+   -- Miscellaneous methods
+   --
+   procedure scroll(self : RA8875_record; hStart : uint16; vStart : uint16;
+                    hEnd : uint16; vEnd : uint16; hOffset : uint16; vOffset : uint16);
+   procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
+   procedure screenActive(self : RA8875_record);
+
 --
 private
    type RA8875_record is tagged
@@ -754,8 +802,8 @@ private
    --
    -- Constants for pin outputs
    --
-   cs_high : constant bit := 0;
-   cs_low : constant bit := 1;
+   gpio_high : constant bit := 0;
+   gpio_low : constant bit := 1;
    --
    -- Constants for RA8875 transaction types
    --
