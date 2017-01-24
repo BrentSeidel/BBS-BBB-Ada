@@ -9,6 +9,12 @@ package body BBS.embed.SPI.RA8875 is
    -------------------------------------------------------------------------------
    -- Routines for RA8875 control
    --
+   -- Setup the RA8875 object.  Note that the RA8875 has a hardware reset line.
+   -- This line is optional.  Setup functions are provided for configurations
+   -- with and without hardware reset.
+   --
+   -- Setup without hardware reset
+   --
    procedure setup(self : in out RA8875_record; CS : BBS.embed.GPIO.GPIO; screen : SPI_ptr) is
    begin
       self.cs_gpio := CS;
@@ -16,6 +22,8 @@ package body BBS.embed.SPI.RA8875 is
       self.lcd_screen := screen;
       self.cs_gpio.set(gpio_high);
    end;
+   --
+   -- Setup with hardware reset
    --
    procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; RST : GPIO.GPIO; screen : SPI_ptr) is
    begin
@@ -31,6 +39,9 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.01;
    end;
    --
+   -- Toggle the hardware reset line if it has been configured, otherwise do
+   -- nothing.
+   --
    procedure hwReset(self : in out RA8875_record) is
    begin
       if (self.reset_gpio /= null) then
@@ -40,6 +51,8 @@ package body BBS.embed.SPI.RA8875 is
          delay 0.01;
       end if;
    end;
+   --
+   -- Send commands to perform a software reset.
    --
    procedure swReset(self : in out RA8875_record) is
       temp : uint8;
@@ -54,6 +67,9 @@ package body BBS.embed.SPI.RA8875 is
       temp := temp and not RA8875_PWRR_SOFTRESET;
       self.writeData(temp);
    end;
+   --
+   -- The following set of routines are the low level interface to read from and
+   -- write to the RA8875.
    --
    procedure writeCmd(self : RA8875_record; value : uint8) is
    begin
@@ -103,6 +119,9 @@ package body BBS.embed.SPI.RA8875 is
       return self.readData;
    end;
    --
+   -- Configure PWM unit 1.  The AdaFruit breakout board uses this to control the
+   -- backlight
+   --
    procedure PWM1config(self : RA8875_record; state : boolean; clock : uint8) is
    begin
       if (state) then
@@ -112,6 +131,7 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
+   -- Configure PWM unit 2.
    procedure PWM2config(self : RA8875_record; state : boolean; clock : uint8) is
    begin
       if (state) then
@@ -121,15 +141,21 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
+   -- Set PWM unit 1 output value.  On the AdaFruit breakout board, this sets the
+   -- brightness of the backlight.
+   --
    procedure PWM1out(self : RA8875_record; value : uint8) is
    begin
       self.writeReg(RA8875_P1DCR, value);
    end;
    --
+   -- Set the PWM unit 2 output value.
    procedure PWM2out(self : RA8875_record; value : uint8) is
    begin
       self.writeReg(RA8875_P2DCR, value);
    end;
+   --
+   -- Configure the basic RA8875 settings.
    --
    procedure configure(self : in out RA8875_record; size : RA8875_sizes) is
       pixclk : uint8;
@@ -216,6 +242,8 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.5;
    end;
    --
+   -- Set the display on or off
+   --
    procedure setDisplay(self : RA8875_record; state : boolean) is
    begin
       if (state) then
@@ -224,6 +252,8 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_PWRR, RA8875_PWRR_NORMAL or RA8875_PWRR_DISPOFF);
       end if;
    end;
+   --
+   -- Set the sleep mode of the display
    --
    procedure setSleep(self : RA8875_record; state : boolean) is
    begin
@@ -234,6 +264,7 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
+   -- Set the state of the GPIOX pin.  This is used by the AdaFruit breakout board.
    procedure GPIOX(self : RA8875_record; state : boolean) is
    begin
       if (state) then
@@ -242,6 +273,8 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_GPIOX, 0);
       end if;
    end;
+   --
+   -- Set the bounds for the active window.
    --
    procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
                              left : uint16; right : uint16) is
@@ -258,6 +291,8 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_VEAW0, lowByte(bottom));
       self.writeReg(RA8875_VEAW1, highByte(bottom));
    end;
+   --
+   -- Set some of the display control parameters
    --
    procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
                             vdir : uint8) is
@@ -358,6 +393,9 @@ package body BBS.embed.SPI.RA8875 is
    ---------------------------------------------------------------------------
    -- Graphics items
    --
+   -- This section contains routines to access the graphics primitves offered
+   -- by the RA8875.
+   --
    procedure graphicsMode(self : RA8875_record) is
       temp : uint8;
    begin
@@ -367,20 +405,20 @@ package body BBS.embed.SPI.RA8875 is
       self.writeData(temp);
    end;
    --
-   procedure drawRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
-                      h : uint16; color : R5G6B5_color; fill : boolean) is
+   -- Draw a rectangle
+   --
+   procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16; color : R5G6B5_color; fill : boolean) is
    begin
-      self.writeReg(RA8875_DLHSR0, lowByte(x));
-      self.writeReg(RA8875_DLHSR1, highByte(x));
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
       --
-      self.writeReg(RA8875_DLVSR0, lowByte(y));
-      self.writeReg(RA8875_DLVSR1, highByte(y));
-      --
-      self.writeReg(RA8875_DLHER0, lowByte(w));
-      self.writeReg(RA8875_DLHER1, highByte(w));
-      --
-      self.writeReg(RA8875_DLVER0, lowByte(h));
-      self.writeReg(RA8875_DLVER1, highByte(h));
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
       --
       self.writeReg(RA8875_FGCR0, color.R);
       self.writeReg(RA8875_FGCR1, color.G);
@@ -396,20 +434,20 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
-   procedure drawRndRect(self : RA8875_record; x : uint16; y : uint16; w : uint16;
-                         h : uint16; rad : uint16; color : R5G6B5_color; fill : boolean) is
+   -- Draw a rectangle with rounded corners
+   --
+   procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                         y2 : uint16; rad : uint16; color : R5G6B5_color; fill : boolean) is
    begin
-      self.writeReg(RA8875_DLHSR0, lowByte(x));
-      self.writeReg(RA8875_DLHSR1, highByte(x));
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
       --
-      self.writeReg(RA8875_DLVSR0, lowByte(y));
-      self.writeReg(RA8875_DLVSR1, highByte(y));
-      --
-      self.writeReg(RA8875_DLHER0, lowByte(w));
-      self.writeReg(RA8875_DLHER1, highByte(w));
-      --
-      self.writeReg(RA8875_DLVER0, lowByte(h));
-      self.writeReg(RA8875_DLVER1, highByte(h));
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
       --
       self.writeReg(RA8875_ELL_A0, lowByte(rad));
       self.writeReg(RA8875_ELL_A1, highByte(rad));
@@ -430,20 +468,20 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
    end;
    --
-   procedure drawLine(self : RA8875_record; x : uint16; y : uint16; w : uint16;
-                      h : uint16; color : R5G6B5_color) is
+   -- Draw a line
+   --
+   procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16; color : R5G6B5_color) is
    begin
-      self.writeReg(RA8875_DLHSR0, lowByte(x));
-      self.writeReg(RA8875_DLHSR1, highByte(x));
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
       --
-      self.writeReg(RA8875_DLVSR0, lowByte(y));
-      self.writeReg(RA8875_DLVSR1, highByte(y));
-      --
-      self.writeReg(RA8875_DLHER0, lowByte(w));
-      self.writeReg(RA8875_DLHER1, highByte(w));
-      --
-      self.writeReg(RA8875_DLVER0, lowByte(h));
-      self.writeReg(RA8875_DLVER1, highByte(h));
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
       --
       self.writeReg(RA8875_FGCR0, color.R);
       self.writeReg(RA8875_FGCR1, color.G);
@@ -455,12 +493,13 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
+   -- Draw a circle
+   --
    procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
                         color : R5G6B5_color; fill : boolean) is
    begin
       self.writeReg(RA8875_DCHR0, lowByte(x));
       self.writeReg(RA8875_DCHR1, highByte(x));
-      --
       self.writeReg(RA8875_DCHV0, lowByte(y));
       self.writeReg(RA8875_DCHV1, highByte(y));
       --
@@ -478,6 +517,8 @@ package body BBS.embed.SPI.RA8875 is
       end if;
       self.waitPoll(RA8875_DCR, RA8875_DCR_CIRCLE_STATUS);
    end;
+   --
+   -- Draw a triangle
    --
    procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
                           x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
@@ -514,12 +555,13 @@ package body BBS.embed.SPI.RA8875 is
       self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
    end;
    --
+   -- Draw an ellipse
+   --
    procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
                           vRad : uint16; color : R5G6B5_color; fill : boolean) is
    begin
       self.writeReg(RA8875_DEHR0, lowByte(x));
       self.writeReg(RA8875_DEHR1, highByte(x));
-      --
       self.writeReg(RA8875_DEVR0, lowByte(y));
       self.writeReg(RA8875_DEVR1, highByte(y));
       --
@@ -537,6 +579,36 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_FILL);
       else
          self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START);
+      end if;
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
+   end;
+   --
+   -- Draw one of four segments of an ellipse
+   --
+   procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                          vRad : uint16; seg : RA8875_ELLIPSE_PART; color : R5G6B5_color; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DEHR0, lowByte(x));
+      self.writeReg(RA8875_DEHR1, highByte(x));
+      self.writeReg(RA8875_DEVR0, lowByte(y));
+      self.writeReg(RA8875_DEVR1, highByte(y));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(hRad));
+      self.writeReg(RA8875_ELL_A1, highByte(hRad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(vRad));
+      self.writeReg(RA8875_ELL_B1, highByte(vRad));
+      --
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_CURVE or
+                         RA8875_ELLIPSE_FILL or uint8(RA8875_ELLIPSE_PART'pos(seg)));
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_CURVE or
+                      uint8(RA8875_ELLIPSE_PART'pos(seg)));
       end if;
       self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
    end;
@@ -824,6 +896,8 @@ package body BBS.embed.SPI.RA8875 is
    ----------------------------------------------------------------------------
    -- Miscellaneous items
    --
+   -- Define a scroll area and move it
+   --
    procedure scroll(self : RA8875_record; hStart : uint16; vStart : uint16;
                     hEnd : uint16; vEnd : uint16; hOffset : uint16; vOffset : uint16) is
    begin
@@ -847,10 +921,14 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
+   -- Fill the screen with a solid color.
+   --
    procedure fillScreen(self : RA8875_record; color : R5G6B5_color) is
    begin
       self.drawRect(0, 0, self.width - 1, self.height - 1, color, true);
    end;
+   --
+   -- Set the active area to be the whole screen
    --
    procedure screenActive(self : RA8875_record) is
    begin
