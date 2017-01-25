@@ -405,7 +405,39 @@ package body BBS.embed.SPI.RA8875 is
       self.writeData(temp);
    end;
    --
+   -- Set color for drawing
+   --
+   procedure drawColor(self : RA8875_record; color : R5G6B5_color) is
+      begin
+      self.writeReg(RA8875_FGCR0, color.R);
+      self.writeReg(RA8875_FGCR1, color.G);
+      self.writeReg(RA8875_FGCR2, color.B);
+   end;
+   --
    -- Draw a rectangle
+   --
+   procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
+      --
+      self.writeCmd(RA8875_DCR);
+      if (fill) then
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWSQUARE
+                      or RA8875_DCR_FILL);
+      else
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWSQUARE);
+      end if;
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
    --
    procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                       y2 : uint16; color : R5G6B5_color; fill : boolean) is
@@ -435,6 +467,34 @@ package body BBS.embed.SPI.RA8875 is
    end;
    --
    -- Draw a rectangle with rounded corners
+   --
+   procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                         y2 : uint16; rad : uint16; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(rad));
+      self.writeReg(RA8875_ELL_A1, highByte(rad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(rad));
+      self.writeReg(RA8875_ELL_B1, highByte(rad));
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR
+                      or RA8875_ELLIPSE_FILL);
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_SQR);
+      end if;
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
+   end;
    --
    procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                          y2 : uint16; rad : uint16; color : R5G6B5_color; fill : boolean) is
@@ -471,6 +531,25 @@ package body BBS.embed.SPI.RA8875 is
    -- Draw a line
    --
    procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(x2));
+      self.writeReg(RA8875_DLHER1, highByte(x2));
+      self.writeReg(RA8875_DLVER0, lowByte(y2));
+      self.writeReg(RA8875_DLVER1, highByte(y2));
+      --
+      self.writeCmd(RA8875_DCR);
+      self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWLINE);
+      --
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
+   --
+   procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                       y2 : uint16; color : R5G6B5_color) is
    begin
       self.writeReg(RA8875_DLHSR0, lowByte(x1));
@@ -496,6 +575,25 @@ package body BBS.embed.SPI.RA8875 is
    -- Draw a circle
    --
    procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                        fill : boolean) is
+   begin
+      self.writeReg(RA8875_DCHR0, lowByte(x));
+      self.writeReg(RA8875_DCHR1, highByte(x));
+      self.writeReg(RA8875_DCHV0, lowByte(y));
+      self.writeReg(RA8875_DCHV1, highByte(y));
+      --
+      self.writeReg(RA8875_DCRR, lowByte(rad));
+      --
+      self.writeCmd(RA8875_DCR);
+      if (fill) then
+         self.writeReg(RA8875_DCR, RA8875_DCR_CIRCLE_START or RA8875_DCR_FILL);
+      else
+         self.writeReg(RA8875_DCR, RA8875_DCR_CIRCLE_START);
+      end if;
+      self.waitPoll(RA8875_DCR, RA8875_DCR_CIRCLE_STATUS);
+   end;
+   --
+   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
                         color : R5G6B5_color; fill : boolean) is
    begin
       self.writeReg(RA8875_DCHR0, lowByte(x));
@@ -519,6 +617,37 @@ package body BBS.embed.SPI.RA8875 is
    end;
    --
    -- Draw a triangle
+   --
+   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                          fill : boolean) is
+   begin
+      self.writeReg(RA8875_DLHSR0, lowByte(x1));
+      self.writeReg(RA8875_DLHSR1, highByte(x1));
+      --
+      self.writeReg(RA8875_DLVSR0, lowByte(y1));
+      self.writeReg(RA8875_DLVSR1, highByte(y1));
+      --
+      self.writeReg(RA8875_DTPH0, lowByte(x2));
+      self.writeReg(RA8875_DTPH1, highByte(x2));
+      --
+      self.writeReg(RA8875_DTPV0, lowByte(y2));
+      self.writeReg(RA8875_DTPV1, highByte(y2));
+      --
+      self.writeReg(RA8875_DLHER0, lowByte(x3));
+      self.writeReg(RA8875_DLHER1, highByte(x3));
+      --
+      self.writeReg(RA8875_DLVER0, lowByte(y3));
+      self.writeReg(RA8875_DLVER1, highByte(y3));
+      --
+      if (fill) then
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWTRIANGLE
+                      or RA8875_DCR_FILL);
+      else
+         self.writeReg(RA8875_DCR, RA8875_DCR_LINESQUTRI_START or RA8875_DCR_DRAWTRIANGLE);
+      end if;
+      self.waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+   end;
    --
    procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
                           x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
@@ -558,6 +687,28 @@ package body BBS.embed.SPI.RA8875 is
    -- Draw an ellipse
    --
    procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                          vRad : uint16; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DEHR0, lowByte(x));
+      self.writeReg(RA8875_DEHR1, highByte(x));
+      self.writeReg(RA8875_DEVR0, lowByte(y));
+      self.writeReg(RA8875_DEVR1, highByte(y));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(hRad));
+      self.writeReg(RA8875_ELL_A1, highByte(hRad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(vRad));
+      self.writeReg(RA8875_ELL_B1, highByte(vRad));
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_FILL);
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START);
+      end if;
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
+   end;
+   --
+   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
                           vRad : uint16; color : R5G6B5_color; fill : boolean) is
    begin
       self.writeReg(RA8875_DEHR0, lowByte(x));
@@ -584,6 +735,30 @@ package body BBS.embed.SPI.RA8875 is
    end;
    --
    -- Draw one of four segments of an ellipse
+   --
+   procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                          vRad : uint16; seg : RA8875_ELLIPSE_PART; fill : boolean) is
+   begin
+      self.writeReg(RA8875_DEHR0, lowByte(x));
+      self.writeReg(RA8875_DEHR1, highByte(x));
+      self.writeReg(RA8875_DEVR0, lowByte(y));
+      self.writeReg(RA8875_DEVR1, highByte(y));
+      --
+      self.writeReg(RA8875_ELL_A0, lowByte(hRad));
+      self.writeReg(RA8875_ELL_A1, highByte(hRad));
+      --
+      self.writeReg(RA8875_ELL_B0, lowByte(vRad));
+      self.writeReg(RA8875_ELL_B1, highByte(vRad));
+      --
+      if (fill) then
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_CURVE or
+                         RA8875_ELLIPSE_FILL or uint8(RA8875_ELLIPSE_PART'pos(seg)));
+      else
+         self.writeReg(RA8875_ELLIPSE, RA8875_ELLIPSE_START or RA8875_ELLIPSE_CURVE or
+                      uint8(RA8875_ELLIPSE_PART'pos(seg)));
+      end if;
+      self.waitPoll(RA8875_ELLIPSE, RA8875_ELLIPSE_STATUS);
+   end;
    --
    procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
                           vRad : uint16; seg : RA8875_ELLIPSE_PART; color : R5G6B5_color; fill : boolean) is

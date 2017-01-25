@@ -754,6 +754,25 @@ end record;
    -- Graphics methods
    --
    procedure graphicsMode(self : RA8875_record);
+   -- Set the color for drawing
+   procedure drawColor(self : RA8875_record; color : R5G6B5_color);
+   -- Use these procedures to draw in whatever color has already been set
+   procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16; fill : boolean);
+   procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                         y2 : uint16; rad : uint16; fill : boolean);
+   procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16);
+   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                        fill : boolean);
+   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                          fill : boolean);
+   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                        vRad : uint16; fill : boolean);
+   procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                                vRad : uint16; seg : RA8875_ELLIPSE_PART; fill : boolean);
+   -- Use these procedures to specify the color to draw
    procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                       y2 : uint16; color : R5G6B5_color; fill : boolean);
    procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
@@ -768,7 +787,8 @@ end record;
    procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
                         vRad : uint16; color : R5G6B5_color; fill : boolean);
    procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
-                          vRad : uint16; seg : RA8875_ELLIPSE_PART; color : R5G6B5_color; fill : boolean);
+                                vRad : uint16; seg : RA8875_ELLIPSE_PART; color : R5G6B5_color; fill : boolean);
+   --
    procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
    --
    -- Touch methods
