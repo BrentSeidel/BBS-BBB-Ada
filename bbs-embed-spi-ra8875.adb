@@ -15,7 +15,7 @@ package body BBS.embed.SPI.RA8875 is
    --
    -- Setup without hardware reset
    --
-   procedure setup(self : in out RA8875_record; CS : BBS.embed.GPIO.GPIO; screen : SPI_ptr) is
+   procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; screen : SPI_ptr) is
    begin
       self.cs_gpio := CS;
       self.reset_gpio := null;
@@ -274,24 +274,6 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
-   -- Set the bounds for the active window.
-   --
-   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
-                             left : uint16; right : uint16) is
-   begin
-      self.writeReg(RA8875_HSAW0, lowByte(left));
-      self.writeReg(RA8875_HSAW1, highByte(left));
-      --
-      self.writeReg(RA8875_VSAW0, lowByte(top));
-      self.writeReg(RA8875_VSAW1, highByte(top));
-      --
-      self.writeReg(RA8875_HEAW0, lowByte(right));
-      self.writeReg(RA8875_HEAW1, highByte(right));
-      --
-      self.writeReg(RA8875_VEAW0, lowByte(bottom));
-      self.writeReg(RA8875_VEAW1, highByte(bottom));
-   end;
-   --
    -- Set some of the display control parameters
    --
    procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
@@ -299,6 +281,47 @@ package body BBS.embed.SPI.RA8875 is
    begin
       self.writeReg(RA8875_DPCR, layer or hdir or vdir);
    end;
+   --
+   procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE; cursorVisible : boolean;
+                           cursorBlink : boolean; writeDir : RA8875_MWCR0_CURDIR; WriteCursorIncr : boolean;
+                           ReadCursorIncr : boolean) is
+      temp : uint8 := 0;
+   begin
+      if (mode = text) then
+         temp := temp + RA8875_MWCR0_TXTMODE;
+      end if;
+      if (cursorVisible) then
+         temp := temp + RA8875_MWCR0_CURVIS;
+      end if;
+      if (cursorBlink) then
+         temp := temp + RA8875_MWCR0_CURBLINK;
+      end if;
+      temp := temp + (RA8875_MWCR0_CURDIR'pos(writeDir) * 16#04#);
+      if (WriteCursorIncr) then
+         temp := temp + RA8875_MWCR0_WRITE_NOINCR;
+      end if;
+      if (ReadCursorIncr) then
+         temp := temp + RA8875_MWCR0_READ_NOINCR;
+      end if;
+      self.writeReg(RA8875_MWCR0, temp);
+   end;
+   --
+   --
+   -- Memory write control register 1
+   procedure setWriteCtrl1(self : RA8875_record; cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
+                           GCursorSelect : RA8875_MWCR1_GCURS_SET; writeDest : RA8875_MWCR1_WRITE_DEST;
+                           layer : RA8875_MWCR1_LAYER) is
+      temp : uint8 := 0;
+   begin
+      if (cursorEnable = enable) then
+         temp := temp + RA8875_NWCR1_GCURS_EN;
+      end if;
+      temp := temp + uint8(GCursorSelect)*RA8875_MWCR1_CUR_SEL_SCALE;
+      temp := temp + RA8875_MWCR1_WRITE_DEST'pos(writeDest)*RA8875_MWCR_WRITE_DEST_SCALE;
+      temp := temp + RA8875_MWCR1_LAYER'pos(layer);
+      self.writeReg(RA8875_MWCR1, temp);
+   end;
+   --
    ----------------------------------------------------------------------------
    -- Text items
    --
@@ -337,14 +360,6 @@ package body BBS.embed.SPI.RA8875 is
       temp := self.readData;
       temp := temp and not 64;
       self.writeData(temp);
-   end;
-   --
-   procedure textSetCursor(self : RA8875_record; x : uint16; y : uint16) is
-   begin
-      self.writeReg(RA8875_F_CURXL, lowByte(x));
-      self.writeReg(RA8875_F_CURXH, highByte(x));
-      self.writeReg(RA8875_F_CURYL, lowByte(y));
-      self.writeReg(RA8875_F_CURYH, highByte(y));
    end;
    --
    procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page) is
@@ -909,19 +924,19 @@ package body BBS.embed.SPI.RA8875 is
       self.cal_left := 0;
       self.cal_right := self.width;
       self.graphicsMode;
-      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.fillScreen(R5G6B5_BLACK);
       self.enableTouch(true);
       -- Find top edge
       self.textMode;
       self.screenActive;
       self.textSetAttribute(true, false, false, 0, 0);
-      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
-      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textColor(R5G6B5_BLACK, R5G6B5_WHITE);
+      self.textSetCodePage(RA8875_FNCR0_ISO8859_1);
       self.textSetAttribute(true, false, false, 3, 3);
-      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.setTextCursorPos(self.width/2 - 7*40, self.height/2 - 10);
       self.textWrite("Touch Top Edge");
       self.graphicsMode;
-      self.drawRect(0, 0, self.width - 1, 10, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      self.drawRect(0, 0, self.width - 1, 10, R5G6B5_WHITE, true);
       loop
          if (self.checkTouched) then
             count := count + 1;
@@ -949,16 +964,16 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.5;
       -- Find bottom edge
       self.graphicsMode;
-      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.fillScreen(R5G6B5_BLACK);
       self.textMode;
       self.textSetAttribute(true, false, false, 0, 0);
-      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
-      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textColor(R5G6B5_BLACK, R5G6B5_WHITE);
+      self.textSetCodePage(RA8875_FNCR0_ISO8859_1);
       self.textSetAttribute(true, false, false, 3, 3);
-      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.setTextCursorPos(self.width/2 - 7*40, self.height/2 - 10);
       self.textWrite("Touch Bottom Edge");
       self.graphicsMode;
-      self.drawRect(0, self.height - 10, self.width - 1, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      self.drawRect(0, self.height - 10, self.width - 1, self.height - 1, R5G6B5_WHITE, true);
       count := 0;
       loop
          if (self.checkTouched) then
@@ -987,16 +1002,16 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.5;
       -- Find left edge
       self.graphicsMode;
-      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.fillScreen(R5G6B5_BLACK);
       self.textMode;
       self.textSetAttribute(true, false, false, 0, 0);
-      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
-      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textColor(R5G6B5_BLACK, R5G6B5_WHITE);
+      self.textSetCodePage(RA8875_FNCR0_ISO8859_1);
       self.textSetAttribute(true, false, false, 3, 3);
-      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.setTextCursorPos(self.width/2 - 7*40, self.height/2 - 10);
       self.textWrite("Touch Left Edge");
       self.graphicsMode;
-      self.drawRect(0, 0, 10, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      self.drawRect(0, 0, 10, self.height - 1, R5G6B5_WHITE, true);
       count := 0;
       loop
          if (self.checkTouched) then
@@ -1024,16 +1039,16 @@ package body BBS.embed.SPI.RA8875 is
       delay 0.5;
       -- Find right edge
       self.graphicsMode;
-      self.drawRect(0, 0, self.width - 1, self.height - 1, RA8875_BLACK, true);
+      self.fillScreen(R5G6B5_BLACK);
       self.textMode;
       self.textSetAttribute(true, false, false, 0, 0);
-      self.textColor(BBS.embed.SPI.RA8875.RA8875_BLACK, BBS.embed.SPI.RA8875.RA8875_WHITE);
-      self.textSetCodePage(BBS.embed.SPI.RA8875.RA8875_FNCR0_ISO8859_1);
+      self.textColor(R5G6B5_BLACK, R5G6B5_WHITE);
+      self.textSetCodePage(RA8875_FNCR0_ISO8859_1);
       self.textSetAttribute(true, false, false, 3, 3);
-      self.textSetCursor(self.width/2 - 7*40, self.height/2 - 10);
+      self.setTextCursorPos(self.width/2 - 7*40, self.height/2 - 10);
       self.textWrite("Touch Right Edge");
       self.graphicsMode;
-      self.drawRect(self.width - 10, 0, self.width - 1, self.height - 1, BBS.embed.SPI.RA8875.RA8875_WHITE, true);
+      self.drawRect(self.width - 10, 0, self.width - 1, self.height - 1, R5G6B5_WHITE, true);
       count := 0;
       loop
          if (self.checkTouched) then
@@ -1069,7 +1084,7 @@ package body BBS.embed.SPI.RA8875 is
       self.cal_right := found_right;
    end;
    ----------------------------------------------------------------------------
-   -- Miscellaneous items
+   -- Region and layer items
    --
    -- Define a scroll area and move it
    --
@@ -1096,11 +1111,22 @@ package body BBS.embed.SPI.RA8875 is
       end if;
    end;
    --
-   -- Fill the screen with a solid color.
+   -- Set the bounds for the active window.
    --
-   procedure fillScreen(self : RA8875_record; color : R5G6B5_color) is
+   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
+                             left : uint16; right : uint16) is
    begin
-      self.drawRect(0, 0, self.width - 1, self.height - 1, color, true);
+      self.writeReg(RA8875_HSAW0, lowByte(left));
+      self.writeReg(RA8875_HSAW1, highByte(left));
+      --
+      self.writeReg(RA8875_VSAW0, lowByte(top));
+      self.writeReg(RA8875_VSAW1, highByte(top));
+      --
+      self.writeReg(RA8875_HEAW0, lowByte(right));
+      self.writeReg(RA8875_HEAW1, highByte(right));
+      --
+      self.writeReg(RA8875_VEAW0, lowByte(bottom));
+      self.writeReg(RA8875_VEAW1, highByte(bottom));
    end;
    --
    -- Set the active area to be the whole screen
@@ -1108,6 +1134,74 @@ package body BBS.embed.SPI.RA8875 is
    procedure screenActive(self : RA8875_record) is
    begin
       self.setActiveWindow(0, self.height - 1, 0, self.width - 1);
+   end;
+   ----------------------------------------------------------------------------
+   -- Cursor Methods
+   --
+   procedure setTextCursorPos(self : RA8875_record; x : uint16; y : uint16) is
+   begin
+      self.writeReg(RA8875_F_CURXL, lowByte(x));
+      self.writeReg(RA8875_F_CURXH, highByte(x));
+      self.writeReg(RA8875_F_CURYL, lowByte(y));
+      self.writeReg(RA8875_F_CURYH, highByte(y));
+   end;
+   --
+   procedure setGraphCursorColors(self : RA8875_record; color0 : R3G3B2_color;
+                                  color1 : R3G3B2_color) is
+   begin
+      self.writeReg(RA8875_GCC0, R3G3B2_to_uint8(color0));
+      self.writeReg(RA8875_GCC1, R3G3B2_to_uint8(color1));
+   end;
+   --
+   procedure setGraphCursorPos(self : RA8875_record; x : uint16; y : uint16) is
+   begin
+      self.writeReg(RA8875_GCHP0, lowByte(x));
+      self.writeReg(RA8875_GCHP1, highByte(x));
+      self.writeReg(RA8875_GCHV0, lowByte(y));
+      self.writeReg(RA8875_GCHV1, highByte(y));
+   end;
+   --
+   procedure setGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
+                            data : RA8875_GCursor) is
+      buffer : RA8875_GCursorBuffer := GCursor_to_buffer(data);
+      temp : uint8 := 0;
+      mwcr0 : uint8 := self.readReg(RA8875_MWCR0);
+      mwcr1 : uint8 := self.readReg(RA8875_MWCR1);
+   begin
+      self.setWriteCtrl0(graphic, true, false, LRTD, true, true);
+--   type RA8875_MWCR0_CURDIR is (LRTD*, RLTD*, TDLR*, DTLR*);
+      self.setWriteCtrl1(enable, curs, GCURS, layer1);
+      self.writeCmd(RA8875_MRWC);
+      for t of buffer loop
+         temp := (t and 16#F0#)/16 or (t and 16#0F#)*16;
+         temp := (temp and 16#CC#)/4 or (temp and 16#33#)*4;
+         self.writeData(temp);
+         delay 0.001;
+      end loop;
+      self.writeReg(RA8875_MWCR0, mwcr0);
+      self.writeReg(RA8875_MWCR1, mwcr1);
+   end;
+   --
+   procedure selectGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
+                               enable : RA8875_MWCR1_GCURS_ENABLE) is
+      temp : uint8 := self.readReg(RA8875_MWCR1);
+   begin
+      temp := temp and 16#0F#;
+      if (enable = enable) then
+         temp := temp + RA8875_NWCR1_GCURS_EN;
+      end if;
+      temp := temp + uint8(curs)*RA8875_MWCR1_CUR_SEL_SCALE;
+      self.writeReg(RA8875_MWCR1, temp);
+   end;
+   --
+   ----------------------------------------------------------------------------
+   -- Miscellaneous Methods
+   --
+   -- Fill the screen with a solid color.
+   --
+   procedure fillScreen(self : RA8875_record; color : R5G6B5_color) is
+   begin
+      self.drawRect(0, 0, self.width - 1, self.height - 1, color, true);
    end;
    --
 

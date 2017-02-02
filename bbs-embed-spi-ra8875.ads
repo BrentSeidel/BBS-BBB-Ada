@@ -1,11 +1,12 @@
 with Ada.Text_IO;
 with Ada.Integer_Text_IO;
+with Ada.Unchecked_Conversion;
 --
 with BBS.embed.GPIO;
 use type BBS.embed.GPIO.GPIO;
 with BBS.embed.SPI;
 package BBS.embed.SPI.RA8875 is
-   --
+   ----------------------------------------------------------------------------
    -- Define the object for the RA8875 controller
    --
    type RA8875_record is tagged private;
@@ -18,7 +19,7 @@ package BBS.embed.SPI.RA8875 is
    -- Right now I only have an 800x480 panel for testing so nothing is tested
    -- for other sizes.
    type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
-   --
+   ----------------------------------------------------------------------------
    -- Constants for RA8875 registers and bits
    --
    -- Power and display control register
@@ -216,9 +217,23 @@ package BBS.embed.SPI.RA8875 is
    RA8875_MWCR0 : constant uint8 := 16#40#;
    RA8875_MWCR0_GFXMODE : constant uint8 := 16#00#;
    RA8875_MWCR0_TXTMODE : constant uint8 := 16#80#;
+   RA8875_MWCR0_CURVIS : constant uint8 := 16#40#;
+   RA8875_MWCR0_CURBLINK : constant uint8 := 16#20#;
+   type RA8875_MWCR0_MODE is (graphic, text);
+   type RA8875_MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
+   RA8875_MWCR0_CURDIR_SCALE : constant uint8 := 16#04#;
+   RA8875_MWCR0_WRITE_NOINCR : constant uint8 := 16#02#;
+   RA8875_MWCR0_READ_NOINCR : constant uint8 := 16#01#;
    --
    -- Memory write control register 1
    RA8875_MWCR1 : constant uint8 := 16#41#;
+   RA8875_NWCR1_GCURS_EN : constant uint8 := 16#80#;
+   RA8875_MWCR1_CUR_SEL_SCALE : constant uint8 := 16#10#;
+   RA8875_MWCR_WRITE_DEST_SCALE : constant uint8 := 16#04#;
+   type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
+   type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
+   type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
+   type RA8875_MWCR1_LAYER is (LAYER1, LAYER2);
    --
    -- Blink time control register
    RA8875_BTCR : constant uint8 := 16#44#;
@@ -661,6 +676,8 @@ package BBS.embed.SPI.RA8875 is
    RA8875_INTC2_DMA : constant uint8 := 16#08#;
    RA8875_INTC2_TP : constant uint8 := 16#04#;
    RA8875_INTC2_BTE : constant uint8 := 16#02#;
+   ----------------------------------------------------------------------------
+   -- Type definitions
    --
    -- Colors (RGB565)
    --
@@ -682,14 +699,14 @@ end record;
    --
    -- Define some common colors
    --
-   RA8875_BLACK : constant R5G6B5_color := (R => 0, G => 0, B => 0);
-   RA8875_BLUE : constant R5G6B5_color := (R => 0, G => 0, B => 31);
-   RA8875_RED : constant R5G6B5_color := (R => 31, G => 0, B => 0);
-   RA8875_GREEN : constant R5G6B5_color := (R => 0, G => 63, B => 0);
-   RA8875_CYAN : constant R5G6B5_color := (R => 0, G => 63, B => 31);
-   RA8875_MAGENTA : constant R5G6B5_color := (R => 31, G => 0, B => 31);
-   RA8875_YELLOW : constant R5G6B5_color := (R => 31, G => 63, B => 0);
-   RA8875_WHITE : constant R5G6B5_color := (R => 31, G => 63, B => 31);
+   R5G6B5_BLACK : constant R5G6B5_color := (R => 0, G => 0, B => 0);
+   R5G6B5_BLUE : constant R5G6B5_color := (R => 0, G => 0, B => 31);
+   R5G6B5_RED : constant R5G6B5_color := (R => 31, G => 0, B => 0);
+   R5G6B5_GREEN : constant R5G6B5_color := (R => 0, G => 63, B => 0);
+   R5G6B5_CYAN : constant R5G6B5_color := (R => 0, G => 63, B => 31);
+   R5G6B5_MAGENTA : constant R5G6B5_color := (R => 31, G => 0, B => 31);
+   R5G6B5_YELLOW : constant R5G6B5_color := (R => 31, G => 63, B => 0);
+   R5G6B5_WHITE : constant R5G6B5_color := (R => 31, G => 63, B => 31);
    --
    -- Colors (RGB332)
    --
@@ -697,17 +714,50 @@ end record;
       R : uint8 range 0 .. 7;
       G : uint8 range 0 .. 7;
       B : uint8 range 0 .. 3;
-   end record;
+   end record
 --
 -- To match the 8 bit definition, add the following:
 --
---     with pack, size => 8;
---   for R3G3B2_color use
---      record
---         B at 0 range 0 .. 1;
---         G at 0 range 2 .. 4;
---         R at 0 range 5 .. 7;
---      end record;
+     with pack, size => 8;
+   for R3G3B2_color use
+      record
+         B at 0 range 0 .. 1;
+         G at 0 range 2 .. 4;
+         R at 0 range 5 .. 7;
+      end record;
+   function R3G3B2_to_uint8 is new Ada.Unchecked_Conversion(Source => R3G3B2_color,
+                                                            Target => uint8);
+   function uint8_to_R3G3B2 is new Ada.Unchecked_Conversion(Source => uint8,
+                                                            Target => R3G3B2_color);
+   --
+   -- Define some common colors
+   --
+   R3G3B2_BLACK : constant R3G3B2_color := (R => 0, G => 0, B => 0);
+   R3G3B2_BLUE : constant R3G3B2_color := (R => 0, G => 0, B => 3);
+   R3G3B2_RED : constant R3G3B2_color := (R => 7, G => 0, B => 0);
+   R3G3B2_GREEN : constant R3G3B2_color := (R => 0, G => 7, B => 0);
+   R3G3B2_CYAN : constant R3G3B2_color := (R => 0, G => 7, B => 3);
+   R3G3B2_MAGENTA : constant R3G3B2_color := (R => 7, G => 0, B => 3);
+   R3G3B2_YELLOW : constant R3G3B2_color := (R => 7, G => 7, B => 0);
+   R3G3B2_WHITE : constant R3G3B2_color := (R => 7, G => 7, B => 3);
+   --
+   -- Graphics cursor
+   --
+   -- Cursor pixel value:
+   -- 0 - GCC0 color
+   -- 1 - GCC1 color
+   -- 2 - Background color
+   -- 3 - Inverse of background color
+   type RA8875_GCursor is array (0 .. 31, 0 .. 31) of integer range 0 .. 3
+     with -- Convention => Fortran,
+--       convention => C,
+       Pack;
+   type RA8875_GCursorBuffer is array (0 .. 255) of uint8
+      with Pack;
+   function GCursor_to_buffer is new Ada.Unchecked_Conversion(source => RA8875_GCursor,
+                                                              target => RA8875_GCursorBuffer);
+   ----------------------------------------------------------------------------
+   -- Object funcitons and procedures
    --
    function RA8875_new return RA8875_ptr;
    --
@@ -734,16 +784,19 @@ end record;
    procedure PWM2config(self : RA8875_record; state : boolean; clock : uint8);
    procedure PWM1out(self : RA8875_record; value : uint8);
    procedure PWM2out(self : RA8875_record; value : uint8);
-   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
-                             left : uint16; right : uint16);
    procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
                             vdir : uint8);
+   procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE; cursorVisible : boolean;
+                           cursorBlink : boolean; writeDir : RA8875_MWCR0_CURDIR; WriteCursorIncr : boolean;
+                           ReadCursorIncr : boolean);
+   procedure setWriteCtrl1(self : RA8875_record; cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
+                           GCursorSelect : RA8875_MWCR1_GCURS_SET; writeDest : RA8875_MWCR1_WRITE_DEST;
+                           layer : RA8875_MWCR1_LAYER);
    --
    -- Text methods
    --
    procedure textMode(self : RA8875_record);
    procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
-   procedure textSetCursor(self : RA8875_record; x : uint16; y : uint16);
    procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
    procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
                               rotate : boolean; h_size : uint8; v_size : uint8);
@@ -803,15 +856,32 @@ end record;
    procedure getTouchCalibration(self : RA8875_record; top : out uint16;
                                  bottom : out uint16; left : out uint16; right : out uint16);
    --
-   -- Miscellaneous methods
+   -- Region and layer methods
    --
    procedure scroll(self : RA8875_record; hStart : uint16; vStart : uint16;
                     hEnd : uint16; vEnd : uint16; hOffset : uint16; vOffset : uint16);
-   procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
+   procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
+                             left : uint16; right : uint16);
    procedure screenActive(self : RA8875_record);
+   --
+   -- Cursor methods
+   --
+   procedure setTextCursorPos(self : RA8875_record; x : uint16; y : uint16);
+   procedure setGraphCursorColors(self : RA8875_record; color0 : R3G3B2_color;
+                                  color1 : R3G3B2_color);
+   procedure setGraphCursorPos(self : RA8875_record; x : uint16; y : uint16);
+   procedure setGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
+                            data : RA8875_GCursor);
+   procedure selectGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
+                               enable : RA8875_MWCR1_GCURS_ENABLE);
+   --
+   -- Miscellaneous methods
+   --
+   procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
 
 --
 private
+   ----------------------------------------------------------------------------
    type RA8875_record is tagged
       record
          cs_gpio : BBS.embed.GPIO.GPIO;
