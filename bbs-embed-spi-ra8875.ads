@@ -20,7 +20,9 @@ package BBS.embed.SPI.RA8875 is
    -- for other sizes.
    type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
    ----------------------------------------------------------------------------
-   -- Constants for RA8875 registers and bits
+   -- Constants and types for RA8875 registers and bits
+   --
+   type RA8875_LAYER is (LAYER1, LAYER2);
    --
    -- Power and display control register
    RA8875_PWRR : constant uint8 := 16#01#;
@@ -233,7 +235,6 @@ package BBS.embed.SPI.RA8875 is
    type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
    type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
    type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
-   type RA8875_MWCR1_LAYER is (LAYER1, LAYER2);
    --
    -- Blink time control register
    RA8875_BTCR : constant uint8 := 16#44#;
@@ -279,6 +280,12 @@ package BBS.embed.SPI.RA8875 is
    --
    -- Layer transparency register 0
    RA8875_LTPR0 : constant uint8 := 16#52#;
+   RA8875_LTPR0_MODE_SCALE : uint8 := 16#40#;
+   type RA8875_LTPR0_SCROLL_MODE is (LAYER12_SIMULTANEOUS, LAYER1_ONLY,
+                                     LAYER2_ONLY, BUFFERED);
+   RA8875_LTPR0_FLOAT_ENABLE : uint8 := 16#20#;
+   type RA8875_LTPR0_DISP_MODE is (ONLY_LAYER1, ONLY_LAYER2, LIGHTEN, TRANSPARENT,
+                                     BOOL_OR, BOOL_AND, FLOATING, RESERVED);
    --
    -- Layer transparency register 1
    RA8875_LTPR1 : constant uint8 := 16#53#;
@@ -748,6 +755,12 @@ end record;
    -- 1 - GCC1 color
    -- 2 - Background color
    -- 3 - Inverse of background color
+   --
+   -- Note that the coordinates for GCursor are reversed from what one would
+   -- expect.  The Y axis coordinate is the first array index and the X axis
+   -- coordinate is the second array index.  Once can think of it as being in
+   -- row, column order.
+   --
    type RA8875_GCursor is array (0 .. 31, 0 .. 31) of integer range 0 .. 3
      with -- Convention => Fortran,
 --       convention => C,
@@ -791,7 +804,7 @@ end record;
                            ReadCursorIncr : boolean);
    procedure setWriteCtrl1(self : RA8875_record; cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
                            GCursorSelect : RA8875_MWCR1_GCURS_SET; writeDest : RA8875_MWCR1_WRITE_DEST;
-                           layer : RA8875_MWCR1_LAYER);
+                           layer : RA8875_LAYER);
    --
    -- Text methods
    --
@@ -863,6 +876,10 @@ end record;
    procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
                              left : uint16; right : uint16);
    procedure screenActive(self : RA8875_record);
+   procedure setLayers(self : RA8875_record; layer : RA8875_LAYER);
+   procedure selectLayer(self : RA8875_record; layer : RA8875_LAYER);
+   procedure setLayerSetting0(self : RA8875_record; scroll : RA8875_LTPR0_SCROLL_MODE;
+                              float : boolean; display : RA8875_LTPR0_DISP_MODE);
    --
    -- Cursor methods
    --
@@ -887,6 +904,7 @@ private
          cs_gpio : BBS.embed.GPIO.GPIO;
          reset_gpio : BBS.embed.GPIO.GPIO;
          lcd_screen : BBS.embed.SPI.SPI_ptr;
+         size : RA8875_sizes;
          width : uint16;
          height : uint16;
          cal_top : uint16;

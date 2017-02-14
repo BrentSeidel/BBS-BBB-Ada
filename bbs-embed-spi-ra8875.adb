@@ -167,6 +167,7 @@ package body BBS.embed.SPI.RA8875 is
       vsync_nondisp : uint16;
       vsync_start : uint16;
    begin
+      self.size := size;
       case size is
          when RA8875_480x272 =>
             self.writeReg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10);
@@ -306,11 +307,10 @@ package body BBS.embed.SPI.RA8875 is
       self.writeReg(RA8875_MWCR0, temp);
    end;
    --
-   --
    -- Memory write control register 1
    procedure setWriteCtrl1(self : RA8875_record; cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
                            GCursorSelect : RA8875_MWCR1_GCURS_SET; writeDest : RA8875_MWCR1_WRITE_DEST;
-                           layer : RA8875_MWCR1_LAYER) is
+                           layer : RA8875_LAYER) is
       temp : uint8 := 0;
    begin
       if (cursorEnable = enable) then
@@ -318,7 +318,7 @@ package body BBS.embed.SPI.RA8875 is
       end if;
       temp := temp + uint8(GCursorSelect)*RA8875_MWCR1_CUR_SEL_SCALE;
       temp := temp + RA8875_MWCR1_WRITE_DEST'pos(writeDest)*RA8875_MWCR_WRITE_DEST_SCALE;
-      temp := temp + RA8875_MWCR1_LAYER'pos(layer);
+      temp := temp + RA8875_LAYER'pos(layer);
       self.writeReg(RA8875_MWCR1, temp);
    end;
    --
@@ -1135,6 +1135,40 @@ package body BBS.embed.SPI.RA8875 is
    begin
       self.setActiveWindow(0, self.height - 1, 0, self.width - 1);
    end;
+   --
+   procedure setLayers(self : RA8875_record; layer : RA8875_LAYER) is
+      temp1 : uint8 := self.readReg(RA8875_SYSR) and 16#03#;
+      temp2 : uint8 := self.readReg(RA8875_DPCR) and 16#7F#;
+   begin
+      if (layer = LAYER1) then
+         temp1 := temp1 and RA8875_SYSR_16BPP;
+         temp2 := temp2 and RA8875_DPCR_1LAYER;
+      else
+         temp1 := temp1 and RA8875_SYSR_8BPP; -- Eventually this can be modified by size
+         temp2 := temp2 and RA8875_DPCR_2LAYER;
+      end if;
+      self.writeReg(RA8875_SYSR, temp1);
+      self.writeReg(RA8875_DPCR, temp2);
+   end;
+   --
+   procedure selectLayer(self : RA8875_record; layer : RA8875_LAYER) is
+      temp : uint8 := self.readReg(RA8875_MWCR1) and 16#F0#;
+   begin
+      temp := temp or RA8875_LAYER'pos(layer);
+      self.writeReg(RA8875_MWCR1, temp);
+   end;
+   --
+   procedure setLayerSetting0(self : RA8875_record; scroll : RA8875_LTPR0_SCROLL_MODE;
+                              float : boolean; display : RA8875_LTPR0_DISP_MODE) is
+      temp : uint8 := RA8875_LTPR0_SCROLL_MODE'pos(scroll)*RA8875_LTPR0_MODE_SCALE;
+   begin
+      if (float) then
+         temp := temp + RA8875_LTPR0_FLOAT_ENABLE;
+      end if;
+      temp := temp + RA8875_LTPR0_DISP_MODE'pos(display);
+      self.writeReg(RA8875_LTPR0, temp);
+   end;
+   --
    ----------------------------------------------------------------------------
    -- Cursor Methods
    --
