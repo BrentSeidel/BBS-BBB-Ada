@@ -6,8 +6,6 @@ package BBS.embed.SPI is
    type SPI_record is abstract tagged limited null record;
    type SPI_ptr is access all SPI_record'Class;
    --
---   function SPI_new return SPI_record'Class is abstract;
-   --
    -- Configure the SPI interface on a BeagleBone Black or other systems that
    -- have multiple functions on the SPI pins.  This configureation procedure
    -- sets the pins to the SPI function.
