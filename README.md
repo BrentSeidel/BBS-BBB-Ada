@@ -118,6 +118,7 @@ I got the following results:
 |--------|-----------|
 | BeagleBone Black | 60 kHz |
 | Raspberry PI 3 | 160 kHz |
+| Arduino Due | 384 kHz |
 
 Note that the times are only approximate and can vary greatly depending on other
 processing on the processor.
