@@ -1,4 +1,4 @@
-package body BBS.embed.i2c is
+package body BBS.embed.i2c.linux is
    --
    -- This works with Debian Jessy for the Beaglebone Black.  The configuration
    -- system has changed and it will probably not work on earlier versions.
