@@ -25,3 +25,5 @@ errors.d
 i2c-loc.xml
 
 i2c-loc.xml
+*.cswi
+*.xml
