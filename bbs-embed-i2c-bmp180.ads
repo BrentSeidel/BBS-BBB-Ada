@@ -63,46 +63,46 @@ package BBS.embed.i2c.BMP180 is
    -- get_temp or get_press is called, the type is checked to ensure that the
    -- proper reading was started.
    --
-   procedure configure(error : out integer);
-   --
-   -- Starts the BMP180 converting data.  The conversion types are listed above.
-   -- Note that the conversion type must match the get value function.  An
-   -- exception will be thrown if it doesn't match.
-   --
-   procedure start_conversion(kind : uint8; error : out integer);
-   --
-   -- Check for data ready.  Reading a value before data is ready will have
-   -- undesirable results.
-   --
-   function data_ready(error : out integer) return boolean;
-   --
-   -- Return a calibrated temperature value.  Temperature is returned in units
-   -- of degrees Celsius.
-   --
-   function get_temp(error : out integer) return float;
-   --
-   -- Return calibrated temperature in units of 0.1 degrees Celsius.
-   --
-   function get_temp(error : out integer) return integer;
-   --
-   -- Return temperature in various units.
-   --
-   function get_temp(error : out integer) return BBS.units.temp_c;
-   function get_temp(error : out integer) return BBS.units.temp_f;
-   function get_temp(error : out integer) return BBS.units.temp_k;
-   --
-   -- Return a calibrated pressure value.  Note that a temperature reading must
-   -- be made before calibrated pressure can be successfully computed.  Pressure
-   -- is returned in units of Pascals.
-   --
-   function get_press(error : out integer) return integer;
-   --
-   -- Return pressure in various units.
-   --
-   function get_press(error : out integer) return BBS.units.press_p;
-   function get_press(error : out integer) return BBS.units.press_mb;
-   function get_press(error : out integer) return BBS.units.press_atm;
-   function get_press(error : out integer) return BBS.units.press_inHg;
+--     procedure configure(error : out integer);
+--     --
+--     -- Starts the BMP180 converting data.  The conversion types are listed above.
+--     -- Note that the conversion type must match the get value function.  An
+--     -- exception will be thrown if it doesn't match.
+--     --
+--     procedure start_conversion(kind : uint8; error : out integer);
+--     --
+--     -- Check for data ready.  Reading a value before data is ready will have
+--     -- undesirable results.
+--     --
+--     function data_ready(error : out integer) return boolean;
+--     --
+--     -- Return a calibrated temperature value.  Temperature is returned in units
+--     -- of degrees Celsius.
+--     --
+--     function get_temp(error : out integer) return float;
+--     --
+--     -- Return calibrated temperature in units of 0.1 degrees Celsius.
+--     --
+--     function get_temp(error : out integer) return integer;
+--     --
+--     -- Return temperature in various units.
+--     --
+--     function get_temp(error : out integer) return BBS.units.temp_c;
+--     function get_temp(error : out integer) return BBS.units.temp_f;
+--     function get_temp(error : out integer) return BBS.units.temp_k;
+--     --
+--     -- Return a calibrated pressure value.  Note that a temperature reading must
+--     -- be made before calibrated pressure can be successfully computed.  Pressure
+--     -- is returned in units of Pascals.
+--     --
+--     function get_press(error : out integer) return integer;
+--     --
+--     -- Return pressure in various units.
+--     --
+--     function get_press(error : out integer) return BBS.units.press_p;
+--     function get_press(error : out integer) return BBS.units.press_mb;
+--     function get_press(error : out integer) return BBS.units.press_atm;
+--     function get_press(error : out integer) return BBS.units.press_inHg;
    --
    -- Stuff for object oriented interface.  These basically emulate the function
    -- of the conventional routines above.
@@ -110,25 +110,25 @@ package BBS.embed.i2c.BMP180 is
    type BMP180_record is new i2c_device_record with private;
    type BMP180_ptr is access BMP180_record;
    --
-   function i2c_new return BMP180_ptr;
-   procedure configure(self : not null access BMP180_record'class; port : i2c_interface;
-                       addr : addr7; error : out integer);
+--   function i2c_new return BMP180_ptr;
+   procedure configure(self : in out BMP180_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
    --
-   procedure start_conversion(self : not null access BMP180_record'class; kind : uint8; error : out integer);
-   function data_ready(self : not null access BMP180_record'class; error : out integer) return boolean;
-   function get_temp(self : not null access BMP180_record'class; error : out integer) return float;
-   function get_temp(self : not null access BMP180_record'class; error : out integer) return integer;
-   function get_temp(self : not null access BMP180_record'class; error : out integer) return BBS.units.temp_c;
-   function get_temp(self : not null access BMP180_record'class; error : out integer) return BBS.units.temp_f;
-   function get_temp(self : not null access BMP180_record'class; error : out integer) return BBS.units.temp_k;
-   function get_press(self : not null access BMP180_record'class; error : out integer) return integer;
-   function get_press(self : not null access BMP180_record'class; error : out integer) return BBS.units.press_p;
-   function get_press(self : not null access BMP180_record'class; error : out integer) return BBS.units.press_mb;
-   function get_press(self : not null access BMP180_record'class; error : out integer) return BBS.units.press_atm;
-   function get_press(self : not null access BMP180_record'class; error : out integer) return BBS.units.press_inHg;
+   procedure start_conversion(self : in out BMP180_record; kind : uint8; error : out err_code);
+   function data_ready(self : BMP180_record; error : out err_code) return boolean;
+   function get_temp(self : in out BMP180_record; error : out err_code) return float;
+   function get_temp(self : in out BMP180_record; error : out err_code) return integer;
+   function get_temp(self : in out BMP180_record; error : out err_code) return BBS.units.temp_c;
+   function get_temp(self : in out BMP180_record; error : out err_code) return BBS.units.temp_f;
+   function get_temp(self : in out BMP180_record; error : out err_code) return BBS.units.temp_k;
+   function get_press(self : BMP180_record; error : out err_code) return integer;
+   function get_press(self : BMP180_record; error : out err_code) return BBS.units.press_p;
+   function get_press(self : BMP180_record; error : out err_code) return BBS.units.press_mb;
+   function get_press(self : BMP180_record; error : out err_code) return BBS.units.press_atm;
+   function get_press(self : BMP180_record; error : out err_code) return BBS.units.press_inHg;
    --
 private
-   buff : aliased buffer;
+--   buff : aliased buffer;
    --
    -- Calibration constants.  These are read from the BMP180.
    --
@@ -160,7 +160,7 @@ private
      new Ada.Unchecked_Conversion(source => uint32, target => integer);
    --
    type BMP180_record is new i2c_device_record with record
-      buff : aliased buffer;
+--      buff : aliased buffer;
       ac1 : int16 := 0;
       ac2 : int16 := 0;
       ac3 : int16 := 0;

@@ -37,24 +37,24 @@ package BBS.embed.i2c.linux is
    --
    -- Routines to read and write data on the i2c bus
    --
-   procedure write(addr : addr7; reg : uint8; data : uint8; error : out integer);
-   function read(addr : addr7; reg : uint8; error : out integer) return uint8;
+   procedure write(addr : addr7; reg : uint8; data : uint8; error : out err_code);
+   function read(addr : addr7; reg : uint8; error : out err_code) return uint8;
    --
    -- Reading a single byte is straigtforward.  When reading two bytes, is the
    -- MSB first or second?  There is no standard even within a single device.
    --
    -- Read a word with MSB first
    --
-   function readm1(addr : addr7; reg : uint8; error : out integer) return uint16;
+   function readm1(addr : addr7; reg : uint8; error : out err_code) return uint16;
    --
    -- Read a word with MSB second (LSB first)
    --
-   function readm2(addr : addr7; reg : uint8; error : out integer) return uint16;
+   function readm2(addr : addr7; reg : uint8; error : out err_code) return uint16;
    --
    -- Read the specified number of bytes into a buffer
    --
    procedure read(addr : addr7; reg : uint8; buff : buff_ptr;
-                  size : uint16; error : out integer);
+                  size : uint16; error : out err_code);
    --
    -- Set to true to print error messages.
    --
@@ -64,37 +64,37 @@ package BBS.embed.i2c.linux is
    --
    -- The I2C interface object
    --
-   type i2c_interface_record is tagged private;
-   type i2c_interface is access i2c_interface_record;
+   type linux_i2c_interface_record is new i2c_interface_record with private;
+   type linux_i2c_interface is access linux_i2c_interface_record'Class;
    --
    -- The root class for I2C device objects
    --
-   type i2c_device_record is tagged private;
-   type i2c_device is access i2c_device_record;
+--   type linux_i2c_device_record is new i2c_device_record with private;
+--   type linux_i2c_device is access linux_i2c_device_record'Class;
    --
-   function i2c_new return i2c_interface;
+--   function i2c_new return i2c_interface;
    --
    -- Configure the I2C interface on a BeagleBone Black or other systems that
    -- have multiple functions on the I2C pins.  This configureation procedure
    -- sets the pins to the I2C function.
    --
-   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
+   procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
                        SCL : string; SDA : string);
    --
    -- Configure the I2C interface on a Raspberry PI or other systems that have
    -- dedicated pins for the I2C interface.  This would also work on a system
    -- with shared pins if the pins had already been set to the I2C function.
    --
-   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string);
+   procedure configure(self : in out linux_i2c_interface_record; i2c_file : string);
    --
    -- Reading or writing a single byte is straigtforward.
    --
    overriding
-   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                   data : uint8; error : out integer);
+   procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint8; error : out err_code);
    overriding
-   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint8;
+   function read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint8;
    --
    -- When reading two bytes, is the MSB first or second?  There is no standard
    -- even within a single device.
@@ -102,33 +102,33 @@ package BBS.embed.i2c.linux is
    -- Read a word with MSB first
    --
    overriding
-   function readm1(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint16;
+   function readm1(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16;
    --
    -- Read a word with MSB second (LSB first)
    --
    overriding
-   function readm2(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint16;
+   function readm2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16;
    --
    -- Write an arbitrary number of bytes to a device on the i2c bus.
    --
    overriding
-   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                   buff : buff_ptr; size : uint16; error : out integer);
+   procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   size : buff_index; error : out err_code);
    --
    -- Read the specified number of bytes into a buffer
    --
    overriding
-   procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                  buff : buff_ptr; size : uint16; error : out integer);
+   procedure read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                  size : buff_index; error : out err_code);
    -- -------------------------------------------------------
    -- Create a new I2C device.  Each I2C device object should implement these
    -- two routines.
    --
-   function i2c_new return i2c_device;
-   procedure configure(self : not null access i2c_device_record'class; port : i2c_interface;
-                       addr : addr7);
+--   function i2c_new return i2c_device;
+--   procedure configure(self : not null access i2c_device_record'class; port : i2c_interface;
+--                       addr : addr7);
 private
    --
    -- The rest of the stuff is private to hid the ugliness required to be
@@ -264,7 +264,7 @@ private
    --
    -- Object oriented definitions
    --
-   type i2c_interface_record is tagged
+   type linux_i2c_interface_record is new i2c_interface_record with
       record
          port : file_id;
          buff1 : aliased buffer;
@@ -273,9 +273,9 @@ private
          ioctl_msg : i2c_rdwr_ioctl_data;
       end record;
    --
-   type i2c_device_record is tagged
-      record
-         port : i2c_interface;
-         address : addr7;
-      end record;
+--   type Linux_i2c_device_record is tagged
+--      record
+--         port : i2c_interface;
+--         address : addr7;
+--      end record;
 end;

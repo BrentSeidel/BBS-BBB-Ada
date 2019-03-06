@@ -59,26 +59,26 @@ package BBS.embed.i2c.MCP23008 is
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
    --
-   procedure configure(self : not null access MCB23008_record'class; port : i2c_interface;
-                       addr : addr7; error : out integer);
+   procedure configure(self : in out MCB23008_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
    --
    -- Set the direction (read(0)/write(1)) for each of the output bits.  The
    -- direction bits are packed into a uint8.
    --
-   procedure set_dir(self : not null access MCB23008_record'class; dir : uint8;
-                     error : out integer);
+   procedure set_dir(self : MCB23008_record; dir : uint8;
+                     error : out err_code);
    --
    -- Sets the output bits.  Bits are packed into a uint8.
    --
-   procedure set_data(self : not null access MCB23008_record'class; data : uint8;
-                      error : out integer);
+   procedure set_data(self : MCB23008_record; data : uint8;
+                      error : out err_code);
    --
    -- Read the port.  Bits are packed into a uint8.
    --
-   function read_data(self : not null access MCB23008_record'class; error : out integer)
+   function read_data(self : MCB23008_record; error : out err_code)
                       return uint8;
 private
-   buff : aliased buffer;
+--   buff : aliased buffer;
    --
    type MCB23008_record is new i2c_device_record with record
       buff : aliased buffer;

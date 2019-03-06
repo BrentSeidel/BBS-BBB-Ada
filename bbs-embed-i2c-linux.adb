@@ -42,7 +42,7 @@ package body BBS.embed.i2c.linux is
    --
    -- Procedure to write a byte to a register on a device on the i2c bus.
    --
-   procedure write(addr : addr7; reg : uint8; data : uint8; error : out integer) is
+   procedure write(addr : addr7; reg : uint8; data : uint8; error : out err_code) is
       status : interfaces.C.int;
       err : integer;
    begin
@@ -61,15 +61,15 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
    end;
    --
    -- Function to read a byte from a register on a device on the i2c bus.
    --
-   function read(addr : addr7; reg : uint8; error : out integer)
+   function read(addr : addr7; reg : uint8; error : out err_code)
                        return uint8 is
       status : interfaces.C.int;
       err : integer;
@@ -92,9 +92,9 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return buff2(0);
    end;
@@ -102,7 +102,7 @@ package body BBS.embed.i2c.linux is
    -- Function to read a 16 bit word from a register on a device on the i2c bus.
    -- MSB first
    --
-   function readm1(addr : addr7; reg : uint8; error : out integer)
+   function readm1(addr : addr7; reg : uint8; error : out err_code)
                        return uint16 is
       status : interfaces.C.int;
       err : integer;
@@ -125,9 +125,9 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return uint16(buff2(0))*256 + uint16(buff2(1));
    end;
@@ -135,7 +135,7 @@ package body BBS.embed.i2c.linux is
    -- Function to read a 16 bit word from a register on a device on the i2c bus.
    -- LSB first
    --
-   function readm2(addr : addr7; reg : uint8; error : out integer)
+   function readm2(addr : addr7; reg : uint8; error : out err_code)
                        return uint16 is
       status : interfaces.C.int;
       err : integer;
@@ -158,9 +158,9 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return uint16(buff2(0)) + uint16(buff2(1))*256;
    end;
@@ -168,7 +168,7 @@ package body BBS.embed.i2c.linux is
    -- Procedure to read an arbitrary number of bytes from a device on the i2c bus
    --
    procedure read(addr : addr7; reg : uint8; buff : buff_ptr; size : uint16;
-                  error : out integer) is
+                  error : out err_code) is
       status : interfaces.C.int;
       err : integer;
    begin
@@ -190,9 +190,9 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
    end;
    --
@@ -207,12 +207,12 @@ package body BBS.embed.i2c.linux is
    --
    -- Object oriented interface
    --
-   function i2c_new return i2c_interface is
-   begin
-      return new i2c_interface_record;
-   end;
+--   function i2c_new return i2c_interface is
+--   begin
+--      return new i2c_interface_record;
+--   end;
    --
-   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string;
+   procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
                       SCL : string; SDA : string) is
       ctrl_file : Ada.Text_IO.File_Type;
    begin
@@ -226,22 +226,22 @@ package body BBS.embed.i2c.linux is
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
       self.port := C_open(i2c_file, O_RDWR, 8#666#);
-      self.msg(0).buff := self.buff1'Access;
-      self.ioctl_msg.messages := self.msg'Access;
-      self.msg(1).buff := self.buff2'Access;
+      self.msg(0).buff := self.buff1'Unchecked_Access;
+      self.ioctl_msg.messages := self.msg'Unchecked_Access;
+      self.msg(1).buff := self.buff2'Unchecked_Access;
    end;
    --
-   procedure configure(self : not null access i2c_interface_record'class; i2c_file : string) is
+   procedure configure(self : in out linux_i2c_interface_record; i2c_file : string) is
       ctrl_file : Ada.Text_IO.File_Type;
    begin
       self.port := C_open(i2c_file, O_RDWR, 8#666#);
-      self.msg(0).buff := self.buff1'Access;
-      self.ioctl_msg.messages := self.msg'Access;
-      self.msg(1).buff := self.buff2'Access;
+      self.msg(0).buff := self.buff1'Unchecked_Access;
+      self.ioctl_msg.messages := self.msg'Unchecked_Access;
+      self.msg(1).buff := self.buff2'Unchecked_Access;
    end;
    --
-   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                   data : uint8; error : out integer) is
+   procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint8; error : out err_code) is
       status : interfaces.C.int;
       err : integer;
    begin
@@ -258,29 +258,29 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
    end;
    --
    --
    -- Write an arbitrary number of bytes to a device on the i2c bus.
    --
-   procedure write(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                   buff : buff_ptr; size : uint16; error : out integer) is
+   procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   size : buff_index; error : out err_code) is
       status : interfaces.C.int;
       err : integer;
    begin
-      msg(0).addr := uint16(addr);
-      msg(0).flags := 0; -- write
-      msg(0).len := size + 1;
-      msg(0).buff := buff1'Access;
+      self.msg(0).addr  := uint16(addr);
+      self.msg(0).flags := 0; -- write
+      self.msg(0).len   := uint16(size + 1);
+--      self.msg(0).buff  := self.buff1'Access;
       ioctl_msg.messages := msg'Access;
       ioctl_msg.nmsgs := 1;
-      buff1(0) := reg;
+      self.buff1(0) := reg;
       for x in 0 .. size loop
-         buff1(integer(x + 1)) := buff(integer(x));
+         self.buff1(integer(x + 1)) := self.b(buff_index(x));
       end loop;
       status := rdwr_ioctl(self.port, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
@@ -289,26 +289,24 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
    end;
    --
-   function read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint8 is
+   function read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint8 is
       status : interfaces.C.int;
       err : integer;
-   begin
-      self.msg(0).addr := uint16(addr);
-      self.msg(0).flags := 0;
-      self.msg(0).len := 1;
-      self.msg(1).addr := uint16(addr);
+   begin      self.msg(0).flags := 0;
+      self.msg(0).len   := 1;
+      self.msg(1).addr  := uint16(addr);
       self.msg(1).flags := 1;
-      self.msg(1).len := 1;
+      self.msg(1).len   := 1;
       self.ioctl_msg.nmsgs := 2;
       self.buff1(0) := reg;
-      self.msg(1).buff := self.buff2'Access;
+--      self.msg(1).buff := self.buff2'Access;
       status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
       if (integer(status) < 0) then
          err := get_errno;
@@ -316,15 +314,15 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return self.buff2(0);
    end;
    --
-   function readm1(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint16 is
+   function readm1(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16 is
       status : interfaces.C.int;
       err : integer;
    begin
@@ -334,7 +332,7 @@ package body BBS.embed.i2c.linux is
       self.msg(1).addr := uint16(addr);
       self.msg(1).flags := 1; -- read
       self.msg(1).len := 2;
-      self.msg(1).buff := self.buff2'Access;
+--      self.msg(1).buff := self.buff2'Access;
       self.ioctl_msg.nmsgs := 2;
       self.buff1(0) := reg;
       status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
@@ -344,15 +342,15 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return uint16(self.buff2(0))*256 + uint16(self.buff2(1));
    end;
    --
-   function readm2(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                 error : out integer) return uint16 is
+   function readm2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16 is
       status : interfaces.C.int;
       err : integer;
    begin
@@ -362,7 +360,7 @@ package body BBS.embed.i2c.linux is
       self.msg(1).addr := uint16(addr);
       self.msg(1).flags := 1; -- read
       self.msg(1).len := 2;
-      self.msg(1).buff := self.buff2'Access;
+--      self.msg(1).buff := self.buff2'Access;
       self.ioctl_msg.nmsgs := 2;
       self.buff1(0) := reg;
       status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
@@ -372,25 +370,25 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
       return uint16(self.buff2(0)) + uint16(self.buff2(1))*256;
    end;
    --
-   procedure read(self : not null access i2c_interface_record'class; addr : addr7; reg : uint8;
-                  buff : buff_ptr; size : uint16; error : out integer) is
+   procedure read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                  size : buff_index; error : out err_code) is
       status : interfaces.C.int;
       err : integer;
    begin
-      self.msg(0).addr := uint16(addr);
+      self.msg(0).addr  := uint16(addr);
       self.msg(0).flags := 0; -- write
-      self.msg(0).len := 1;
-      self.msg(1).addr := uint16(addr);
+      self.msg(0).len   := 1;
+      self.msg(1).addr  := uint16(addr);
       self.msg(1).flags := 1; -- read
-      self.msg(1).len := size;
-      self.msg(1).buff := buff;
+      self.msg(1).len   := uint16(size);
+--      self.msg(1).buff  := self.b;
       self.ioctl_msg.nmsgs := 2;
       self.buff1(0) := reg;
       status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
@@ -400,21 +398,21 @@ package body BBS.embed.i2c.linux is
             Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
             Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
-         error := err;
+         error := failed;
       else
-         error := 0;
+         error := none;
       end if;
    end;
    --
-   function i2c_new return i2c_device is
-   begin
-      return new i2c_device_record;
-   end;
+--   function i2c_new return i2c_device is
+--   begin
+--      return new i2c_device_record;
+--   end;
    --
-   procedure configure(self : not null access i2c_device_record'Class; port : i2c_interface;
-                      addr : addr7) is
-   begin
-      self.port := port;
-      self.address := addr;
-   end;
+--   procedure configure(self : i2c_device_record; port : i2c_interface;
+--                      addr : addr7) is
+--   begin
+--      self.port := port;
+--      self.address := addr;
+--   end;
 end;

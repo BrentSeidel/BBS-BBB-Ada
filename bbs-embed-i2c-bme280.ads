@@ -106,73 +106,74 @@ package BBS.embed.i2c.BME280 is
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
    --
-   procedure configure(self : not null access BME280_record'class; port : i2c_interface;
-                       addr : addr7; error : out integer);
+   procedure configure(self : in out BME280_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
    --
    -- Starts the BME280 converting data.  Temperature, pressure, and humidity
    -- are converted at the same time.
    --
-   procedure start_conversion(self : not null access BME280_record'class; error : out integer);
+   procedure start_conversion(self : BME280_record; error : out err_code);
    --
    -- Check for data ready.  Reading a value before data is ready will have
    -- undesirable results.
    --
-   function data_ready(self : not null access BME280_record'class; error : out integer) return boolean;
+   function data_ready(self : BME280_record; error : out err_code) return boolean;
    --
    -- Read the temperature, pressure, and humidity value (there's less overhead
    -- to read all three value than to try and read each individually) and compute
    -- the calibrated values
    --
-   procedure read_data(self : not null access BME280_record'class; error : out integer);
+   procedure read_data(self : in out BME280_record; error : out err_code);
    --
    -- Return the raw uncompensated values.  Used for debugging purposes after
    -- read_data() has been called.
    --
-   procedure get_raw(self : not null access BME280_record'class; raw_temp : out uint32;
+   procedure get_raw(self : BME280_record; raw_temp : out uint32;
                      raw_press : out uint32; raw_hum : out uint32);
    --
    -- Return the t_fine value.  Used for debugging purposes after
    -- read_data() has been called.
    --
-   function get_t_fine(self : not null access BME280_record'class) return int32;
+   function get_t_fine(self : BME280_record) return int32;
    --
    -- Return the calibrated temperature value.  Temperature is returned in units
    -- of 0.01 degrees Celsius.
    --
-   function get_temp(self : not null access BME280_record'class) return integer;
+   function get_temp(self : BME280_record) return integer;
    --
    -- Return temperature in various units.
    --
-   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_c;
-   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_f;
-   function get_temp(self : not null access BME280_record'class) return BBS.units.temp_k;
+   function get_temp(self : BME280_record) return BBS.units.temp_c;
+   function get_temp(self : BME280_record) return BBS.units.temp_f;
+   function get_temp(self : BME280_record) return BBS.units.temp_k;
    --
    -- Return the calibrated pressure value.  Pressure is returned in units of
    -- 1/256 Pascals.
    --
-   function get_press(self : not null access BME280_record'class) return integer;
+   function get_press(self : BME280_record) return integer;
    --
    -- Return pressure in various units.
    --
-   function get_press(self : not null access BME280_record'class) return BBS.units.press_p;
-   function get_press(self : not null access BME280_record'class) return BBS.units.press_mb;
-   function get_press(self : not null access BME280_record'class) return BBS.units.press_atm;
-   function get_press(self : not null access BME280_record'class) return BBS.units.press_inHg;
+   function get_press(self : BME280_record) return BBS.units.press_p;
+   function get_press(self : BME280_record) return BBS.units.press_mb;
+   function get_press(self : BME280_record) return BBS.units.press_atm;
+   function get_press(self : BME280_record) return BBS.units.press_inHg;
    --
    -- Return the calibrated relative humidity.  The result is in units of
    -- 1/1024 %.
    --
-   function get_hum(self : not null access BME280_record'class) return integer;
+   function get_hum(self : BME280_record) return integer;
    --
    -- Return the relative humidity in percent.
    --
-   function get_hum(self : not null access BME280_record'class) return float;
+   function get_hum(self : BME280_record) return float;
    --
 private
-   buff : aliased buffer;
+   debug : Boolean := False;
+--   buff : aliased buffer;
    --
    type BME280_record is new i2c_device_record with record
-      buff : aliased buffer;
+--      buff : aliased buffer;
       T1 : uint16 := 0;
       T2 : int16 := 0;
       T3 : int16 := 0;

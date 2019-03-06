@@ -99,32 +99,32 @@ package BBS.embed.i2c.PCA9685 is
    type PS9685_ptr is access PS9685_record;
    --
    function i2c_new return PS9685_ptr;
-   procedure configure(self : not null access PS9685_record'class; port : i2c_interface;
-                       addr : addr7; error : out integer);
+   procedure configure(self : in out PS9685_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
    --
-   procedure set(self : not null access PS9685_record'class; chan : channel;
-                 on : uint12; off : uint12; error : out integer);
+   procedure set(self : PS9685_record; chan : channel;
+                 on : uint12; off : uint12; error : out err_code);
    --
-   procedure set_full_on(self : not null access PS9685_record'class; chan : channel;
-                  error : out integer);
+   procedure set_full_on(self : PS9685_record; chan : channel;
+                  error : out err_code);
    --
-   procedure set_full_off(self : not null access PS9685_record'class; chan : channel;
-                  error : out integer);
+   procedure set_full_off(self : PS9685_record; chan : channel;
+                  error : out err_code);
    --
    -- State = true for sleep or false for wake.
    --
-   procedure sleep(self : not null access PS9685_record'class; state : boolean;
-                  error : out integer);
+   procedure sleep(self : PS9685_record; state : boolean;
+                  error : out err_code);
    --
    -- Methods for servos
    --
-   procedure set_servo_range(self : not null access PS9685_record'class; chan : channel;
+   procedure set_servo_range(self : in out PS9685_record; chan : channel;
                          min : uint12; max : uint12);
    --
    -- Once the servo range has been set, a servo can be controlled by set_servo.
    --
-   procedure set_servo(self : not null access PS9685_record'class; chan : channel;
-                       position : servo_range; error : out integer);
+   procedure set_servo(self : PS9685_record; chan : channel;
+                       position : servo_range; error : out err_code);
    --
 private
    --
@@ -136,7 +136,7 @@ private
    -- Object definition
    --
    type PS9685_record is new i2c_device_record with record
-      addr : addr7;
+--      addr : addr7;
       servo_min : servo_array;
       servo_max : servo_array;
       servo_set : servo_set_array;

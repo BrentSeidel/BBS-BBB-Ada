@@ -94,33 +94,33 @@ package BBS.embed.i2c.L3GD20H is
    --
    -- Configure the device
    --
-   procedure configure(error : out integer);
-   procedure configure(deflection : uint8; error : out integer);
+--   procedure configure(error : out err_code);
+--   procedure configure(deflection : uint8; error : out err_code);
    --
    -- Get values from the device.  The integer values are the value read from
    -- the device registers.
    --
-   function get_temperature(error : out integer) return integer;
-   function get_rotation_x(error : out integer) return integer;
-   function get_rotation_y(error : out integer) return integer;
-   function get_rotation_z(error : out integer) return integer;
+--   function get_temperature(error : out err_code) return integer;
+--   function get_rotation_x(error : out err_code) return integer;
+--   function get_rotation_y(error : out err_code) return integer;
+--   function get_rotation_z(error : out err_code) return integer;
    --
    -- get_rotations gets the rotations around all three axises in a single
    -- transaction and returns them in a structure.
    --
-   function get_rotations(error : out integer) return rotations;
+--   function get_rotations(error : out err_code) return rotations;
    --
    -- Get values in engineering units.  These have been scaled and offset to
    -- convert them into standard units.
    --
-   function get_temperature(error : out integer) return BBS.units.temp_c;
-   function get_rotation_x(error : out integer) return BBS.units.rot_d_s;
-   function get_rotation_y(error : out integer) return BBS.units.rot_d_s;
-   function get_rotation_z(error : out integer) return BBS.units.rot_d_s;
-   function get_rotations(error : out integer) return rotations_dps;
+--   function get_temperature(error : out err_code) return BBS.units.temp_c;
+--   function get_rotation_x(error : out err_code) return BBS.units.rot_d_s;
+--   function get_rotation_y(error : out err_code) return BBS.units.rot_d_s;
+--   function get_rotation_z(error : out err_code) return BBS.units.rot_d_s;
+--   function get_rotations(error : out err_code) return rotations_dps;
    --
-   function get_status(error : out integer) return uint8;
-   function data_ready(error : out integer) return boolean;
+--   function get_status(error : out err_code) return uint8;
+--   function data_ready(error : out err_code) return boolean;
    --
    -- Stuff for object oriented interface.  These basically emulate the function
    -- of the conventional routines above.
@@ -128,26 +128,26 @@ package BBS.embed.i2c.L3GD20H is
    type L3GD20H_record is new i2c_device_record with private;
    type L3GD20H_ptr is access L3GD20H_record;
    --
-   function i2c_new return L3GD20H_ptr;
-   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
-                       addr : addr7; error : out integer);
-   procedure configure(self : not null access L3GD20H_record'class; port : i2c_interface;
-                       addr : addr7; deflection : uint8; error : out integer);
+--   function i2c_new return L3GD20H_ptr;
+   procedure configure(self : in out L3GD20H_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
+   procedure configure(self : in out L3GD20H_record; port : i2c_interface;
+                       addr : addr7; deflection : uint8; error : out err_code);
    --
-   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return integer;
-   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return integer;
-   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return integer;
-   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return integer;
-   function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations;
+   function get_temperature(self : L3GD20H_record; error : out err_code) return integer;
+   function get_rotation_x(self : L3GD20H_record; error : out err_code) return integer;
+   function get_rotation_y(self : L3GD20H_record; error : out err_code) return integer;
+   function get_rotation_z(self : L3GD20H_record; error : out err_code) return integer;
+   function get_rotations(self : L3GD20H_record; error : out err_code) return rotations;
    --
-   function get_temperature(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.temp_c;
-   function get_rotation_x(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
-   function get_rotation_y(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
-   function get_rotation_z(self : not null access L3GD20H_record'class; error : out integer) return BBS.units.rot_d_s;
-   function get_rotations(self : not null access L3GD20H_record'class; error : out integer) return rotations_dps;
+   function get_temperature(self : L3GD20H_record; error : out err_code) return BBS.units.temp_c;
+   function get_rotation_x(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
+   function get_rotation_y(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
+   function get_rotation_z(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
+   function get_rotations(self : L3GD20H_record; error : out err_code) return rotations_dps;
    --
-   function get_status(self : not null access L3GD20H_record'class; error : out integer) return uint8;
-   function data_ready(self : not null access L3GD20H_record'class; error : out integer) return boolean;
+   function get_status(self : L3GD20H_record; error : out err_code) return uint8;
+   function data_ready(self : L3GD20H_record; error : out err_code) return boolean;
    --
    -- When stationary, the sensors may not report 0.  This function should be
    -- called when the sensor is stationary.  It reads the rotations several times
@@ -158,10 +158,9 @@ package BBS.embed.i2c.L3GD20H is
    -- of the values measured are reasonably close to the mean.  If it returns false,
    -- the sensor may be moving.
    --
-   function measure_offsets(self : not null access L3GD20H_record'class) return boolean;
+   function measure_offsets(self : in out L3GD20H_record) return boolean;
    --
 private
-   buff : aliased buffer;
    --
    -- The temperature offset is emperically determined and seems to work for my
    -- application.  You may want to check the values that you get from the
@@ -175,7 +174,6 @@ private
    dps_scale : float := 245.0/32767.0;
    --
    type L3GD20H_record is new i2c_device_record with record
-      buff : aliased buffer;
       temp_offset : integer := 37;
       offset_x : integer := 0;
       offset_y : integer := 0;

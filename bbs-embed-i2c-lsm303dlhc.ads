@@ -134,38 +134,38 @@ package BBS.embed.i2c.LSM303DLHC is
       end record;
    --
    --
-   procedure configure(error : out integer);
-   procedure configure(accel_fs : uint8; mag_fs: uint8; error : out integer);
-   --
-   function get_acceleration_x(error : out integer) return integer;
-   function get_acceleration_y(error : out integer) return integer;
-   function get_acceleration_z(error : out integer) return integer;
-   function get_accelerations(error : out integer) return accelerations;
-   --
-   function get_acceleration_x(error : out integer) return BBS.units.accel_g;
-   function get_acceleration_y(error : out integer) return BBS.units.accel_g;
-   function get_acceleration_z(error : out integer) return BBS.units.accel_g;
-   function get_accelerations(error : out integer) return accelerations_g;
-   --
-   function get_accel_status(error : out integer) return uint8;
-   function accel_data_ready(error : out integer) return boolean;
-   --
-   function get_temperature(error : out integer) return integer;
-   function get_temperature(error : out integer) return float;
-   function get_temperature(error : out integer) return BBS.units.temp_c;
-   --
-   function get_magnet_x(error : out integer) return integer;
-   function get_magnet_y(error : out integer) return integer;
-   function get_magnet_z(error : out integer) return integer;
-   function get_magnetism(error : out integer) return magnetism;
-   --
-   function get_magnet_x(error : out integer) return BBS.units.mag_g;
-   function get_magnet_y(error : out integer) return BBS.units.mag_g;
-   function get_magnet_z(error : out integer) return BBS.units.mag_g;
-   function get_magnetism(error : out integer) return magnetism_gauss;
-   --
-   function get_mag_status(error : out integer) return uint8;
-   function mag_data_ready(error : out integer) return boolean;
+--     procedure configure(error : out integer);
+--     procedure configure(accel_fs : uint8; mag_fs: uint8; error : out integer);
+--     --
+--     function get_acceleration_x(error : out integer) return integer;
+--     function get_acceleration_y(error : out integer) return integer;
+--     function get_acceleration_z(error : out integer) return integer;
+--     function get_accelerations(error : out integer) return accelerations;
+--     --
+--     function get_acceleration_x(error : out integer) return BBS.units.accel_g;
+--     function get_acceleration_y(error : out integer) return BBS.units.accel_g;
+--     function get_acceleration_z(error : out integer) return BBS.units.accel_g;
+--     function get_accelerations(error : out integer) return accelerations_g;
+--     --
+--     function get_accel_status(error : out integer) return uint8;
+--     function accel_data_ready(error : out integer) return boolean;
+--     --
+--     function get_temperature(error : out integer) return integer;
+--     function get_temperature(error : out integer) return float;
+--     function get_temperature(error : out integer) return BBS.units.temp_c;
+--     --
+--     function get_magnet_x(error : out integer) return integer;
+--     function get_magnet_y(error : out integer) return integer;
+--     function get_magnet_z(error : out integer) return integer;
+--     function get_magnetism(error : out integer) return magnetism;
+--     --
+--     function get_magnet_x(error : out integer) return BBS.units.mag_g;
+--     function get_magnet_y(error : out integer) return BBS.units.mag_g;
+--     function get_magnet_z(error : out integer) return BBS.units.mag_g;
+--     function get_magnetism(error : out integer) return magnetism_gauss;
+--     --
+--     function get_mag_status(error : out integer) return uint8;
+--     function mag_data_ready(error : out integer) return boolean;
    --
    -- Definitions for object oriented interface.  They basically do the same
    -- thing as the standard routines above.
@@ -173,12 +173,12 @@ package BBS.embed.i2c.LSM303DLHC is
    type LSM303DLHC_record is new i2c_device_record with private;
    type LSM303DLHC_ptr is access LSM303DLHC_record;
    --
-   function i2c_new return LSM303DLHC_ptr;
-   procedure configure(self : not null access LSM303DLHC_record'class; port : i2c_interface;
-                       accel : addr7; mag : addr7; error : out integer);
-   procedure configure(self : not null access LSM303DLHC_record'class;
+--   function i2c_new return LSM303DLHC_ptr;
+   procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
+                       accel : addr7; mag : addr7; error : out err_code);
+   procedure configure(self : in out LSM303DLHC_record;
                        port : i2c_interface; addr_accel : addr7; addr_mag : addr7;
-                       accel_fs : uint8; mag_fs : uint8; error : out integer);
+                       accel_fs : uint8; mag_fs : uint8; error : out err_code);
    --
    -- The calibrate accel procedure can be called when the sensor is stationary
    -- in a 1G acceleration or gravitational field.  It takes multiple measurements
@@ -187,40 +187,40 @@ package BBS.embed.i2c.LSM303DLHC is
    -- compute a calibration value for each of the axis separately, but that would
    -- require the sensor to be precicely positioned three time.
    --
-   procedure calibrate_accel(self : not null access LSM303DLHC_record'class);
+   procedure calibrate_accel(self : in out LSM303DLHC_record);
    --
-   function get_acceleration_x(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_acceleration_y(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_acceleration_z(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_accelerations(self : not null access LSM303DLHC_record'class; error : out integer) return accelerations;
+   function get_acceleration_x(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_acceleration_y(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_acceleration_z(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_accelerations(self : LSM303DLHC_record; error : out err_code) return accelerations;
    --
-   function get_acceleration_x(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.accel_g;
-   function get_acceleration_y(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.accel_g;
-   function get_acceleration_z(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.accel_g;
-   function get_accelerations(self : not null access LSM303DLHC_record'class; error : out integer) return accelerations_g;
+   function get_acceleration_x(self : LSM303DLHC_record; error : out err_code) return BBS.units.accel_g;
+   function get_acceleration_y(self : LSM303DLHC_record; error : out err_code) return BBS.units.accel_g;
+   function get_acceleration_z(self : LSM303DLHC_record; error : out err_code) return BBS.units.accel_g;
+   function get_accelerations(self : LSM303DLHC_record; error : out err_code) return accelerations_g;
    --
-   function get_accel_status(self : not null access LSM303DLHC_record'class; error : out integer) return uint8;
-   function accel_data_ready(self : not null access LSM303DLHC_record'class; error : out integer) return boolean;
+   function get_accel_status(self : LSM303DLHC_record; error : out err_code) return uint8;
+   function accel_data_ready(self : LSM303DLHC_record; error : out err_code) return boolean;
    --
-   function get_temperature(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_temperature(self : not null access LSM303DLHC_record'class; error : out integer) return float;
-   function get_temperature(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.temp_c;
+   function get_temperature(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_temperature(self : LSM303DLHC_record; error : out err_code) return float;
+   function get_temperature(self : LSM303DLHC_record; error : out err_code) return BBS.units.temp_c;
    --
-   function get_magnet_x(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_magnet_y(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_magnet_z(self : not null access LSM303DLHC_record'class; error : out integer) return integer;
-   function get_magnetism(self : not null access LSM303DLHC_record'class; error : out integer) return magnetism;
+   function get_magnet_x(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_magnet_y(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_magnet_z(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_magnetism(self : LSM303DLHC_record; error : out err_code) return magnetism;
    --
-   function get_magnet_x(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.mag_g;
-   function get_magnet_y(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.mag_g;
-   function get_magnet_z(self : not null access LSM303DLHC_record'class; error : out integer) return BBS.units.mag_g;
-   function get_magnetism(self : not null access LSM303DLHC_record'class; error : out integer) return magnetism_gauss;
+   function get_magnet_x(self : LSM303DLHC_record; error : out err_code) return BBS.units.mag_g;
+   function get_magnet_y(self : LSM303DLHC_record; error : out err_code) return BBS.units.mag_g;
+   function get_magnet_z(self : LSM303DLHC_record; error : out err_code) return BBS.units.mag_g;
+   function get_magnetism(self : LSM303DLHC_record; error : out err_code) return magnetism_gauss;
    --
-   function get_mag_status(self : not null access LSM303DLHC_record'class; error : out integer) return uint8;
-   function mag_data_ready(self : not null access LSM303DLHC_record'class; error : out integer) return boolean;
+   function get_mag_status(self : LSM303DLHC_record; error : out err_code) return uint8;
+   function mag_data_ready(self : LSM303DLHC_record; error : out err_code) return boolean;
    --
 private
-   buff : aliased buffer;
+--   buff : aliased buffer;
    --
    -- The temperature offset is emperically determined and seems to work for my
    -- application.  You may want to check the values that you get from the
@@ -236,7 +236,7 @@ private
    -- Object definition
    --
    type LSM303DLHC_record is new i2c_device_record with record
-      buff : aliased buffer;
+--      buff : aliased buffer;
       addr_accel : addr7;
       addr_mag : addr7;
       temp_offset :  integer := 136;

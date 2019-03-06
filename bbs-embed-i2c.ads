@@ -12,7 +12,7 @@ package BBS.embed.i2c is
    --
    --  Possible error codes
    --
-   type err_code is (none, nack, ovre, invalid_addr);
+   type err_code is (none, nack, ovre, invalid_addr, failed);
    --
    --  buffer to use for reading and writing from i2c bus.  In most cases, only
    --  a few bytes are needed.  This should be quite adequate.
@@ -41,7 +41,8 @@ package BBS.embed.i2c is
    --
    type i2c_device_record is tagged
       record
-         hw       : i2c_interface;
+         hw      : i2c_interface;
+         address : addr7;
       end record;
    type i2c_device is access i2c_device_record;
    --
