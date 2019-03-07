@@ -1,8 +1,8 @@
 with "../BBS-Ada/bbs.gpr";
 
-project bbs_embed is
+project Bbs_Embed is
 
-   for Source_Dirs use ("./**");
+   for Source_Dirs use ("src/**");
    for Main use ();
    for Languages use ("Ada", "C");
 
@@ -23,5 +23,5 @@ project bbs_embed is
       for Default_Switches ("c") use ("-g");
    end Compiler;
 
-end bbs_embed;
+end Bbs_Embed;
 
