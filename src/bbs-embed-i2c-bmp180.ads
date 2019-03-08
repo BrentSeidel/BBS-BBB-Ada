@@ -1,6 +1,6 @@
-with Ada.Text_IO;
-with Ada.Integer_Text_IO;
-with Ada.Unchecked_Conversion;
+--with Ada.Text_IO;
+--with Ada.Integer_Text_IO;
+--with Ada.Unchecked_Conversion;
 with Ada.Numerics.Generic_Elementary_Functions;
 with BBS.embed.i2c;
 with BBS.units;

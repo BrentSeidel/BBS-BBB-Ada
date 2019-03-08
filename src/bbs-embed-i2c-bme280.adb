@@ -1,18 +1,19 @@
+with BBS.embed.log;
 package body BBS.embed.i2c.BME280 is
    --
    -- Get elementary math functions for floating point numbers
    --
-   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
-   function "**"(Left, Right : float) return float
-                 renames float_functions."**";
+--   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
+--   function "**"(Left, Right : float) return float
+--                 renames float_functions."**";
    --
    --
    -- Object oriented interface
    --
-   function i2c_new return BME280_ptr is
-   begin
-      return new BME280_record;
-   end;
+--   function i2c_new return BME280_ptr is
+--   begin
+--      return new BME280_record;
+--   end;
    --
    procedure configure(self : in out BME280_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
@@ -29,98 +30,110 @@ package body BBS.embed.i2c.BME280 is
       -- first or a single byte.  The two exceptions are H4 and H5.
       --
       self.T1 := self.hw.readm2(self.address, dig_T1, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.T2 := uint16_to_int16(self.hw.readm2(self.address, dig_T2, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.T3 := uint16_to_int16(self.hw.readm2(self.address, dig_T3, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P1 := self.hw.readm2(self.address, dig_P1, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P2 := uint16_to_int16(self.hw.readm2(self.address, dig_P2, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P3 := uint16_to_int16(self.hw.readm2(self.address, dig_P3, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P4 := uint16_to_int16(self.hw.readm2(self.address, dig_P4, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P5 := uint16_to_int16(self.hw.readm2(self.address, dig_P5, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P6 := uint16_to_int16(self.hw.readm2(self.address, dig_P6, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P7 := uint16_to_int16(self.hw.readm2(self.address, dig_P7, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P8 := uint16_to_int16(self.hw.readm2(self.address, dig_P8, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.P9 := uint16_to_int16(self.hw.readm2(self.address, dig_P9, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.H1 := self.hw.read(self.address, dig_H1, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.H2 := uint16_to_int16(self.hw.readm2(self.address, dig_H2, error));
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       self.H3 := self.hw.read(self.address, dig_H3, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       --
       -- Specification of H4 is given as 0xE4/0xE5[3:0] => dig_H4[11:4]/[3:0]
       -- Specification of H5 is given as 0xE5[7:4]/0xE6 => dig_H5[3:0]/[11:4]
       -- These are actually 12 bit integers packed into three bytes.
       --
       temp_1 := self.hw.read(self.address, dig_H4, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       temp_2 := self.hw.read(self.address, dig_H45, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       temp_3 := self.hw.read(self.address, dig_H5, error);
+      if error /= BBS.embed.i2c.none then
+         return;
+      end if;
       temp_a := uint12(temp_1)*16 + uint12(temp_2 mod 16);
       temp_b := uint12(temp_3)*16 + uint12(temp_2/16);
       self.H4 := int16(uint12_to_int12(temp_a));
       self.H5 := int16(uint12_to_int12(temp_b));
       self.H6 := self.hw.read(self.address, dig_H6, error);
       if debug then
-         Ada.Text_IO.Put_Line("BME280 Calibration parameters");
-         Ada.Text_IO.Put("T1 = ");
-         Ada.Integer_Text_IO.Put(integer(self.T1), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("T2 = ");
-         Ada.Integer_Text_IO.Put(integer(self.T2), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("T3 = ");
-         Ada.Integer_Text_IO.Put(integer(self.T3), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P1 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P1), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P2 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P2), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P3 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P3), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P4 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P4), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P5 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P5), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P6 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P6), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P7 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P7), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P8 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P8), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("P9 = ");
-         Ada.Integer_Text_IO.Put(integer(self.P9), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H1 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H1), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H2 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H2), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H3 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H3), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("temp_1 = ");
-         Ada.Integer_Text_IO.Put(integer(temp_1), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("temp_2 = ");
-         Ada.Integer_Text_IO.Put(integer(temp_2), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("temp_3 = ");
-         Ada.Integer_Text_IO.Put(integer(temp_3), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H4 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H4), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H5 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H5), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("H6 = ");
-         Ada.Integer_Text_IO.Put(integer(self.H6), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
+         BBS.embed.log.debug.Put_Line("BME280 Calibration parameters");
+         BBS.embed.log.debug.put_line("BME280: T1 = " & Integer'Image(integer(self.T1)));
+         BBS.embed.log.debug.put_line("BME280: T2 = " & Integer'Image(integer(self.T2)));
+         BBS.embed.log.debug.put_line("BME280: T3 = " & Integer'Image(integer(self.T3)));
+         BBS.embed.log.debug.put_line("BME280: P1 = " & Integer'Image(integer(self.P1)));
+         BBS.embed.log.debug.put_line("BME280: P2 = " & Integer'Image(integer(self.P2)));
+         BBS.embed.log.debug.put_line("BME280: P3 = " & Integer'Image(integer(self.P3)));
+         BBS.embed.log.debug.put_line("BME280: P4 = " & Integer'Image(integer(self.P4)));
+         BBS.embed.log.debug.put_line("BME280: P5 = " & Integer'Image(integer(self.P5)));
+         BBS.embed.log.debug.put_line("BME280: P6 = " & Integer'Image(integer(self.P6)));
+         BBS.embed.log.debug.put_line("BME280: P7 = " & Integer'Image(integer(self.P7)));
+         BBS.embed.log.debug.put_line("BME280: P8 = " & Integer'Image(integer(self.P8)));
+         BBS.embed.log.debug.put_line("BME280: P9 = " & Integer'Image(integer(self.P9)));
+         BBS.embed.log.debug.put_line("BME280: H1 = " & Integer'Image(integer(self.H1)));
+         BBS.embed.log.debug.put_line("BME280: H2 = " & Integer'Image(integer(self.H2)));
+         BBS.embed.log.debug.put_line("BME280: H3 = " & Integer'Image(integer(self.H3)));
+         BBS.embed.log.debug.put_line("BME280: temp_1 = " & Integer'Image(integer(temp_1)));
+         BBS.embed.log.debug.put_line("BME280: temp_2 = " & Integer'Image(integer(temp_2)));
+         BBS.embed.log.debug.put_line("BME280: temp_3 = " & Integer'Image(integer(temp_3)));
+         BBS.embed.log.debug.put_line("BME280: H4 = " & Integer'Image(integer(self.H4)));
+         BBS.embed.log.debug.put_line("BME280: H5 = " & Integer'Image(integer(self.H5)));
+         BBS.embed.log.debug.put_line("BME280: H6 = " & Integer'Image(integer(self.H6)));
       end if;
       --
       -- Now set the mode.  Use forced mode to keep the interface similar to
@@ -232,15 +245,9 @@ package body BBS.embed.i2c.BME280 is
       self.raw_temp  := (uint32(self.hw.b(3))*2**16 + uint32(self.hw.b(4))*2**8 + uint32(self.hw.b(5)))/16;
       self.raw_hum   := uint32(self.hw.b(6))*2**8  + uint32(self.hw.b(7));
       if (debug) then
-         Ada.Text_IO.Put("p_raw: ");
-         Ada.Integer_Text_IO.Put(integer(self.raw_press), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("t_raw: ");
-         Ada.Integer_Text_IO.Put(integer(self.raw_temp), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put("h_raw: ");
-         Ada.Integer_Text_IO.Put(integer(self.raw_hum), width => 9, base => 16);
-         Ada.Text_IO.New_Line;
+         BBS.embed.log.debug.put_line("p_raw: " & uint32'Image(self.raw_press));
+         BBS.embed.log.debug.put_line("t_raw: " & uint32'Image(self.raw_temp));
+         BBS.embed.log.debug.put_line("h_raw: " & uint32'Image(self.raw_hum));
       end if;
       --
       -- Compute the calibrated values based on the algorithms in the datasheet.

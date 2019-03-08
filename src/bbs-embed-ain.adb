@@ -1,3 +1,4 @@
+with BBS.embed.log;
 package body BBS.embed.AIN is
 
    function AIN_new return AIN is
@@ -44,7 +45,7 @@ package body BBS.embed.AIN is
       -- the exception on.  This provides a little bit of debugging information.
       --
       when Constraint_Error =>
-         Ada.Text_IO.Put_Line("Analog input conversion failed on value <" & buff & ">");
+         BBS.embed.log.error.Put_Line("Analog input conversion failed on value <" & buff & ">");
          raise;
    end;
    --
