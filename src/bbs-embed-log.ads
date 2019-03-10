@@ -16,7 +16,7 @@ package bbs.embed.log is
       record
          enabled : Boolean;
       end record;
-   type log_ptr is access all log_record;
+   type log_ptr is access all log_record'Class;
    --
    --  Define the procedures that can act on a log.
    --

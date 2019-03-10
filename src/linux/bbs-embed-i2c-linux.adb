@@ -1,3 +1,4 @@
+with BBS.embed.log;
 package body BBS.embed.i2c.linux is
    --
    -- This works with Debian Jessy for the Beaglebone Black.  The configuration
@@ -58,8 +59,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Write error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -89,8 +90,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -122,8 +123,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -155,8 +156,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -187,8 +188,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -255,8 +256,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Write error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -286,8 +287,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Write error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Write error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -311,8 +312,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -339,8 +340,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -367,8 +368,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else
@@ -395,8 +396,8 @@ package body BBS.embed.i2c.linux is
       if (integer(status) < 0) then
          err := get_errno;
          if (debug) then
-            Ada.Text_IO.Put("Read error " & Integer'Image(err) & " occured.  ");
-            Ada.Text_IO.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
+            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
          end if;
          error := failed;
       else

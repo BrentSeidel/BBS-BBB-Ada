@@ -1,4 +1,4 @@
-#with Ada.Text_IO;
+with Ada.Text_IO;
 with Ada.Direct_IO;
 with Ada.IO_Exceptions;
 with BBS.units;
