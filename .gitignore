@@ -4,6 +4,10 @@
 # Ada Library Information
 *.ali
 
+# Other files
+*.stdout
+*.stderr
+
 b__main.adb
 
 b__main.ads

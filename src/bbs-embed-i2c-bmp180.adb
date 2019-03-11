@@ -1,10 +1,11 @@
+with BBS.embed.log;
 package body BBS.embed.i2c.BMP180 is
    --
    -- Get elementary math functions for floating point numbers
    --
-   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
-   function "**"(Left, Right : float) return float
-                 renames float_functions."**";
+--   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
+--   function "**"(Left, Right : float) return float
+--                 renames float_functions."**";
    --
    -- Given local pressure and altimeter setting, determine the pressure
    -- altitude.  Given local pressure and altitude, determine the altimeter

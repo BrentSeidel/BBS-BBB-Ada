@@ -2,9 +2,9 @@ package body BBS.embed.i2c.BME280 is
    --
    -- Get elementary math functions for floating point numbers
    --
-   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
-   function "**"(Left, Right : float) return float
-                 renames float_functions."**";
+--   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
+--   function "**"(Left, Right : float) return float
+--                 renames float_functions."**";
    --
    --
    -- Object oriented interface
