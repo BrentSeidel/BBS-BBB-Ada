@@ -1,5 +1,6 @@
-with Ada.Text_IO;
-with BBS.embed.i2c.linux;
+with BBS.embed.log;
+--with Ada.Text_IO;
+--with BBS.embed.i2c.linux;
 --
 -- Author: Brent Seidel
 -- Date:   15-Mar-2016
@@ -180,7 +181,7 @@ package body BBS.embed.i2c.L3GD20H is
          when fs_2000dps =>
             self.scale := 2000.0/32767.0;
          when others =>
-            Ada.Text_IO.Put_Line("Unknown value for L3GD20H full scale deflection");
+            BBS.embed.log.error.Put_Line("Unknown value for L3GD20H full scale deflection");
             raise Program_Error;
       end case;
       self.hw := port;
@@ -337,10 +338,10 @@ package body BBS.embed.i2c.L3GD20H is
          var_y := (sum_y2 - float(self.offset_y)*float(self.offset_y))/(float(samples - 1));
          var_z := (sum_z2 - float(self.offset_z)*float(self.offset_z))/(float(samples - 1));
          if debug then
-            Ada.Text_IO.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
+            BBS.embed.log.debug.Put_Line("Rotation offsets are: <" & integer'Image(self.offset_x) & ", " &
                                    integer'Image(self.offset_y) & ", " &
                                    integer'Image(self.offset_z) & ">");
-            Ada.Text_IO.Put_Line("Rotation variances are: <" & integer'Image(integer(var_x)) & ", " &
+            BBS.embed.log.debug.Put_Line("Rotation variances are: <" & integer'Image(integer(var_x)) & ", " &
                                    integer'Image(integer(var_y)) & ", " &
                                    integer'Image(integer(var_z)) & ">");
          end if;

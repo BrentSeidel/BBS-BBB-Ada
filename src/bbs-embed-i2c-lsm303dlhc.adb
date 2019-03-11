@@ -1,3 +1,4 @@
+with BBS.embed.log;
 package body BBS.embed.i2c.LSM303DLHC is
    --
    -- Do a basic configuration.  Turn on the accelerometers, magnetometers, and
@@ -293,7 +294,7 @@ package body BBS.embed.i2c.LSM303DLHC is
          when fs_16g =>
             accel_scale := 16.0 / 32768.0;
          when others =>
-            Ada.Text_IO.Put_Line("Unknown value for LSM303DLHC accelerometer full scale deflection");
+            BBS.embed.log.error.Put_Line("Unknown value for LSM303DLHC accelerometer full scale deflection");
             raise Program_Error;
       end case;
       case mag_fs is
@@ -319,7 +320,7 @@ package body BBS.embed.i2c.LSM303DLHC is
             mag_scale_xy := 1.0 / 230.0;
             mag_scale_z := 1.0 / 205.0;
          when others =>
-            Ada.Text_IO.Put_Line("Unknown value for LSM303DLHC magnetometer full scale deflection");
+            BBS.embed.log.error.Put_Line("Unknown value for LSM303DLHC magnetometer full scale deflection");
             raise Program_Error;
       end case;
       --
@@ -352,9 +353,8 @@ package body BBS.embed.i2c.LSM303DLHC is
            float(accel.z*accel.z));
       end loop;
       self.accel_calib := 1.0 / (sum_sq/float(samples));
-      Ada.Text_IO.Put("Acceleration calibration is: <");
-      Ada.Float_Text_IO.Put(self.accel_calib, 1, 2, 0);
-      Ada.Text_IO.Put_Line(">");
+      BBS.embed.log.info.put_line("Acceleration calibration is: <" & Float'Image(self.accel_calib) &
+                            ">");
    end;
    --
    function get_acceleration_x(self : LSM303DLHC_record;

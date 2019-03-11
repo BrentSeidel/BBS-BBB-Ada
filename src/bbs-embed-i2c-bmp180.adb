@@ -269,7 +269,7 @@ package body BBS.embed.i2c.BMP180 is
       temp : int16;
    begin
       if (self.last_cvt /= cvt_temp) then
-         Ada.Text_IO.Put_Line("Last conversion request was not for temperature");
+         BBS.embed.log.error.Put_Line("Last conversion request was not for temperature");
          raise Program_Error;
       end if;
       msb_value := self.hw.read(self.address, msb, error);
@@ -327,7 +327,7 @@ package body BBS.embed.i2c.BMP180 is
    begin
       if (self.last_cvt /= cvt_press0) and (self.last_cvt /= cvt_press1) and
         (self.last_cvt /= cvt_press2) and (self.last_cvt /= cvt_press3) then
-         Ada.Text_IO.Put_Line("Last conversion request was not for pressure");
+         BBS.embed.log.error.Put_Line("Last conversion request was not for pressure");
          raise Program_Error;
       end if;
       msb_value := self.hw.read(self.address, msb, error);
@@ -349,7 +349,7 @@ package body BBS.embed.i2c.BMP180 is
          press := press / 2 ** 5;
          oss_2 := 8;
       when others =>
-         Ada.Text_IO.Put_Line("OSS value out of range " & integer'Image(integer(oss)));
+         BBS.embed.log.error.Put_Line("OSS value out of range " & integer'Image(integer(oss)));
          raise Program_Error;
       end case;
       b6a := self.b5 - 4000;

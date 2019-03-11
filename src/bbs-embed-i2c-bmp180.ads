@@ -1,7 +1,3 @@
---with Ada.Text_IO;
---with Ada.Integer_Text_IO;
-with Ada.Unchecked_Conversion;
---with Ada.Numerics.Generic_Elementary_Functions;
 with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.len_m;
@@ -160,7 +156,6 @@ private
      new Ada.Unchecked_Conversion(source => uint32, target => integer);
    --
    type BMP180_record is new i2c_device_record with record
---      buff : aliased buffer;
       ac1 : int16 := 0;
       ac2 : int16 := 0;
       ac3 : int16 := 0;

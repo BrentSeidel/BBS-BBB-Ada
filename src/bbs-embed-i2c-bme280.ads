@@ -1,7 +1,4 @@
---with Ada.Text_IO;
---with Ada.Integer_Text_IO;
-with Ada.Unchecked_Conversion;
---with Ada.Numerics.Generic_Elementary_Functions;
+--with Ada.Unchecked_Conversion;
 with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.len_m;
@@ -101,7 +98,7 @@ package BBS.embed.i2c.BME280 is
    type BME280_record is new i2c_device_record with private;
    type BME280_ptr is access BME280_record;
    --
-   function i2c_new return BME280_ptr;
+--   function i2c_new return BME280_ptr;
    --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
