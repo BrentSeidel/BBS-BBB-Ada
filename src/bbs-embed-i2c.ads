@@ -31,7 +31,7 @@ package BBS.embed.i2c is
    --
    type i2c_interface_record is tagged limited
       record
-         b        : buff_ptr;
+         b : aliased buffer;
       end record;
    type i2c_interface is access all i2c_interface_record'Class;
    --

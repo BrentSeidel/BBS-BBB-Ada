@@ -25,9 +25,9 @@ package BBS.embed.i2c.linux is
    -- buffer to use for reading and writing from i2c bus.  In most cases, only
    -- a few bytes are needed.  This should be quite adequate.
    --
-   type buffer is array(0 .. 127) of uint8;
-   type buff_ptr is access all buffer;
-   pragma Convention(C, buff_ptr);
+--   type buffer is array(0 .. 127) of uint8;
+   type cbuff_ptr is new buff_ptr;
+   pragma Convention(C, cbuff_ptr);
    --
    -- Now define routines to actually use the interface.
    --
@@ -177,7 +177,7 @@ private
          addr : uint16;
          flags : uint16;
          len : uint16;
-         buff : buff_ptr;
+         buff : cbuff_ptr;
       end record;
    --
    type i2c_msg_arr is array (0 .. 1) of i2c_msg;
@@ -268,7 +268,7 @@ private
       record
          port : file_id;
          buff1 : aliased buffer;
-         buff2 : aliased buffer;
+--         buff2 : aliased buffer;
          msg : aliased i2c_msg_arr;
          ioctl_msg : i2c_rdwr_ioctl_data;
       end record;
