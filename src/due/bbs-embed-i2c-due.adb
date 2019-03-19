@@ -9,7 +9,6 @@ with SAM3x8e.TWI;  --  Needed for I2C interface
 with BBS.embed;
 use type BBS.embed.uint32;
 with BBS.embed.due.serial.int;
---with utils;
 --
 --  Package for the I2C interface
 --
@@ -45,7 +44,6 @@ package body bbs.embed.i2c.due is
       i2c_port(0).sda_pin := 12;
       i2c_port(0).scl_pin := 13;
       i2c_port(0).int_id  := Ada.Interrupts.Names.TWI1_Interrupt;
-      i2c_port(0).b       := b0'Access;
       i2c_port(0).handle  := buff(0);
       buff0.set_interface(i2c_0'Access);
       --
@@ -55,7 +53,6 @@ package body bbs.embed.i2c.due is
       i2c_port(1).sda_pin := 17;
       i2c_port(1).scl_pin := 18;
       i2c_port(1).int_id  := Ada.Interrupts.Names.TWI0_Interrupt;
-      i2c_port(1).b       := b1'Access;
       i2c_port(1).handle  := buff(1);
       buff1.set_interface(i2c_1'Access);
       --
@@ -274,7 +271,7 @@ package body bbs.embed.i2c.due is
    function read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint8 is
    begin
-      read(self, addr, reg, 1, error);
+      self.read(addr, reg, 1, error);
       return  self.b(0);
    end read;
    --
@@ -286,7 +283,7 @@ package body bbs.embed.i2c.due is
    function readm1(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                    error : out err_code) return UInt16 is
    begin
-      read(self, addr, reg, 2, error);
+      self.read(addr, reg, 2, error);
       return  UInt16(self.b(0))*256 + UInt16(self.b(1));
    end;
    --
@@ -295,7 +292,7 @@ package body bbs.embed.i2c.due is
    function readm2(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                    error : out err_code) return UInt16 is
    begin
-      read(self, addr, reg, 2, error);
+      self.read(addr, reg, 2, error);
       return  UInt16(self.b(1))*256 + UInt16(self.b(0));
    end;
    --
@@ -413,7 +410,6 @@ package body bbs.embed.i2c.due is
          status : SAM3x8e.TWI.TWI0_SR_Register;
       begin
          status := device.port.SR;
-         stat := status;
          if status.NACK = 1 then
             err := nack;
          elsif status.OVRE = 1 then

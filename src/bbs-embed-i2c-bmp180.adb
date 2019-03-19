@@ -223,6 +223,7 @@ package body BBS.embed.i2c.BMP180 is
    begin
       self.hw := port;
       self.address := addr;
+      BBS.embed.log.info.put_line("BMP180 Info: Configuring and reading calibration values.");
       self.hw.read(self.address, cal_start, buff_index(cal_end - cal_start + 1), error);
       --
       -- offsets into the buffer do not match the addresses.  Offset zero is
@@ -244,6 +245,7 @@ package body BBS.embed.i2c.BMP180 is
    procedure start_conversion(self : in out BMP180_record;
                               kind : uint8; error : out err_code) is
    begin
+      BBS.embed.log.info.put_line("BMP180 Info: Starting Conversion.");
       self.hw.write(self.address, ctrl, kind, error);
       self.last_cvt := kind;
    end;
@@ -253,6 +255,7 @@ package body BBS.embed.i2c.BMP180 is
       byte : uint8;
       err : err_code;
    begin
+      BBS.embed.log.info.put_line("BMP180 Info: Checking for data ready.");
       byte := self.hw.read(self.address, ctrl, err);
       error := err;
       if ((byte and start_cvt) /= start_cvt) and (err = none) then
@@ -269,7 +272,7 @@ package body BBS.embed.i2c.BMP180 is
       temp : int16;
    begin
       if (self.last_cvt /= cvt_temp) then
-         BBS.embed.log.error.Put_Line("Last conversion request was not for temperature");
+         BBS.embed.log.error.Put_Line("BMP180 Error: Last conversion request was not for temperature");
          raise Program_Error;
       end if;
       msb_value := self.hw.read(self.address, msb, error);
@@ -327,7 +330,7 @@ package body BBS.embed.i2c.BMP180 is
    begin
       if (self.last_cvt /= cvt_press0) and (self.last_cvt /= cvt_press1) and
         (self.last_cvt /= cvt_press2) and (self.last_cvt /= cvt_press3) then
-         BBS.embed.log.error.Put_Line("Last conversion request was not for pressure");
+         BBS.embed.log.error.Put_Line("BMP180 Error: Last conversion request was not for pressure");
          raise Program_Error;
       end if;
       msb_value := self.hw.read(self.address, msb, error);
@@ -349,7 +352,7 @@ package body BBS.embed.i2c.BMP180 is
          press := press / 2 ** 5;
          oss_2 := 8;
       when others =>
-         BBS.embed.log.error.Put_Line("OSS value out of range " & integer'Image(integer(oss)));
+         BBS.embed.log.error.Put_Line("BMP180 Error: OSS value out of range " & integer'Image(integer(oss)));
          raise Program_Error;
       end case;
       b6a := self.b5 - 4000;

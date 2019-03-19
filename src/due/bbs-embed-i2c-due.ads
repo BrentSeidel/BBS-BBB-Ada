@@ -113,8 +113,8 @@ private
    --
    --  Buffers for reading data
    --
-   b0 : aliased buffer;
-   b1 : aliased buffer;
+--   b0 : aliased buffer;
+--   b1 : aliased buffer;
 
    --
    --  A protected type defining the transmit and receive buffers as well as an
@@ -156,7 +156,6 @@ private
       pragma Interrupt_Priority(System.Interrupt_Priority'First);
 
       device   : due_i2c_interface;
-      stat     : SAM3x8e.TWI.TWI0_SR_Register;
 
       busy     : Boolean := False;
       not_busy : Boolean := True;

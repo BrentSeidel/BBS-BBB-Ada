@@ -1,4 +1,3 @@
---with Ada.Unchecked_Conversion;
 with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.len_m;
