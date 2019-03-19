@@ -1,20 +1,27 @@
 # BBS-BBB-Ada
-This repository contains a collection of Ada sources for working with the
-BeagleBone Black Linux computer.  Some of these could probably be easily ported
-to similar systems such as the Raspberry PI.
+This repository contains a collection of Ada sources for working with embedded
+Linux computers such as the BeagleBone Black or the Raspberry Pi, as well as the
+ARM based Arduino Due.  Due to differences between platforms and the limited
+amount of time I have to work on things, something may work on one platform,
+but not on another.
 
 # Notices
+## Note
+As a result of bringing in the Arduino Due, the non-object oriented interfaces
+will generally be going away.  They may still exist at a low level, but are
+not recommended for use.
+
 ## Note
 Due to changes in the way that various I/O is handled, these routines are pretty much
 guarenteed not to work on some versions of Linux.  The I2C routines were developed on
 Debian Jessie, Linux V4.1.12-ti-r29 and use Ada 2012.
 
-##Note
+## Note
 Some of the system files that control I/O are owned by root and do not allow world
 write access.  A shell script is provided to set the permissions so that the Ada
 program does not need to run as root.
 
-##Note
+## Note
 I finally got around to developing a centralized units system.  The types for
 many physical units are now defined in the BBS.units package.  This can be fetched
 from the https://github.com/BrentSeidel/BBS-Ada.git repository on GitHub.  While
@@ -25,7 +32,7 @@ An advantage of this approach is that if you use the proper units in your
 calculations, the compiler will be able to catch mismatches between feet and
 meters before you crash your probe into Mars.
 
-##Note
+## Note
 Another reoganization is likely in work.  These routines seem to work fairly well on
 Linux based embedded systems.  I am getting interested in trying out Ada on bare
 ARM based systems such as the Arduino Due.  It would be nice to be able to re-use
@@ -40,19 +47,14 @@ experimentation.
 
 # Contents
 ## LEDs
-The BBS.BBB.LED package contains definitions and routines for controlling the four built-
-in LEDs on the board next to the ethernet connector.
+This works only on the BeagleBone Black which has four controllable LEDs on the
+circuit board.  The BBS.embed.LED package contains definitions and routines for
+controlling the four built-in LEDs on the board next to the ethernet connector.
 
 ## i2c
-The BBS.BBB.i2c package contains a set of routines for reading and writing to
-devices on I2C bus 1 (pins P9-24 and P9-26).  Currently the other two I2C busses
-are not supported.  They may be at some future point, but they seem to be used
-for system functions so probably best not to mess with them.
-
-An object oriented interface has been provided for the I2C bus as well as for
-devices on the bus.  The functionality is the same as the non-object oriented
-interface with the exception that the object oriented interface will allow for
-mutliple devices of the same kind on an I2C bus.
+The BBS.embed.i2c package contains a set of objects and routines for reading and
+writing to devices on I2C buses.  To acutally use the I2C bus, you must create
+an object from either the BBS.embed.I2C.Due or BBS.embed.I2C.Linux packages.
 
 **Note** after a bug fix, the I2C interface works on a Raspberry PI 3.  It should
 work on other models as well.  Just pass "/dev/null" as the pin control files.  A
