@@ -227,18 +227,16 @@ package body BBS.embed.i2c.linux is
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
       self.port := C_open(i2c_file, O_RDWR, 8#666#);
---      self.msg(0).buff := self.buff1'Unchecked_Access;
       self.ioctl_msg.messages := self.msg'Unchecked_Access;
---      self.msg(1).buff := self.b'Unchecked_Access;
    end;
    --
    procedure configure(self : in out linux_i2c_interface_record; i2c_file : string) is
       ctrl_file : Ada.Text_IO.File_Type;
    begin
+      BBS.embed.log.info.put_line("I2C: Configuring I2C interface on " & i2c_file);
       self.port := C_open(i2c_file, O_RDWR, 8#666#);
---      self.msg(0).buff := self.buff1'Unchecked_Access;
       self.ioctl_msg.messages := self.msg'Unchecked_Access;
---      self.msg(1).buff := self.b'Unchecked_Access;
+      BBS.embed.log.info.put_line("I2C: Configuration complete.");
    end;
    --
    procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
