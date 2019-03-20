@@ -3,12 +3,7 @@
 -- Date:   15-Mar-2016
 --
 -- This package spec and body provide an interface to the L3GD20H gyroscope.  They
--- are largely based on the datasheet for the device.  Currently, there are both
--- object oriented and non-object oriented interfaces.  The non-object oriented
--- interface is depreciated will probably go away at some time in the future.
---
--- Additional planned changes are moving the rate_dps and Celcius types into a
--- new collector package to try and unify units and conversions.
+-- are largely based on the datasheet for the device.
 --
 with BBS.embed.i2c;
 with BBS.units;
@@ -90,37 +85,6 @@ package BBS.embed.i2c.L3GD20H is
          y : BBS.units.rot_d_s;
          z : BBS.units.rot_d_s;
       end record;
-   --
-   --
-   -- Configure the device
-   --
---   procedure configure(error : out err_code);
---   procedure configure(deflection : uint8; error : out err_code);
-   --
-   -- Get values from the device.  The integer values are the value read from
-   -- the device registers.
-   --
---   function get_temperature(error : out err_code) return integer;
---   function get_rotation_x(error : out err_code) return integer;
---   function get_rotation_y(error : out err_code) return integer;
---   function get_rotation_z(error : out err_code) return integer;
-   --
-   -- get_rotations gets the rotations around all three axises in a single
-   -- transaction and returns them in a structure.
-   --
---   function get_rotations(error : out err_code) return rotations;
-   --
-   -- Get values in engineering units.  These have been scaled and offset to
-   -- convert them into standard units.
-   --
---   function get_temperature(error : out err_code) return BBS.units.temp_c;
---   function get_rotation_x(error : out err_code) return BBS.units.rot_d_s;
---   function get_rotation_y(error : out err_code) return BBS.units.rot_d_s;
---   function get_rotation_z(error : out err_code) return BBS.units.rot_d_s;
---   function get_rotations(error : out err_code) return rotations_dps;
-   --
---   function get_status(error : out err_code) return uint8;
---   function data_ready(error : out err_code) return boolean;
    --
    -- Stuff for object oriented interface.  These basically emulate the function
    -- of the conventional routines above.

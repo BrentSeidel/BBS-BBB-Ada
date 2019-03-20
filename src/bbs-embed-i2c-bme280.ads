@@ -166,10 +166,8 @@ package BBS.embed.i2c.BME280 is
    --
 private
    debug : Boolean := False;
---   buff : aliased buffer;
    --
    type BME280_record is new i2c_device_record with record
---      buff : aliased buffer;
       T1 : uint16 := 0;
       T2 : int16 := 0;
       T3 : int16 := 0;
@@ -196,6 +194,7 @@ private
       raw_hum : uint32;
       --
       -- Compensated values
+      --
       t_fine : int32;
       p_cal : uint32; -- LSB = Pa/256
       h_cal : uint32; -- LSB = %/1024

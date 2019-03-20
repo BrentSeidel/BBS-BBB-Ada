@@ -85,12 +85,6 @@ package BBS.embed.i2c.PCA9685 is
    -- output turns on.  When the counter is equal to the off threshold, the
    -- output turns off.  This allows the pulses to be staggered between the
    -- channels, if needed.
-   --
-   -- Simple non-object oriented interface to get started.
-   --
-   procedure setup(port : i2c_interface; addr : addr7);
-   procedure set(port : i2c_interface; addr : addr7; chan : channel;
-                 on : uint12; off : uint12);
    -- --------------------------------------------------------
    -- Stuff for object oriented interface.  These basically emulate the function
    -- of the conventional routines above.
@@ -98,7 +92,6 @@ package BBS.embed.i2c.PCA9685 is
    type PS9685_record is new i2c_device_record with private;
    type PS9685_ptr is access PS9685_record;
    --
-   function i2c_new return PS9685_ptr;
    procedure configure(self : in out PS9685_record; port : i2c_interface;
                        addr : addr7; error : out err_code);
    --

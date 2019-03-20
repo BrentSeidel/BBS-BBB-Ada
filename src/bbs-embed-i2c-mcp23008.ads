@@ -54,8 +54,6 @@ package BBS.embed.i2c.MCP23008 is
    type MCB23008_record is new i2c_device_record with private;
    type MCB23008_ptr is access MCB23008_record;
    --
-   function i2c_new return MCB23008_ptr;
-   --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
    --
@@ -78,10 +76,10 @@ package BBS.embed.i2c.MCP23008 is
    function read_data(self : MCB23008_record; error : out err_code)
                       return uint8;
 private
---   buff : aliased buffer;
    --
-   type MCB23008_record is new i2c_device_record with record
-      buff : aliased buffer;
+   type MCB23008_record is new i2c_device_record with
+      record
+         null;
    end record;
 
 end;

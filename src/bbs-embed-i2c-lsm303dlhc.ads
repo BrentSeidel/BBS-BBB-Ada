@@ -2,9 +2,6 @@ with BBS.embed.i2c;
 with BBS.units;
 use type BBS.units.accel_g;
 with Ada.Numerics.Generic_Elementary_Functions;
---with Ada.Text_IO;
---with Ada.Float_Text_IO;
---with Ada.Integer_Text_IO;
 --
 -- This package contains constants and routines to communicate with the LSM303DLHC
 -- accelerometer and magnetometer on the i2c bus.
@@ -133,47 +130,12 @@ package BBS.embed.i2c.LSM303DLHC is
          z : BBS.units.mag_g;
       end record;
    --
-   --
---     procedure configure(error : out integer);
---     procedure configure(accel_fs : uint8; mag_fs: uint8; error : out integer);
---     --
---     function get_acceleration_x(error : out integer) return integer;
---     function get_acceleration_y(error : out integer) return integer;
---     function get_acceleration_z(error : out integer) return integer;
---     function get_accelerations(error : out integer) return accelerations;
---     --
---     function get_acceleration_x(error : out integer) return BBS.units.accel_g;
---     function get_acceleration_y(error : out integer) return BBS.units.accel_g;
---     function get_acceleration_z(error : out integer) return BBS.units.accel_g;
---     function get_accelerations(error : out integer) return accelerations_g;
---     --
---     function get_accel_status(error : out integer) return uint8;
---     function accel_data_ready(error : out integer) return boolean;
---     --
---     function get_temperature(error : out integer) return integer;
---     function get_temperature(error : out integer) return float;
---     function get_temperature(error : out integer) return BBS.units.temp_c;
---     --
---     function get_magnet_x(error : out integer) return integer;
---     function get_magnet_y(error : out integer) return integer;
---     function get_magnet_z(error : out integer) return integer;
---     function get_magnetism(error : out integer) return magnetism;
---     --
---     function get_magnet_x(error : out integer) return BBS.units.mag_g;
---     function get_magnet_y(error : out integer) return BBS.units.mag_g;
---     function get_magnet_z(error : out integer) return BBS.units.mag_g;
---     function get_magnetism(error : out integer) return magnetism_gauss;
---     --
---     function get_mag_status(error : out integer) return uint8;
---     function mag_data_ready(error : out integer) return boolean;
-   --
    -- Definitions for object oriented interface.  They basically do the same
    -- thing as the standard routines above.
    --
    type LSM303DLHC_record is new i2c_device_record with private;
    type LSM303DLHC_ptr is access LSM303DLHC_record;
    --
---   function i2c_new return LSM303DLHC_ptr;
    procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
                        accel : addr7; mag : addr7; error : out err_code);
    procedure configure(self : in out LSM303DLHC_record;
@@ -220,7 +182,6 @@ package BBS.embed.i2c.LSM303DLHC is
    function mag_data_ready(self : LSM303DLHC_record; error : out err_code) return boolean;
    --
 private
---   buff : aliased buffer;
    --
    -- The temperature offset is emperically determined and seems to work for my
    -- application.  You may want to check the values that you get from the
@@ -236,7 +197,6 @@ private
    -- Object definition
    --
    type LSM303DLHC_record is new i2c_device_record with record
---      buff : aliased buffer;
       addr_accel : addr7;
       addr_mag : addr7;
       temp_offset :  integer := 136;

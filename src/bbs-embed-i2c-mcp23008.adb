@@ -3,11 +3,6 @@ package body BBS.embed.i2c.MCP23008 is
    --
    -- Object oriented interface
    --
-   function i2c_new return MCB23008_ptr is
-   begin
-      return new MCB23008_record;
-   end;
-   --
    procedure configure(self : in out MCB23008_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
       pragma Unreferenced(error);

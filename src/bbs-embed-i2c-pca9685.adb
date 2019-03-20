@@ -1,38 +1,6 @@
 package body BBS.embed.i2c.PCA9685 is
-
-   --
-   -- Simple object oriented interface
-   --
-   procedure setup(port : i2c_interface; addr : addr7) is
-      error : err_code;
-   begin
-      port.write(addr_0, MODE1, uint8(16#10#), error);
-      port.write(addr_0, PRESCALE, uint8(16#1E#), error);
-      port.write(addr_0, MODE1, uint8(16#00#), error);
-   end;
-   --
-   procedure set(port : i2c_interface; addr : addr7; chan : channel;
-                  on : uint12; off : uint12) is
-      error : err_code;
-      t_low : uint8;
-      t_high : uint8;
-   begin
-      t_low := uint8(on and 16#ff#);
-      t_high := uint8(on / 16#100#);
-      port.write(addr_0, LED_ON_L(chan), t_low, error);
-      port.write(addr_0, LED_ON_H(chan), t_high, error);
-      t_low := uint8(off and 16#ff#);
-      t_high := uint8(off / 16#100#);
-      port.write(addr_0, LED_OFF_L(chan), t_low, error);
-      port.write(addr_0, LED_OFF_H(chan), t_high, error);
-   end;
    --
    -- Object oriented interface
-   --
-   function i2c_new return PS9685_ptr is
-   begin
-      return new PS9685_record;
-   end;
    --
    procedure configure(self : in out PS9685_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is

@@ -43,6 +43,10 @@ package BBS.embed is
      new Ada.Unchecked_Conversion(source => uint12, target => int12);
    function uint16_to_int16 is
      new Ada.Unchecked_Conversion(source => uint16, target => int16);
+   function uint32_to_int is
+      new Ada.Unchecked_Conversion(source => uint32, target => Integer);
+   function int_to_uint32 is
+      new Ada.Unchecked_Conversion(source => Integer, target => uint32);
    --
    -- Get the high and low bytes (uint8) of a 16 bit uint
    --

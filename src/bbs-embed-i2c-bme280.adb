@@ -1,19 +1,7 @@
 with BBS.embed.log;
 package body BBS.embed.i2c.BME280 is
    --
-   -- Get elementary math functions for floating point numbers
-   --
---   package float_functions is new Ada.Numerics.Generic_Elementary_Functions(float);
---   function "**"(Left, Right : float) return float
---                 renames float_functions."**";
-   --
-   --
    -- Object oriented interface
-   --
---   function i2c_new return BME280_ptr is
---   begin
---      return new BME280_record;
---   end;
    --
    procedure configure(self : in out BME280_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is

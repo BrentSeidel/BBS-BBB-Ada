@@ -297,86 +297,21 @@ package body BBS.embed.i2c.linux is
    --
    function read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint8 is
---      status : interfaces.C.int;
---      err : integer;
    begin
---      self.msg(0).flags := 0;
---      self.msg(0).len   := 1;
---      self.msg(1).addr  := uint16(addr);
---      self.msg(1).flags := 1;
---      self.msg(1).len   := 1;
---      self.ioctl_msg.nmsgs := 2;
---      self.buff1(0) := reg;
---      self.msg(1).buff := self.buff2'Access;
---      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
---      if (integer(status) < 0) then
---         err := get_errno;
---         if (debug) then
---            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
---            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
---         end if;
---         error := failed;
---      else
---         error := none;
---      end if;
       self.read(addr, reg, 1, error);
       return self.b(0);
    end;
    --
    function readm1(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint16 is
---      status : interfaces.C.int;
---      err : integer;
    begin
---      self.msg(0).addr := uint16(addr);
---      self.msg(0).flags := 0; -- write
---      self.msg(0).len := 1;
---      self.msg(1).addr := uint16(addr);
---      self.msg(1).flags := 1; -- read
---      self.msg(1).len := 2;
---      self.msg(1).buff := self.buff2'Access;
---      self.ioctl_msg.nmsgs := 2;
---      self.buff1(0) := reg;
---      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
---      if (integer(status) < 0) then
---         err := get_errno;
---         if (debug) then
---            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
---            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
---         end if;
---         error := failed;
---      else
---         error := none;
---      end if;
       self.read(addr, reg, 2, error);
       return uint16(self.b(0))*256 + uint16(self.b(1));
    end;
    --
    function readm2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint16 is
---      status : interfaces.C.int;
---      err : integer;
    begin
---      self.msg(0).addr := uint16(addr);
---      self.msg(0).flags := 0; -- write
---      self.msg(0).len := 1;
---      self.msg(1).addr := uint16(addr);
---      self.msg(1).flags := 1; -- read
---      self.msg(1).len := 2;
---      self.msg(1).buff := self.buff2'Access;
---      self.ioctl_msg.nmsgs := 2;
---      self.buff1(0) := reg;
---      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
---      if (integer(status) < 0) then
---         err := get_errno;
---         if (debug) then
---            BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
---            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
---         end if;
---         error := failed;
---      else
---         error := none;
---      end if;
       self.read(addr, reg, 2, error);
       return uint16(self.b(0)) + uint16(self.b(1))*256;
    end;
@@ -409,15 +344,4 @@ package body BBS.embed.i2c.linux is
       end if;
    end;
    --
---   function i2c_new return i2c_device is
---   begin
---      return new i2c_device_record;
---   end;
-   --
---   procedure configure(self : i2c_device_record; port : i2c_interface;
---                      addr : addr7) is
---   begin
---      self.port := port;
---      self.address := addr;
---   end;
 end;
