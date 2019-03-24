@@ -6,6 +6,7 @@ with BBS.embed.GPIO;
 --
 package BBS.embed.GPIO.Linux is
 
+   type direction is (input, output);
    type Linux_GPIO_record is new GPIO_record with private;
    --
    -- Create a new GPIO object
@@ -17,14 +18,12 @@ package BBS.embed.GPIO.Linux is
    -- be one of the pin constants and port should be one of
    -- the gpio constants from the device specific pins packages.
    --
-   overriding
    procedure configure(self : in out Linux_GPIO_record;
                        pin : string; port : string; dir : direction);
    --
    -- Not all GPIOs have an associated pin control file.  Some pins are dedicated
    -- to GPIO and have no other function.
    --
-   overriding
    procedure configure(self : in out Linux_GPIO_record;
                        port : string; dir : direction);
    --

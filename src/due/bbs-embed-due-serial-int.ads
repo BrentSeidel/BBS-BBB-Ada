@@ -6,8 +6,8 @@ use type SAM3x8e.Bit;
 use type SAM3x8e.Byte;
 use type SAM3x8e.UInt32;
 with SAM3x8e.UART;
-with BBS.embed.due.pio;
-use type BBS.embed.due.pio.pio_access;
+with BBS.embed.GPIO.Due;
+use type BBS.embed.GPIO.Due.pio_access;
 --
 --  This is an interrupt driven serial package that can be used to print
 --  text with reduced overhead for the user code.  Characters are written
@@ -64,12 +64,12 @@ package BBS.embed.due.serial.int is
    --  initialized digital I/O pin record.  If d.ctrl isn't pointing to a
    --  PIO control record, bad things can happen, so make this a precondition.
    --
-   procedure enable_rs485(chan : port_id; d : pio.gpio_ptr)
-     with pre => ((d.ctrl = pio.PIOA'Access) or (d.ctrl = pio.PIOB'Access) or
-                      (d.ctrl = pio.PIOC'Access) or (d.ctrl = pio.PIOD'Access));
-   procedure enable_rs485(self : not null access serial_port_record'class; d : pio.gpio_ptr)
-     with pre => ((d.ctrl = pio.PIOA'Access) or (d.ctrl = pio.PIOB'Access) or
-                      (d.ctrl = pio.PIOC'Access) or (d.ctrl = pio.PIOD'Access));
+   procedure enable_rs485(chan : port_id; d : BBS.embed.GPIO.Due.Due_GPIO_ptr)
+     with pre => ((d.ctrl = BBS.embed.GPIO.Due.PIOA'Access) or (d.ctrl = BBS.embed.GPIO.Due.PIOB'Access) or
+                      (d.ctrl = BBS.embed.GPIO.Due.PIOC'Access) or (d.ctrl = BBS.embed.GPIO.Due.PIOD'Access));
+   procedure enable_rs485(self : not null access serial_port_record'class; d : BBS.embed.GPIO.Due.Due_GPIO_ptr)
+     with pre => ((d.ctrl = BBS.embed.GPIO.Due.PIOA'Access) or (d.ctrl = BBS.embed.GPIO.Due.PIOB'Access) or
+                      (d.ctrl = BBS.embed.GPIO.Due.PIOC'Access) or (d.ctrl = BBS.embed.GPIO.Due.PIOD'Access));
    --
    --  Wait until transmit buffer is empty.  Since the Ravenscar profile doesn't
    --  allow more than one entry in a protected object, look into using
@@ -176,7 +176,7 @@ private
       --
       --  Procedure to enable RS-485 mode.
       --
-      procedure enable_rs485(d : pio.gpio_ptr);
+      procedure enable_rs485(d : BBS.embed.GPIO.Due.Due_GPIO_ptr);
       --
       --  Procedure to initialize some things
       --
@@ -187,7 +187,7 @@ private
       pragma Interrupt_Priority(System.Interrupt_Priority'First);
 
       rs485_mode : Boolean := False;
-      rs485_pin  : pio.gpio_ptr;
+      rs485_pin  : BBS.embed.GPIO.Due.Due_GPIO_ptr;
 
       tx_buff_empty    : Boolean := True;
       tx_buff_not_full : Boolean := True;

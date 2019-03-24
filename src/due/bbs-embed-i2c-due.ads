@@ -3,7 +3,7 @@ with Ada.Interrupts.Names;
 with Ada.Synchronous_Task_Control;
 with System;
 with SAM3x8e.TWI;
-with BBS.embed.due.pio;
+with BBS.embed.GPIO.Due;
 with BBS.embed.due.dev;
 --
 --  Concrete package for I2C interfaces on the Arduino Due.  This inherits from
@@ -187,7 +187,7 @@ private
       record
          dev_id   : uint8;           --  TWI device ID
          port     : twi_access;      --  Access to I2C registers
-         pioc     : BBS.embed.due.pio.pio_access; --  PIO controlling pins
+         pioc     : BBS.embed.GPIO.Due.pio_access; --  PIO controlling pins
          sda_pin  : uint8;           --  SDA pin on PIO
          scl_pin  : uint8;           --  SCL pin on PIO
          int_id   : Ada.Interrupts.Interrupt_ID; -- Interrupt for channel

@@ -1,18 +1,18 @@
-package body BBS.embed.due.pio is
+package body BBS.embed.GPIO.Due is
 
    --
    --  Configures a pin to be controlled by the PIO controller.  Output is
    --  enabled or disabled based on the value of dir.
    --
-   procedure config(self : not null access gpio_record'class;
-                    pin : gpio_record; dir : direction) is
+   procedure config(self : in out Due_GPIO_record;
+                    pin : Due_GPIO_record; dir : direction) is
    begin
       self.ctrl := pin.ctrl;
       self.bit  := pin.bit;
       self.config(dir);
    end;
    --
-   procedure config(self : not null access gpio_record'class; dir : direction) is
+   procedure config(self : in out Due_GPIO_record; dir : direction) is
    begin
       self.ctrl.PER.Arr(self.bit) := 1;
       if (dir = funct_a) or (dir = funct_b) then
@@ -55,7 +55,7 @@ package body BBS.embed.due.pio is
    --
    --  Set a pin to a high or low value.
    --
-   procedure set(self : not null access gpio_record'class; val : SAM3x8e.Bit) is
+   procedure set(self : Due_GPIO_record; val : Bit) is
    begin
       if val = 1 then
          self.ctrl.SODR.Arr(self.bit) := 1;
@@ -66,15 +66,15 @@ package body BBS.embed.due.pio is
    --
    --  Read the value of a pin regardless of what is controlling it
    --
-   function get(self : not null access gpio_record'class) return SAM3x8e.Bit is
+   function get(self : Due_GPIO_record) return Bit is
    begin
-      return self.ctrl.PDSR.Arr(self.bit);
+      return Bit(self.ctrl.PDSR.Arr(self.bit));
    end;
    --
    --
    --  Enable or disable pullup on a pin
    --
-   procedure pullup(self : not null access gpio_record'class; val : SAM3x8e.Bit) is
+   procedure pullup(self : Due_GPIO_record; val : Bit) is
    begin
       if val = 1 then
          self.ctrl.PUER.Arr(self.bit) := 1;
@@ -83,4 +83,4 @@ package body BBS.embed.due.pio is
       end if;
    end;
    --
-end BBS.embed.due.pio;
+end BBS.embed.GPIO.Due;

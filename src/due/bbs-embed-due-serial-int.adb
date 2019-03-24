@@ -121,12 +121,12 @@ package body BBS.embed.due.serial.int is
    --
    --  Enables RS-485 driver control via the specified pin.
    --
-   procedure enable_rs485(chan : port_id; d : pio.gpio_ptr) is
+   procedure enable_rs485(chan : port_id; d : BBS.embed.GPIO.Due.Due_GPIO_ptr) is
    begin
       buff(chan).enable_rs485(d);
    end;
    --
-   procedure enable_rs485(self : not null access serial_port_record'class; d : pio.gpio_ptr) is
+   procedure enable_rs485(self : not null access serial_port_record'class; d : BBS.embed.GPIO.Due.Due_GPIO_ptr) is
    begin
       self.b.enable_rs485(d);
    end;
@@ -340,7 +340,7 @@ package body BBS.embed.due.serial.int is
       entry tx_write(c : Character) when tx_buff_not_full is
       begin
          if rs485_mode then
-            pio.set(rs485_pin, 1);
+            rs485_pin.set(1);
          end if;
          s.hardware.port.IDR.TXRDY := 1;
          if (s.hardware.port.SR.TXRDY = 1) and tx_buff_empty then
@@ -404,10 +404,10 @@ package body BBS.embed.due.serial.int is
       --
       --  Procedure to enable RS-485 mode.
       --
-      procedure enable_rs485(d : pio.gpio_ptr) is
+      procedure enable_rs485(d : BBS.embed.GPIO.Due.Due_GPIO_ptr) is
       begin
          rs485_pin := d;
-         pio.set(rs485_pin, 0);
+         rs485_pin.set(0);
          rs485_mode := True;
       end;
       --
@@ -471,7 +471,7 @@ package body BBS.embed.due.serial.int is
          --  Check for transmitter empty
          --
          if (s.hardware.port.SR.TXEMPTY = 1) and rs485_mode then
-            pio.set(rs485_pin, 0);
+            rs485_pin.set(0);
             s.hardware.port.IDR.TXEMPTY := 1;
          end if;
       end int_handler;

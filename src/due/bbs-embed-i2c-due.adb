@@ -40,7 +40,7 @@ package body bbs.embed.i2c.due is
       --
       i2c_port(0).dev_id  := BBS.embed.due.dev.TWI1_ID;
       i2c_port(0).port    := TWI1'Access;
-      i2c_port(0).pioc    := BBS.embed.due.pio.PIOB'Access;
+      i2c_port(0).pioc    := BBS.embed.GPIO.Due.PIOB'Access;
       i2c_port(0).sda_pin := 12;
       i2c_port(0).scl_pin := 13;
       i2c_port(0).int_id  := Ada.Interrupts.Names.TWI1_Interrupt;
@@ -49,7 +49,7 @@ package body bbs.embed.i2c.due is
       --
       i2c_port(1).dev_id := BBS.embed.due.dev.TWI0_ID;
       i2c_port(1).port   := TWI0'Access;
-      i2c_port(1).pioc   := BBS.embed.due.pio.PIOA'Access;
+      i2c_port(1).pioc   := BBS.embed.GPIO.Due.PIOA'Access;
       i2c_port(1).sda_pin := 17;
       i2c_port(1).scl_pin := 18;
       i2c_port(1).int_id  := Ada.Interrupts.Names.TWI0_Interrupt;

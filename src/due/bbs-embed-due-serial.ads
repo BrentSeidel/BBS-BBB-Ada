@@ -4,7 +4,7 @@ use type SAM3x8e.Bit;
 use type SAM3x8e.Byte;
 use type SAM3x8e.UInt32;
 with BBS.embed.due.dev;
-with BBS.embed.due.pio;
+with BBS.embed.GPIO.Due;
 with Ada.Interrupts;
 with Ada.Interrupts.Names;
 --
@@ -97,7 +97,7 @@ private
    type channel_info_rec is tagged limited record
       dev_id   : SAM3x8e.Byte;    --  UART device ID
       port     : serial_access;   --  Access to UART registers
-      pioc     : pio.pio_access;  --  PIO controlling pins
+      pioc     : BBS.embed.GPIO.Due.pio_access;  --  PIO controlling pins
       tx_pin   : SAM3x8e.Byte;    --  Transmit pin on PIO
       rx_pin   : SAM3x8e.Byte;    --  Receive pin on PIO
       tx_absel : SAM3x8e.Bit;     --  A/B selection on PIO for transmit
@@ -117,19 +117,19 @@ private
    --  3 - USART3
    --
    chan0 : aliased constant channel_info_rec := (dev_id => dev.UART_ID, port => Serial'Access,
-                                         pioc => pio.PIOA'Access, tx_pin => 9,
+                                         pioc => BBS.embed.GPIO.Due.PIOA'Access, tx_pin => 9,
                                          rx_pin => 8, tx_absel => 0, rx_absel => 0,
                                          int_id => Ada.Interrupts.Names.UART_Interrupt);
    chan1 : aliased constant channel_info_rec := (dev_id => dev.USART0_ID, port => Serial0'Access,
-                                         pioc => pio.PIOA'Access, tx_pin => 11,
+                                         pioc => BBS.embed.GPIO.Due.PIOA'Access, tx_pin => 11,
                                          rx_pin => 10, tx_absel => 0, rx_absel => 0,
                                          int_id => Ada.Interrupts.Names.USART0_Interrupt);
    chan2 : aliased constant channel_info_rec := (dev_id => dev.USART1_ID, port => Serial1'Access,
-                                         pioc => pio.PIOA'Access, tx_pin => 13,
+                                         pioc => BBS.embed.GPIO.Due.PIOA'Access, tx_pin => 13,
                                          rx_pin => 12, tx_absel => 0, rx_absel => 0,
                                          int_id => Ada.Interrupts.Names.USART1_Interrupt);
    chan3 : aliased constant channel_info_rec := (dev_id => dev.USART3_ID, port => Serial3'Access,
-                                         pioc => pio.PIOD'Access, tx_pin => 4,
+                                         pioc => BBS.embed.GPIO.Due.PIOD'Access, tx_pin => 4,
                                          rx_pin => 5, tx_absel => 1, rx_absel => 1,
                                          int_id => Ada.Interrupts.Names.USART3_Interrupt);
    channel : constant array (port_id'Range) of serial_obj := (chan0'Access, chan1'Access,

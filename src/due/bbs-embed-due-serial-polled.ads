@@ -1,5 +1,5 @@
 with SAM3x8e.UART;
-with BBS.embed.due.pio;
+--with BBS.embed.GPIO.Due;
 --
 --  This is a very simple serial package that can be used to print some
 --  debugging information.  It uses polling to wait for each character

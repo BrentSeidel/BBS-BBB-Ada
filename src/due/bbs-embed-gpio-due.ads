@@ -1,24 +1,24 @@
 with SAM3x8e;
-use type SAM3x8e.Bit;
 with SAM3x8e.PIO;
 --
 --  This package contains definitions and routines for the PIO controllers.  It
 --  also has functions for setting and getting pin values.
 --
-package BBS.embed.due.pio is
-   type direction is (gpio_input, gpio_output, funct_a, funct_b);
+package BBS.embed.GPIO.Due is
    --
    --  Access type to controller address
    --
    type pio_access is access all SAM3x8e.PIO.PIO_Peripheral;
+   type direction is (gpio_input, gpio_output, funct_a, funct_b);
    --
    --  Definitions for object oriented pins
    --
-   type gpio_record is tagged record
-      ctrl : pio_access;
-      bit  : Integer range 0 .. 31;
-   end record;
-   type gpio_ptr is access all gpio_record;
+   type Due_GPIO_record is new GPIO_record with
+      record
+         ctrl : pio_access;
+         bit  : Integer range 0 .. 31;
+      end record;
+   type Due_GPIO_ptr is access all Due_GPIO_record'Class;
    --
    --  Record containing information to translate pin number to actual I/O
    --  signals.
@@ -28,21 +28,23 @@ package BBS.embed.due.pio is
    --  Configures a pin to be controlled by the PIO controller.  Output is
    --  enabled or disabled based on the value of dir.
    --
-   procedure config(self : not null access gpio_record'class;
-                    pin : gpio_record; dir : direction);
-   procedure config(self : not null access gpio_record'class; dir : direction);
+   procedure config(self : in out Due_GPIO_record;
+                    pin : Due_GPIO_record; dir : direction);
+   procedure config(self : in out Due_GPIO_record; dir : direction);
    --
    --  Set a pin to a high or low value.
    --
-   procedure set(self : not null access gpio_record'class; val : SAM3x8e.Bit);
+   overriding
+   procedure set(self : Due_GPIO_record; val : Bit);
    --
    --  Read the value of a pin regardless of what is controlling it
    --
-   function get(self : not null access gpio_record'class) return SAM3x8e.Bit;
+   overriding
+   function get(self : Due_GPIO_record) return Bit;
    --
    --  Enable or disable pullup on a pin
    --
-   procedure pullup(self : not null access gpio_record'class; val : SAM3x8e.Bit);
+   procedure pullup(self : Due_GPIO_record; val : Bit);
 
    --  Parallel Input/Output Controller A
    PIOA : aliased SAM3x8e.PIO.PIO_Peripheral
@@ -62,17 +64,18 @@ package BBS.embed.due.pio is
    --
    --  LED pin is Arduino digital pin 14 (processor pin PB27)
    --
-   led_pin_obj : aliased gpio_record := (ctrl => PIOB'Access, bit => 27);
-   LED_PIN   : gpio_ptr := led_pin_obj'Access;
+--   led_pin_obj : aliased Due_GPIO_record := (ctrl => PIOB'Access, bit => 27);
+--   LED_PIN   : Due_GPIO_ptr := led_pin_obj'Access;
    --
    --  RS-485 controlled Arduino digital pin 22 (processor pin PB26)
    --
-   rs485_pin_rec : aliased gpio_record := (ctrl => PIOB'Access, bit => 26);
-   RS485_PIN : gpio_ptr := rs485_pin_rec'Access;
+--   rs485_pin_rec : aliased Due_GPIO_record := (ctrl => PIOB'Access, bit => 26);
+--   RS485_PIN : Due_GPIO_ptr := rs485_pin_rec'Access;
    --
    --  Arduino pin 23 used by toggle task.
    --
-   pin23_rec : aliased gpio_record := (ctrl => PIOA'Access, bit => 14);
-   pin23 : gpio_ptr := pin23_rec'Access;
+--   pin23_rec : aliased Due_GPIO_record := (ctrl => PIOA'Access, bit => 14);
+--   pin23 : Due_GPIO_ptr := pin23_rec'Access;
+private
 
-end BBS.embed.due.pio;
+end BBS.embed.GPIO.Due;

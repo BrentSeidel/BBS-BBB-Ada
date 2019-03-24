@@ -28,30 +28,30 @@ package body BBS.embed.due.serial is
       --
       --  PER
       --  PDR
-      pio.PIOA.PDR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.PDR.Val := pins;
       --  OER
       --  ODR
-      pio.PIOA.ODR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.ODR.Val := pins;
       --  IFER
       --  IFDR
-      pio.PIOA.IFDR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.IFDR.Val := pins;
       --  SODR
       --  CODR
       --  IER
       --  IDR
-      pio.PIOA.IDR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.IDR.Val := pins;
       --  MDER
       --  MDDR
-      pio.PIOA.MDDR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.MDDR.Val := pins;
       --  PUDR
       --  PUER
-      pio.PIOA.PUER.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.PUER.Val := pins;
       --  ABSR
-      pio.PIOA.ABSR.Arr(8) := 0;
-      pio.PIOA.ABSR.Arr(9) := 0;
+      BBS.embed.GPIO.Due.PIOA.ABSR.Arr(8) := 0;
+      BBS.embed.GPIO.Due.PIOA.ABSR.Arr(9) := 0;
       --  OWER
       --  OWDR
-      pio.PIOA.OWDR.Val := pins;
+      BBS.embed.GPIO.Due.PIOA.OWDR.Val := pins;
       --
       -- Reset UART receive and transmit
       --
