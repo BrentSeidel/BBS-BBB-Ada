@@ -9,12 +9,14 @@ with BBS.embed.GPIO.Due;
 --
 package BBS.embed.Due.GPIO is
    --
-   --  Arduino Due pins
+   --  Arduino Due pins.  Note that many of these pins have multiple uses.
    --
+   pin0_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOA'Access, bit => 8);
+   pin1_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOA'Access, bit => 9);
    pin2_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOB'Access, bit => 25);
    pin3_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOC'Access, bit => 28);
    --
-   --  The schematics of pin 4 are not clear.  It might be wither PA29 or PC26.
+   --  Arduino pin 4 seems to be PA29 and PC26 wired together.
    --
 --   pin4_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOA'Access, bit => 29);
 --   pin4 : BBS.embed.GPIO.Due.Due_GPIO_ptr := pin4_rec'Access;
@@ -77,6 +79,8 @@ package BBS.embed.Due.GPIO is
    pin52_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOB'Access, bit => 21);
    pin53_rec : aliased BBS.embed.GPIO.Due.Due_GPIO_record := (ctrl => BBS.embed.GPIO.Due.PIOB'Access, bit => 14);
    --
+   pin0  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin0_rec'Access;
+   pin1  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin1_rec'Access;
    pin2  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin2_rec'Access;
    pin3  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin3_rec'Access;
    --
