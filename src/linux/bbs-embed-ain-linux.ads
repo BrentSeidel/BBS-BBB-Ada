@@ -12,9 +12,9 @@ use type BBS.units.emf_v;
 -- directly through /dev/kmem.  It should be possible to change the underlaying
 -- implementation here without impacting code that uses this package.
 --
-package BBS.embed.AIN is
+package BBS.embed.AIN.linux is
 --
--- The analog related pins are:
+-- The analog related pins for the BeagleBone Black are:
 -- AIN0 - P9_39
 -- AIN1 - P9_40
 -- AIN2 - P9_37
@@ -33,8 +33,7 @@ package BBS.embed.AIN is
 -- There are no pin control files for these pins - they are dedicated to analog
 -- input.
 --
-   type AIN_record is tagged limited private;
-   type AIN is access AIN_record;
+   type Linux_AIN_record is new AIN_record with private;
    max_volts : constant BBS.units.emf_v := 1.8;
    --
    -- Create a new AIN object
@@ -44,27 +43,29 @@ package BBS.embed.AIN is
    -- Configure a new AIN object.  Port should be one of the AIN constants from
    -- the BBS.BBB.pins package.
    --
-   procedure configure(self : not null access AIN_record'class;
+   procedure configure(self : in out Linux_AIN_record;
                        port : string);
    --
    -- Read the value of an input AIN.  The ADC has 12 bits of resolution, so the
    -- returned value would be in the range 0-4095.
    --
-   function get(self : not null access AIN_record'class) return uint12;
+   overriding
+   function get(self : Linux_AIN_record) return uint12;
    --
    -- Read the value of an input AIN in volts.  The maximum value is 1.8 so the
    -- result is equal to 1.8*(reading in uint12)/uint12'last;
    --
-   function get(self : not null access AIN_record'class) return BBS.units.emf_v;
+   function get(self : Linux_AIN_record) return BBS.units.emf_v;
    --
    -- Close the file for the pin.  Once this is called, the AIN object will
    -- need to be re-configured.
    --
-   procedure close(self : not null access AIN_record'class);
+   procedure close(self : in out Linux_AIN_record);
 
 private
    package Char_IO is new Ada.Direct_IO(Character);
-   type AIN_record is tagged limited
+
+   type Linux_AIN_record is new AIN_record with
       record
          AIN_file : Char_IO.File_Type;
       end record;

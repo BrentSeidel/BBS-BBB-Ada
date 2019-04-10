@@ -1,22 +1,23 @@
 with BBS.embed.log;
-package body BBS.embed.AIN is
+package body BBS.embed.AIN.linux is
 
    function AIN_new return AIN is
    begin
-      return new AIN_record;
+      return new Linux_AIN_record;
    end;
    --
-   procedure configure(self : not null access AIN_record'class;
+   procedure configure(self : in out Linux_AIN_record;
                        port : string) is
-      temp : Ada.Text_IO.File_Type;
+--      temp : Char_IO.File_Type;
    begin
       --
       -- Open the AIN file
       --
       Char_IO.Open(self.AIN_file, Char_IO.In_File, port);
+--      self.AIN_file := temp;
    end;
    --
-   function get(self : not null access AIN_record'class) return uint12 is
+   function get(self : Linux_AIN_record) return uint12 is
       char : character;
       buff : string(1 .. 5) := "     ";
       index : integer := 1;
@@ -49,14 +50,14 @@ package body BBS.embed.AIN is
          raise;
    end;
    --
-   function get(self : not null access AIN_record'class) return BBS.units.emf_v is
+   function get(self : Linux_AIN_record) return BBS.units.emf_v is
       reading : uint12;
    begin
       reading := self.get;
       return max_volts*BBS.units.emf_v(reading)/BBS.units.emf_v(uint12'Last);
    end;
    --
-   procedure close(self : not null access AIN_record'class) is
+   procedure close(self : in out Linux_AIN_record) is
    begin
       Char_IO.Close(self.AIN_file);
    end;
