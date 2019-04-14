@@ -53,7 +53,7 @@ controlling the four built-in LEDs on the board next to the ethernet connector.
 
 ## i2c
 The BBS.embed.i2c package contains a set of objects and routines for reading and
-writing to devices on I2C buses.  To acutally use the I2C bus, you must create
+writing to devices on I2C buses.  To actually use the I2C bus, you must create
 an object from either the BBS.embed.I2C.Due or BBS.embed.I2C.Linux packages.
 
 **Note** after a bug fix, the I2C interface works on a Raspberry PI 3.  It should
@@ -135,9 +135,16 @@ for P8_28, one of the PWMs is not really usable.  The interface allows control
 of the period (or rate) and the time high (or duty cycle) of the PWM output.
 
 ## Analog inputs
-This is a simple object oriented interface to the analog inputs.  There are seven
-available and the pins that they are on are fixed purpose.  The A/D converted is
-a 12 bit converter, so the result should be in the range 0..4095.
+This is a simple object oriented interface to the analog inputs.  This base
+class supports 12 bit conversions.  The concrete implementations for Linux or
+Arduino Due may support other options.
+
+On the BeagleBone Black, there are seven analog inputs available and the pins
+that they are on are fixed purpose.  The A/D converted is a 12 bit converter,
+so the result should be in the range 0..4095.
+
+The Arduino Due has 16 analog inputs, 12 of which are actually wired up and are
+available for use.  The A/D converter is a 12 bit converter.
 
 ## SPI
 A basic API for the SPI interface is provided.  It does 8 bit reads and writes

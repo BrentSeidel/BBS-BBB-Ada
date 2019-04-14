@@ -38,3 +38,10 @@ This is the Arduino Due specific logging function.  It is provided because
 Ada.Text_IO is either missing or very primitive on the Arduino Due, so this
 provides a common way for other routines to produce debugging output.  The
 implementation allows output to be turned on and off under program control.
+
+### bbs-embed-ain-due
+This is the Arduino Due specific implementation of Analog inputs.  The base
+object-oriented class provides only 12 bit inputs.  The Due specific
+implementation also provides 16 bit inputs.  A non-object oriented interface
+is also provided.
+

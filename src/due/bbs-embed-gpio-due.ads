@@ -20,11 +20,6 @@ package BBS.embed.GPIO.Due is
       end record;
    type Due_GPIO_ptr is access all Due_GPIO_record'Class;
    --
-   --  Record containing information to translate pin number to actual I/O
-   --  signals.
-   --
-
-   --
    --  Configures a pin to be controlled by the PIO controller.  Output is
    --  enabled or disabled based on the value of dir.
    --
