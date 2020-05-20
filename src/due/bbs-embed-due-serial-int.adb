@@ -234,13 +234,13 @@ package body BBS.embed.due.serial.int is
    --
    --  Return a line of text.
    --
-   procedure get_line(s : in out String; l : out Integer) is
+   procedure get_line(s : out String; l : out Natural) is
    begin
       get_line(0, s, l);
    end;
    --
-   procedure get_line(chan : port_id; s : in out String; l : out Integer) is
-      i : Integer := s'First;
+   procedure get_line(chan : port_id; s : in out String; l : out Natural) is
+      i : Natural := s'First;
       c : Character;
    begin
       loop
@@ -266,8 +266,8 @@ package body BBS.embed.due.serial.int is
    end;
    --
    procedure get_line(self : not null access serial_port_record'class;
-                      s : in out String; l : out Integer) is
-      i : Integer := s'First;
+                      s : in out String; l : out Natural) is
+      i : Natural := s'First;
       c : Character;
    begin
       loop

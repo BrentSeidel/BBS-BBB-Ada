@@ -103,10 +103,10 @@ package BBS.embed.due.serial.int is
    --
    --  Return a line of text.
    --
-   procedure get_line(s : in out String; l : out Integer);
-   procedure get_line(chan : port_id; s : in out String; l : out Integer);
+   procedure get_line(s : out String; l : out Natural);
+   procedure get_line(chan : port_id; s : in out String; l : out Natural);
    procedure get_line(self : not null access serial_port_record'class;
-                      s : in out String; l : out Integer);
+                      s : in out String; l : out Natural);
    --
    -- Procedures to control configuration settings
    --
