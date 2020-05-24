@@ -84,6 +84,8 @@ package BBS.embed.Due.GPIO is
    pin2  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin2_rec'Access;
    pin3  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin3_rec'Access;
    --
+   pin4  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := null;
+   --
    pin5  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin5_rec'Access;
    pin6  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin6_rec'Access;
    pin7  : constant BBS.embed.GPIO.Due.Due_GPIO_ptr := pin7_rec'Access;
