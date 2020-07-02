@@ -67,7 +67,7 @@ Mon Jun 13 13:13:27 BST 2016 armv7l GNU/Linux
 Subpackages have been created for the following devices to provide a higher level interface.
 
 ### BME280
-This chip contains pressure, temperature, and humidity sensora along with calibration
+This chip contains pressure, temperature, and humidity sensors along with calibration
 values.  The package contains an object oriented interface to retrieve calibrated
 measurements from the sensors.
 
