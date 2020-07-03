@@ -129,7 +129,6 @@ private
    -- Object definition
    --
    type PS9685_record is new i2c_device_record with record
---      addr : addr7;
       servo_min : servo_array;
       servo_max : servo_array;
       servo_set : servo_set_array;

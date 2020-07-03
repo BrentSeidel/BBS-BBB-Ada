@@ -9,6 +9,7 @@ with SAM3x8e.TWI;  --  Needed for I2C interface
 with BBS.embed;
 use type BBS.embed.uint32;
 with BBS.embed.due.serial.int;
+with BBS.embed.log;
 --
 --  Package for the I2C interface
 --
@@ -60,7 +61,7 @@ package body bbs.embed.i2c.due is
       --
       --  Initialize hardware for selected device.
       --
-      --  Enable clock for I2C-0
+      --  Enable clock for I2C-x
       --
       SAM3x8e.PMC.PMC_Periph.PMC_PCER0.PID.Arr(Integer(i2c_port(chan).dev_id)) := 1;
       --
@@ -265,6 +266,47 @@ package body bbs.embed.i2c.due is
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end write;
    --
+   --  Write an arbitrary number of bytes to a device on the i2c bus.
+   --
+   procedure write(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
+                   size : buff_index; error : out err_code) is
+      status : SAM3x8e.TWI.TWI0_SR_Register;
+      index : buff_index := 0;
+   begin
+      if (addr < 16#0E#) or (addr > 16#77#) then
+         error := invalid_addr;
+         return;
+      end if;
+      Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
+      while index < size loop
+         self.port.CR.MSEN    := 1;  --  Enable master mode
+         self.port.CR.SVDIS   := 1;  --  Disable slave mode
+         self.port.MMR.MREAD  := 0;  --  Master write
+         self.port.MMR.IADRSZ := SAM3x8e.TWI.Val_1_Byte;  --  Register addresses are 1 byte;
+         self.port.MMR.DADR   := SAM3x8e.UInt7(addr);
+         self.port.IADR.IADR  := SAM3x8e.UInt24(reg);
+         self.port.THR.TXDATA := SAM3x8e.Byte(self.b(index));
+         index := index + 1;
+         if index = size then
+            self.port.CR.STOP    := 1;
+         end if;
+         loop
+            status := self.port.SR;
+            exit when status.TXRDY = 1;
+            exit when status.NACK = 1;
+            exit when status.OVRE = 1;
+         end loop;
+         if status.NACK = 1 then
+            error := nack;
+         elsif status.OVRE = 1 then
+            error := ovre;
+         else
+            error := none;
+         end if;
+      end loop;
+      Ada.Synchronous_Task_Control.Set_True(self.not_busy);
+   end;
+   --
    --  All the read functions use the block read procedure and return the
    --  specified data.
    --
@@ -295,12 +337,6 @@ package body bbs.embed.i2c.due is
       self.read(addr, reg, 2, error);
       return  UInt16(self.b(1))*256 + UInt16(self.b(0));
    end;
-   --
-   --  Write an arbitrary number of bytes to a device on the i2c bus.  Not yet
-   --  implemented.
-   --
-   procedure write(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
-                   size : buff_index; error : out err_code) is null;
    --
    -- Read the specified number of bytes into a buffer
    --

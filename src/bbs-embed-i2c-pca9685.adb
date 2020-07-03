@@ -1,3 +1,4 @@
+with BBS.embed.log;
 package body BBS.embed.i2c.PCA9685 is
    --
    -- Object oriented interface
@@ -83,7 +84,6 @@ package body BBS.embed.i2c.PCA9685 is
       if (self.servo_set(chan)) then
          temp := uint12((float(position) + 1.0)*scale) + self.servo_min(chan);
          self.set(chan, 0, temp, error);
-         null;
       else
          raise program_error;
       end if;
