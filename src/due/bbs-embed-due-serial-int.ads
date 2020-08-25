@@ -27,6 +27,8 @@ package BBS.embed.due.serial.int is
    --
    type serial_port_record is tagged limited private;
    type serial_port is access all serial_port_record;
+--   type serial_port (Data : not null access serial_port_record) is limited private
+--     with Implicit_Dereference => Data;
    --
    --  Function to initialize and return a serial port object
    --

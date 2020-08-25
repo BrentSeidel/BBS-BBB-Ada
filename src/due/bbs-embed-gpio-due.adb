@@ -1,3 +1,5 @@
+with System;
+with SAM3x8e.PMC;  --  Needed to enable clocking
 package body BBS.embed.GPIO.Due is
 
    --
@@ -13,7 +15,24 @@ package body BBS.embed.GPIO.Due is
    end;
    --
    procedure config(self : in out Due_GPIO_record; dir : direction) is
+      pid : Integer := 11; -- Peripheral Identifier
    begin
+      --
+      --  Determine which PIO controller is being used and enable the clock
+      --
+      if self.ctrl = BBS.embed.GPIO.Due.PIOA'Access then
+         pid := 11;
+      elsif self.ctrl = BBS.embed.GPIO.Due.PIOB'Access then
+         pid := 12;
+      elsif self.ctrl = BBS.embed.GPIO.Due.PIOC'Access then
+         pid := 13;
+      elsif self.ctrl = BBS.embed.GPIO.Due.PIOD'Access then
+         pid := 14;
+      end if;
+      SAM3x8e.PMC.PMC_Periph.PMC_PCER0.PID.Arr(pid) := 1;
+      --
+      --  Other initializations
+      --
       self.ctrl.PER.Arr(self.bit) := 1;
       if (dir = funct_a) or (dir = funct_b) then
          self.ctrl.PDR.Arr(self.bit) := 1;
