@@ -51,7 +51,7 @@ package BBS.embed.i2c is
    --  given for the functions since the error out parameter is not set.  This
    --  should not cause problems since they are never used.
    --
-   --  Reading or writing a single byte is straigtforward.
+   --  Reading or writing a single byte is straightforward.
    --
    procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code) is null;
@@ -61,8 +61,8 @@ package BBS.embed.i2c is
                  error : out err_code) return uint8 is (0);
    pragma Warnings(on);
    --
-   --  When reading two bytes, is the MSB first or second?  There is no standard
-   --  even within a single device.
+   --  When reading or writing two bytes, is the MSB first or second?  There is
+   --  no standard even within a single device.
    --
    --  Read a word with MSB first
    --
@@ -77,6 +77,16 @@ package BBS.embed.i2c is
    function readm2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint16 is (0);
    pragma Warnings(on);
+   --
+   --  Write a word with MSB first.
+   --
+   procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is null;
+   --
+   --  Write a word with MSB second (LSB first).
+   --
+   procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is null;
    --
    --  Write an arbitrary number of bytes to a device on the i2c bus.
    --

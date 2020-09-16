@@ -187,8 +187,8 @@ package body bbs.embed.i2c.due is
       return  uint8(i2c_port(chan).b(0));
    end;
    --
-   -- Reading a single byte is straightforward.  When reading two bytes, is the
-   -- MSB first or second?  There is no standard even within a single device.
+   --  When reading or writing two bytes, is the MSB first or second?  There is
+   --  no standard even within a single device.
    --
    -- Read a word with MSB first
    --
@@ -208,7 +208,6 @@ package body bbs.embed.i2c.due is
       read(chan, addr, reg, 2, error);
       return UInt16(i2c_port(chan).b(1))*256 + UInt16(i2c_port(chan).b(0));
    end;
-
    --
    -- Read the specified number of bytes into the device buffer
    --
@@ -222,7 +221,7 @@ package body bbs.embed.i2c.due is
       end if;
       Ada.Synchronous_Task_Control.Suspend_Until_True(i2c_port(chan).not_busy);
       buff(chan).rx_read(addr, reg, size);
-      Ada.Synchronous_Task_Control.Suspend_Until_True(i2c_port(chan).not_busy);
+--      Ada.Synchronous_Task_Control.Suspend_Until_True(i2c_port(chan).not_busy);
       error := buff(chan).get_error;
       Ada.Synchronous_Task_Control.Set_True(i2c_port(chan).not_busy);
    end;
@@ -338,6 +337,26 @@ package body bbs.embed.i2c.due is
       return  UInt16(self.b(1))*256 + UInt16(self.b(0));
    end;
    --
+   --  Write a word with MSB first.
+   --
+   procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                     data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8(data/256);
+      self.b(1) := uint8(data and 16#FF#);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
+   --  Write a word with MSB second (LSB first).
+   --
+   procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8(data and 16#FF#);
+      self.b(1) := uint8(data/256);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
    -- Read the specified number of bytes into a buffer
    --
    procedure read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
@@ -351,7 +370,7 @@ package body bbs.embed.i2c.due is
       end if;
       Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
       self.handle.rx_read(addr, reg, size);
-      Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
+--      Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
       error := self.handle.get_error;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end read;
@@ -360,7 +379,7 @@ package body bbs.embed.i2c.due is
    --  A protected type defining the transmit and receive buffers as well as an
    --  interface to the buffers.  This is based on the serial port handler, but
    --  is a bit simpler since (a) tx and rx is not simultaneous, so only one
-   --  buffer is needed, and (b) communications are nore transaction/block
+   --  buffer is needed, and (b) communications are more transaction/block
    --  oriented so the user only needs to be notified when the exchange is
    --  completed.
    --
