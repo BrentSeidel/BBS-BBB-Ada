@@ -59,15 +59,14 @@ package BBS.embed.i2c.MCP23017 is
    all_write : constant uint8 := 16#00#;
    all_read : constant uint8 := 16#FF#;
    --
-   -- Stuff for object oriented interface.  A non-object oriented interface
-   -- is not provided for this device.  If you need one, it should be fairly
-   -- easy to write one.
+   --  Stuff for object oriented interface.  A non-object oriented interface
+   --  is not provided for this device.  If you need one, it should be fairly
+   --  easy to write one.
    --
    type MCP23017_record is new i2c_device_record with private;
    type MCP23017_ptr is access MCP23017_record;
    --
-   -- The configure procedure needs to be called first to initialize the
-   -- calibration constants from the device.
+   --  The configure procedure needs to be called first to setup the object.
    --
    procedure configure(self : in out MCP23017_record; port : i2c_interface;
                        addr : addr7; error : out err_code);
@@ -78,12 +77,24 @@ package BBS.embed.i2c.MCP23017 is
    procedure set_dir(self : MCP23017_record; dir : uint16;
                      error : out err_code);
    --
-   -- Sets the output bits.  Bits are packed into a uint16.
+   -- Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The
+   -- direction bits are packed into a uint16.
+   --
+   procedure set_polarity(self : MCP23017_record; dir : uint16;
+                     error : out err_code);
+   --
+   --  Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each
+   --  of the output bits.  The bits are packed into a uint16.
+   --
+   procedure set_pullup(self : MCP23017_record; dir : uint16;
+                     error : out err_code);
+   --
+   --  Sets the output bits.  Bits are packed into a uint16.
    --
    procedure set_data(self : MCP23017_record; data : uint16;
                       error : out err_code);
    --
-   -- Read the port.  Bits are packed into a uint16.
+   --  Read the port.  Bits are packed into a uint16.
    --
    function read_data(self : MCP23017_record; error : out err_code)
                       return uint16;

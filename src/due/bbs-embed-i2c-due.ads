@@ -110,13 +110,6 @@ private
    TWI1 : aliased SAM3x8e.TWI.TWI_Peripheral
      with Import, Address => SAM3x8e.TWI1_Base;
    --
-   --
-   --  Buffers for reading data
-   --
---   b0 : aliased buffer;
---   b1 : aliased buffer;
-
-   --
    --  A protected type defining the transmit and receive buffers as well as an
    --  interface to the buffers.  This is based on the serial port handler, but
    --  is a bit simpler since (a) tx and rx is not simultaneous, so only one
@@ -147,9 +140,11 @@ private
       --
       procedure rx_read(addr : addr7; reg : uint8; size : buff_index);
       --
-      -- Return the error code, if any.
+      -- Return various information.
       --
       function get_error return err_code;
+      function get_complete return Boolean;
+      function get_saved_status return SAM3x8e.TWI.TWI0_SR_Register;
    private
       procedure int_handler;
       pragma Attach_Handler (int_handler, interrupt);
@@ -157,8 +152,9 @@ private
 
       device   : due_i2c_interface;
 
-      busy     : Boolean := False;
       not_busy : Boolean := True;
+      complete : Boolean := False;
+      status : SAM3x8e.TWI.TWI0_SR_Register;
 
       bytes  : buff_index;
       index  : buff_index;
