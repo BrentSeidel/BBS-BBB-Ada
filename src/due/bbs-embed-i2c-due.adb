@@ -150,6 +150,7 @@ package body bbs.embed.i2c.due is
    procedure write(chan : port_id; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code) is
       status : SAM3x8e.TWI.TWI0_SR_Register;
+--      start : Ada.Real_Time.Time;
    begin
       if (addr < 16#0E#) or (addr > 16#77#) then
          error := invalid_addr;
@@ -164,11 +165,13 @@ package body bbs.embed.i2c.due is
       i2c_port(chan).port.IADR.IADR  := SAM3x8e.UInt24(reg);
       i2c_port(chan).port.THR.TXDATA := SAM3x8e.Byte(data);
       i2c_port(chan).port.CR.STOP    := 1;
+--      start := Ada.Real_Time.Clock;
       loop
          status := i2c_port(chan).port.SR;
          exit when status.TXRDY = 1;
          exit when status.NACK  = 1;
          exit when status.OVRE  = 1;
+--         exit when (Ada.Real_Time.Clock - start) > Ada.Real_Time.To_Time_Span(0.1);
       end loop;
       if status.NACK = 1 then
          error := nack;
@@ -187,8 +190,8 @@ package body bbs.embed.i2c.due is
       return  uint8(i2c_port(chan).b(0));
    end;
    --
-   -- Reading a single byte is straightforward.  When reading two bytes, is the
-   -- MSB first or second?  There is no standard even within a single device.
+   --  When reading or writing two bytes, is the MSB first or second?  There is
+   --  no standard even within a single device.
    --
    -- Read a word with MSB first
    --
@@ -208,7 +211,6 @@ package body bbs.embed.i2c.due is
       read(chan, addr, reg, 2, error);
       return UInt16(i2c_port(chan).b(1))*256 + UInt16(i2c_port(chan).b(0));
    end;
-
    --
    -- Read the specified number of bytes into the device buffer
    --
@@ -338,20 +340,45 @@ package body bbs.embed.i2c.due is
       return  UInt16(self.b(1))*256 + UInt16(self.b(0));
    end;
    --
+   --  Write a word with MSB first.
+   --
+   procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                     data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8((data/256) and 16#FF#);
+      self.b(1) := uint8(data and 16#FF#);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
+   --  Write a word with MSB second (LSB first).
+   --
+   procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8(data and 16#FF#);
+      self.b(1) := uint8((data/256) and 16#FF#);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
    -- Read the specified number of bytes into a buffer
    --
    procedure read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                   size : buff_index; error : out err_code) is
-      stdout : BBS.embed.due.serial.int.serial_port := BBS.embed.due.serial.int.get_port(0);
-      count  : Integer := 0;
+      status : SAM3x8e.TWI.TWI0_SR_Register;
    begin
       if (addr < 16#0E#) or (addr > 16#77#) then
          error := invalid_addr;
          return;
       end if;
       Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
-      self.handle.rx_read(addr, reg, size);
+      if size < 2 then
+         self.handle.rx_read(addr, reg, 2);
+      else
+         self.handle.rx_read(addr, reg, size);
+      end if;
+      status := self.handle.get_status;
       Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
+      status := self.handle.get_saved_status;
       error := self.handle.get_error;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end read;
@@ -360,7 +387,7 @@ package body bbs.embed.i2c.due is
    --  A protected type defining the transmit and receive buffers as well as an
    --  interface to the buffers.  This is based on the serial port handler, but
    --  is a bit simpler since (a) tx and rx is not simultaneous, so only one
-   --  buffer is needed, and (b) communications are nore transaction/block
+   --  buffer is needed, and (b) communications are more transaction/block
    --  oriented so the user only needs to be notified when the exchange is
    --  completed.
    --
@@ -378,7 +405,7 @@ package body bbs.embed.i2c.due is
       --
       function is_busy return Boolean is
       begin
-         return busy;
+         return not not_busy;
       end;
       --
       function get_status return SAM3x8e.TWI.TWI0_SR_Register is
@@ -387,11 +414,10 @@ package body bbs.embed.i2c.due is
       end;
       --
       --  Entry point to transmit a character.  Per Ravenscar, there can be
-      --  only one entry.  Note that this is not yet implemented.
+      --  only one entry.
       --
       entry send(addr : addr7; reg : uint8; size : buff_index) when not_busy is
       begin
-         busy := True;
          not_busy := False;
          bytes := size;
          index := 0;
@@ -403,15 +429,31 @@ package body bbs.embed.i2c.due is
       --
       procedure rx_read(addr : addr7; reg : uint8; size : buff_index) is
       begin
-         busy := True;
          not_busy := False;
          err := none;
          bytes := size;
+         complete := False;
          index := 0;
+         --
+         --  Disable interrupts
+         --
+         device.port.IDR.TXRDY := 1;
+         device.port.IDR.SVACC := 1;
+         device.port.IDR.GACC := 1;
+         device.port.IDR.OVRE := 1;
+         device.port.IDR.NACK := 1;
+         device.port.IDR.ARBLST := 1;
+         device.port.IDR.SCL_WS := 1;
+         device.port.IDR.ENDRX := 1;
+         device.port.IDR.ENDTX := 1;
+         device.port.IDR.RXBUFF := 1;
+         device.port.IDR.TXBUFE := 1;
+         --
+         --  Enable interrupts
+         --
          device.port.IER.RXRDY  := 1;
-         device.port.IER.OVRE   := 1;
-         device.port.IER.NACK   := 1;
          device.port.IER.TXCOMP := 1;
+         --
          device.port.CR.MSEN    := 1;  --  Enable master mode
          device.port.CR.SVDIS   := 1;  --  Disable slave mode
          device.port.MMR.MREAD  := 1;  --  Master read
@@ -430,20 +472,24 @@ package body bbs.embed.i2c.due is
       begin
          return err;
       end;
+      function get_complete return Boolean is
+      begin
+         return complete;
+      end;
+      function get_saved_status return SAM3x8e.TWI.TWI0_SR_Register is
+      begin
+         return status;
+      end;
       --
       --  This is the interrupt handler.  There are three different things that
       --  may cause an interrupt:
       --  Transmitter ready:  Currently does nothing.
       --
-      --  Receiver ready:  Add characters to the receive buffer.  If buffer is
-      --    full, the oldest character is discarded.
+      --  Receiver ready:  Add characters to the buffer.
       --
-      --  Transmitter empty: This is triggered when the UART is finished sending
-      --    data and there is no more data ready.  This is used in RS-485 mode
-      --    to clear the pin used to enable the drivers.
+      --  Transmit complete:
       --
       procedure int_handler is
-         status : SAM3x8e.TWI.TWI0_SR_Register;
       begin
          status := device.port.SR;
          if status.NACK = 1 then
@@ -465,10 +511,12 @@ package body bbs.embed.i2c.due is
             index := index + 1;
             if index = bytes then
                device.port.CR.STOP := 1;
+               Ada.Synchronous_Task_Control.Set_True(device.not_busy);
             end if;
          end if;
          --
-         --  Check for transmitter empty
+         --  Check for transmitter empty.  From the flowcharts in the datasheet,
+         --  this interrupt should also fire at the end of a read operation.
          --
          if (status.TXCOMP = 1) then
             device.port.IDR.TXCOMP := 1;
@@ -476,22 +524,8 @@ package body bbs.embed.i2c.due is
             device.port.IDR.OVRE := 1;
             device.port.IDR.NACK := 1;
             Ada.Synchronous_Task_Control.Set_True(device.not_busy);
-            busy := False;
             not_busy := True;
-         end if;
-         --
-         --  Check if error detected.  If so, abandon whatever we're currently
-         --  doing.
-         --
-         if err /= none then
-            device.port.IDR.TXCOMP := 1;
-            device.port.IDR.TXRDY := 1;
-            device.port.IDR.RXRDY := 1;
-            device.port.IDR.OVRE := 1;
-            device.port.IDR.NACK := 1;
-            Ada.Synchronous_Task_Control.Set_True(device.not_busy);
-            busy := False;
-            not_busy := True;
+            complete := True;
          end if;
       end int_handler;
    end handler;

@@ -40,17 +40,17 @@ package bbs.embed.i2c.due is
    --
    procedure init(chan : port_id; speed : speed_type);
    --
-   -- Routines to read and write data on the i2c bus
+   --  Routines to read and write data on the i2c bus
    --
    procedure write(chan : port_id; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code);
    function read(chan : port_id; addr : addr7; reg : uint8;
                  error : out err_code) return uint8;
    --
-   -- Reading a single byte is straightforward.  When reading two bytes, is the
-   -- MSB first or second?  There is no standard even within a single device.
+   --  Reading a single byte is straightforward.  When reading two bytes, is the
+   --  MSB first or second?  There is no standard even within a single device.
    --
-   -- Read a word with MSB first
+   --  Read a word with MSB first
    --
    function readm1(chan : port_id; addr : addr7; reg : uint8;
                    error : out err_code) return UInt16;
@@ -75,27 +75,27 @@ package bbs.embed.i2c.due is
    function read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint8;
    --
-   -- When reading two bytes, is the MSB first or second?  There is no standard
-   -- even within a single device.
+   --  When reading or writing two bytes, is the MSB first or second?  There is
+   --  no standard even within a single device.
    --
-   -- Read a word with MSB first
+   --  Read a word with MSB first
    --
    overriding
    function readm1(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return UInt16;
    --
-   -- Read a word with MSB second (LSB first)
+   --  Read a word with MSB second (LSB first)
    --
    overriding
    function readm2(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return UInt16;
    --
-   -- Write an arbitrary number of bytes to a device on the i2c bus.
+   --  Write an arbitrary number of bytes to a device on the i2c bus.
    --
    procedure write(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                    size : buff_index; error : out err_code);
    --
-   -- Read the specified number of bytes into a buffer
+   --  Read the specified number of bytes into a buffer
    --
    overriding
    procedure read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
@@ -109,13 +109,6 @@ private
    --
    TWI1 : aliased SAM3x8e.TWI.TWI_Peripheral
      with Import, Address => SAM3x8e.TWI1_Base;
-   --
-   --
-   --  Buffers for reading data
-   --
---   b0 : aliased buffer;
---   b1 : aliased buffer;
-
    --
    --  A protected type defining the transmit and receive buffers as well as an
    --  interface to the buffers.  This is based on the serial port handler, but
@@ -147,9 +140,11 @@ private
       --
       procedure rx_read(addr : addr7; reg : uint8; size : buff_index);
       --
-      -- Return the error code, if any.
+      -- Return various information.
       --
       function get_error return err_code;
+      function get_complete return Boolean;
+      function get_saved_status return SAM3x8e.TWI.TWI0_SR_Register;
    private
       procedure int_handler;
       pragma Attach_Handler (int_handler, interrupt);
@@ -157,8 +152,9 @@ private
 
       device   : due_i2c_interface;
 
-      busy     : Boolean := False;
       not_busy : Boolean := True;
+      complete : Boolean := False;
+      status : SAM3x8e.TWI.TWI0_SR_Register;
 
       bytes  : buff_index;
       index  : buff_index;
