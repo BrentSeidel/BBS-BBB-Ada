@@ -76,18 +76,24 @@ package BBS.embed.i2c.MCP23017 is
    --
    procedure set_dir(self : MCP23017_record; dir : uint16;
                      error : out err_code);
+   function get_dir(self : MCP23017_record;
+                     error : out err_code) return uint16;
    --
    -- Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The
    -- direction bits are packed into a uint16.
    --
    procedure set_polarity(self : MCP23017_record; dir : uint16;
                      error : out err_code);
+   function get_polarity(self : MCP23017_record;
+                     error : out err_code) return uint16;
    --
    --  Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each
    --  of the output bits.  The bits are packed into a uint16.
    --
    procedure set_pullup(self : MCP23017_record; dir : uint16;
                      error : out err_code);
+   function get_pullup(self : MCP23017_record;
+                     error : out err_code) return uint16;
    --
    --  Sets the output bits.  Bits are packed into a uint16.
    --
@@ -96,7 +102,7 @@ package BBS.embed.i2c.MCP23017 is
    --
    --  Read the port.  Bits are packed into a uint16.
    --
-   function read_data(self : MCP23017_record; error : out err_code)
+   function get_data(self : MCP23017_record; error : out err_code)
                       return uint16;
 private
    --

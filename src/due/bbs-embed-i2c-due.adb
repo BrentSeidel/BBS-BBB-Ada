@@ -150,7 +150,7 @@ package body bbs.embed.i2c.due is
    procedure write(chan : port_id; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code) is
       status : SAM3x8e.TWI.TWI0_SR_Register;
-      start : Ada.Real_Time.Time;
+--      start : Ada.Real_Time.Time;
    begin
       if (addr < 16#0E#) or (addr > 16#77#) then
          error := invalid_addr;
@@ -165,13 +165,13 @@ package body bbs.embed.i2c.due is
       i2c_port(chan).port.IADR.IADR  := SAM3x8e.UInt24(reg);
       i2c_port(chan).port.THR.TXDATA := SAM3x8e.Byte(data);
       i2c_port(chan).port.CR.STOP    := 1;
-      start := Ada.Real_Time.Clock;
+--      start := Ada.Real_Time.Clock;
       loop
          status := i2c_port(chan).port.SR;
          exit when status.TXRDY = 1;
          exit when status.NACK  = 1;
          exit when status.OVRE  = 1;
-         exit when (Ada.Real_Time.Clock - start) > Ada.Real_Time.To_Time_Span(0.1);
+--         exit when (Ada.Real_Time.Clock - start) > Ada.Real_Time.To_Time_Span(0.1);
       end loop;
       if status.NACK = 1 then
          error := nack;
@@ -238,7 +238,6 @@ package body bbs.embed.i2c.due is
    procedure write(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code) is
       status : SAM3x8e.TWI.TWI0_SR_Register;
-      start : Ada.Real_Time.Time;
    begin
       if (addr < 16#0E#) or (addr > 16#77#) then
          error := invalid_addr;
@@ -253,13 +252,11 @@ package body bbs.embed.i2c.due is
       self.port.IADR.IADR  := SAM3x8e.UInt24(reg);
       self.port.THR.TXDATA := SAM3x8e.Byte(data);
       self.port.CR.STOP    := 1;
-      start := Ada.Real_Time.Clock;
       loop
          status := self.port.SR;
          exit when status.TXRDY = 1;
          exit when status.NACK = 1;
          exit when status.OVRE = 1;
-         exit when (Ada.Real_Time.Clock - start) > Ada.Real_Time.To_Time_Span(0.1);
       end loop;
       if status.NACK = 1 then
          error := nack;
@@ -277,7 +274,6 @@ package body bbs.embed.i2c.due is
                    size : buff_index; error : out err_code) is
       status : SAM3x8e.TWI.TWI0_SR_Register;
       index : buff_index := 0;
-      start : Ada.Real_Time.Time;
    begin
       if (addr < 16#0E#) or (addr > 16#77#) then
          error := invalid_addr;
@@ -296,13 +292,11 @@ package body bbs.embed.i2c.due is
          if index = size then
             self.port.CR.STOP    := 1;
          end if;
-         start := Ada.Real_Time.Clock;
          loop
             status := self.port.SR;
             exit when status.TXRDY = 1;
             exit when status.NACK = 1;
             exit when status.OVRE = 1;
-            exit when (Ada.Real_Time.Clock - start) > Ada.Real_Time.To_Time_Span(0.1);
          end loop;
          if status.NACK = 1 then
             error := nack;
