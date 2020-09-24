@@ -21,7 +21,6 @@ package body BBS.embed.i2c.MCP23017 is
    procedure set_dir(self : MCP23017_record; dir : uint16;
                      error : out err_code) is
    begin
---      self.hw.writem2(self.address, IODIR, dir, error);
       self.hw.b(0) := uint8(dir and 16#ff#);
       self.hw.b(1) := uint8(dir / 16#100#);
       self.hw.write(self.address, IODIR, buff_index(2), error);
@@ -39,7 +38,9 @@ package body BBS.embed.i2c.MCP23017 is
    procedure set_pullup(self : MCP23017_record; dir : uint16;
                         error : out err_code) is
    begin
-      self.hw.writem2(self.address, GPPU, dir, error);
+      self.hw.b(0) := uint8(dir and 16#ff#);
+      self.hw.b(1) := uint8(dir / 16#100#);
+      self.hw.write(self.address, GPPU, buff_index(2), error);
    end;
    --
    function get_pullup(self : MCP23017_record;
@@ -54,7 +55,9 @@ package body BBS.embed.i2c.MCP23017 is
    procedure set_polarity(self : MCP23017_record; dir : uint16;
                      error : out err_code) is
    begin
-      self.hw.writem2(self.address, IPOL, dir, error);
+      self.hw.b(0) := uint8(dir and 16#ff#);
+      self.hw.b(1) := uint8(dir / 16#100#);
+      self.hw.write(self.address, IPOL, buff_index(2), error);
    end;
    --
    function get_polarity(self : MCP23017_record;
@@ -68,7 +71,9 @@ package body BBS.embed.i2c.MCP23017 is
    procedure set_data(self : MCP23017_record; data : uint16;
                       error : out err_code) is
    begin
-      self.hw.writem2(self.address, OLAT, data, error);
+      self.hw.b(0) := uint8(data and 16#ff#);
+      self.hw.b(1) := uint8(data / 16#100#);
+      self.hw.write(self.address, GPIO, buff_index(2), error);
    end;
    --
    --  Read the port.  Bits are packed into a uint16.
