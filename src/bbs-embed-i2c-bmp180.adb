@@ -28,7 +28,7 @@ package body BBS.embed.i2c.BMP180 is
    procedure start_conversion(self : in out BMP180_record;
                               kind : uint8; error : out err_code) is
    begin
-      BBS.embed.log.info.put_line("BMP180 Info: Starting Conversion.");
+--      BBS.embed.log.info.put_line("BMP180 Info: Starting Conversion.");
       self.hw.write(self.address, ctrl, kind, error);
       self.last_cvt := kind;
    end;
@@ -38,7 +38,7 @@ package body BBS.embed.i2c.BMP180 is
       byte : uint8;
       err : err_code;
    begin
-      BBS.embed.log.info.put_line("BMP180 Info: Checking for data ready.");
+--      BBS.embed.log.info.put_line("BMP180 Info: Checking for data ready.");
       byte := self.hw.read(self.address, ctrl, err);
       error := err;
       if ((byte and start_cvt) /= start_cvt) and (err = none) then
