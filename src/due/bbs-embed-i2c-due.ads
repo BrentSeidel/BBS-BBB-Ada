@@ -1,5 +1,8 @@
 with Ada.Interrupts;
 with Ada.Interrupts.Names;
+with Ada.Real_Time;
+use type Ada.Real_Time.Time;
+use type Ada.Real_Time.Time_Span;
 with Ada.Synchronous_Task_Control;
 with System;
 with SAM3x8e.TWI;
@@ -101,6 +104,17 @@ package bbs.embed.i2c.due is
    procedure read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                   size : buff_index; error : out err_code);
 private
+   --
+   --  Delay time for I2C bus to clear between transactions.  On occasion, without
+   --  a delay the bus will lock up with back to back transaction.  This may be
+   --  more a problem with the I2C devices than with the processor since resetting
+   --  the processor doesn't clear the problem.  Power also needs to be cycled
+   --  on the I2C devices.
+   --
+   --  The delay time was emperically determined.  A value of 0.000_002 causes
+   --  a lockup.  A value of 0.000_003 works.
+   --
+   i2c_delay : constant Ada.Real_Time.Time_Span := Ada.Real_Time.To_Time_Span(0.000_003);
    --
    --  Addresses for TWI records
    --

@@ -1,6 +1,3 @@
-with Ada.Real_Time;
-use type Ada.Real_Time.Time;
-use type Ada.Real_Time.Time_Span;
 with SAM3x8e;
 use type SAM3x8e.Bit;
 with SAM3x8e.PMC;  --  Needed to enable I2C clocking
@@ -177,6 +174,7 @@ package body bbs.embed.i2c.due is
       else
          error := none;
       end if;
+      delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(i2c_port(chan).not_busy);
    end;
    --
@@ -223,6 +221,7 @@ package body bbs.embed.i2c.due is
       buff(chan).rx_read(addr, reg, size);
       Ada.Synchronous_Task_Control.Suspend_Until_True(i2c_port(chan).not_busy);
       error := buff(chan).get_error;
+      delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(i2c_port(chan).not_busy);
    end;
    --
@@ -262,6 +261,7 @@ package body bbs.embed.i2c.due is
       else
          error := none;
       end if;
+      delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end write;
    --
@@ -303,6 +303,7 @@ package body bbs.embed.i2c.due is
             error := none;
          end if;
       end loop;
+      delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end;
    --
@@ -377,6 +378,7 @@ package body bbs.embed.i2c.due is
       status := self.handle.get_saved_status;
       error := self.handle.get_error;
 --      s.put_line("read: Exiting.");
+      delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end read;
    --
