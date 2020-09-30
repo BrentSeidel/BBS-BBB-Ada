@@ -103,6 +103,14 @@ package bbs.embed.i2c.due is
    overriding
    procedure read(self : in out due_i2c_interface_record; addr : addr7; reg : uint8;
                   size : buff_index; error : out err_code);
+   --
+   --  Get the activity counter
+   --
+   function get_activity(self : in out due_i2c_interface_record) return uint32;
+   --
+   --  Get busy status
+   --
+   function is_busy(self : in out due_i2c_interface_record) return Boolean;
 private
    --
    --  Delay time for I2C bus to clear between transactions.  On occasion, without
@@ -203,6 +211,7 @@ private
          int_id   : Ada.Interrupts.Interrupt_ID; -- Interrupt for channel
          handle   : buffer_access;
          not_busy : Ada.Synchronous_Task_Control.Suspension_Object;
+         activity : uint32 := 0;
       end record;
    --
    --  The Arduino Due has two I2C busses available on the headers.  Note that

@@ -239,6 +239,7 @@ package body bbs.embed.i2c.due is
          error := invalid_addr;
          return;
       end if;
+      self.activity := self.activity + 1;
       Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
       self.port.CR.MSEN    := 1;  --  Enable master mode
       self.port.CR.SVDIS   := 1;  --  Disable slave mode
@@ -278,6 +279,7 @@ package body bbs.embed.i2c.due is
       end if;
       Ada.Synchronous_Task_Control.Suspend_Until_True(self.not_busy);
       while index < size loop
+         self.activity := self.activity + 1;
          self.port.CR.MSEN    := 1;  --  Enable master mode
          self.port.CR.SVDIS   := 1;  --  Disable slave mode
          self.port.MMR.MREAD  := 0;  --  Master write
@@ -381,6 +383,20 @@ package body bbs.embed.i2c.due is
       delay until Ada.Real_Time.Clock + i2c_delay;
       Ada.Synchronous_Task_Control.Set_True(self.not_busy);
    end read;
+   --
+   --  Get the activity counter
+   --
+   function get_activity(self : in out due_i2c_interface_record) return uint32 is
+   begin
+      return self.activity;
+   end;
+   --
+   --  Get busy status
+   --
+   function is_busy(self : in out due_i2c_interface_record) return Boolean is
+   begin
+      return not Ada.Synchronous_Task_Control.Current_State(self.not_busy);
+   end;
    --
    --  -------------------------------------------------------------------------
    --  A protected type defining the transmit and receive buffers as well as an
@@ -491,6 +507,7 @@ package body bbs.embed.i2c.due is
       procedure int_handler is
       begin
          status := device.port.SR;
+         device.activity := device.activity + 1;
          if status.NACK = 1 then
             err := nack;
          elsif status.OVRE = 1 then
