@@ -17,77 +17,77 @@ package body BBS.embed.i2c.BME280 is
       -- Calibration parameters.  Most of these are either two byte with LSB
       -- first or a single byte.  The two exceptions are H4 and H5.
       --
-      BBS.embed.log.info.put_line("BME280: Getting parameter T1");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter T1");
       self.T1 := self.hw.readm2(self.address, dig_T1, error);
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter T2");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter T2");
       self.T2 := uint16_to_int16(self.hw.readm2(self.address, dig_T2, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter T3");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter T3");
       self.T3 := uint16_to_int16(self.hw.readm2(self.address, dig_T3, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P1");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P1");
       self.P1 := self.hw.readm2(self.address, dig_P1, error);
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P2");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P2");
       self.P2 := uint16_to_int16(self.hw.readm2(self.address, dig_P2, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P3");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P3");
       self.P3 := uint16_to_int16(self.hw.readm2(self.address, dig_P3, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P4");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P4");
       self.P4 := uint16_to_int16(self.hw.readm2(self.address, dig_P4, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P5");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P5");
       self.P5 := uint16_to_int16(self.hw.readm2(self.address, dig_P5, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P6");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P6");
       self.P6 := uint16_to_int16(self.hw.readm2(self.address, dig_P6, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P7");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P7");
       self.P7 := uint16_to_int16(self.hw.readm2(self.address, dig_P7, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P8");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P8");
       self.P8 := uint16_to_int16(self.hw.readm2(self.address, dig_P8, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter P9");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter P9");
       self.P9 := uint16_to_int16(self.hw.readm2(self.address, dig_P9, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter H1");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter H1");
       self.H1 := self.hw.read(self.address, dig_H1, error);
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter H2");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter H2");
       self.H2 := uint16_to_int16(self.hw.readm2(self.address, dig_H2, error));
       if error /= BBS.embed.i2c.none then
          return;
       end if;
-      BBS.embed.log.info.put_line("BME280: Getting parameter H3");
+--      BBS.embed.log.info.put_line("BME280: Getting parameter H3");
       self.H3 := self.hw.read(self.address, dig_H3, error);
       if error /= BBS.embed.i2c.none then
          return;
@@ -199,7 +199,7 @@ package body BBS.embed.i2c.BME280 is
       begin
          var1 := (int32(self.raw_temp)/2**3 - int32(self.T1)*2)*int32(self.T2)/2**11;
          var2 := (int32(self.raw_temp)/2**4 - int32(self.T1))*
-           (int32(self.raw_temp)/2**4 - int32(self.T1))/2**12*int32(self.T3)/2**14;
+           ((int32(self.raw_temp)/2**4 - int32(self.T1))/2**12)*(int32(self.T3)/2**14);
          return var1 + var2;
       end;
       --
