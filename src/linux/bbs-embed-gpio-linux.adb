@@ -10,13 +10,13 @@ package body BBS.embed.GPIO.Linux is
       temp : Ada.Text_IO.File_Type;
    begin
       --
-      -- Set pin function
+      --  Set pin function
       --
       Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, pin);
       Ada.Text_IO.Put_Line(temp, "gpio");
       Ada.Text_IO.Close(temp);
       --
-      -- Set direction
+      --  Set direction
       --
       Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "direction");
       if (dir = input) then
@@ -27,7 +27,13 @@ package body BBS.embed.GPIO.Linux is
       Ada.Text_IO.Close(temp);
       self.dir := dir;
       --
-      -- Open the GPIO file
+      --  Set active status
+      --
+      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "active_low");
+      Ada.Text_IO.Put_Line(temp, "0");
+      Ada.Text_IO.Close(temp);
+      --
+      --  Open the GPIO file
       --
       if (dir = input) then
          Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
@@ -41,7 +47,7 @@ package body BBS.embed.GPIO.Linux is
       temp : Ada.Text_IO.File_Type;
    begin
       --
-      -- Set direction
+      --  Set direction
       --
       Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "direction");
       if (dir = input) then
@@ -52,7 +58,13 @@ package body BBS.embed.GPIO.Linux is
       Ada.Text_IO.Close(temp);
       self.dir := dir;
       --
-      -- Open the GPIO file
+      --  Set active status
+      --
+      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "active_low");
+      Ada.Text_IO.Put_Line(temp, "0");
+      Ada.Text_IO.Close(temp);
+      --
+      --  Open the GPIO file
       --
       if (dir = input) then
          Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
@@ -65,7 +77,9 @@ package body BBS.embed.GPIO.Linux is
    begin
       if (value = 0) then
          Char_IO.Write(self.gpio_file, '0', 1);
+         Char_IO.Write(self.gpio_file, '0', 1);
       else
+         Char_IO.Write(self.gpio_file, '1', 1);
          Char_IO.Write(self.gpio_file, '1', 1);
       end if;
    end;
