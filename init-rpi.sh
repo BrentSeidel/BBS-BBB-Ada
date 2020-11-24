@@ -21,6 +21,7 @@ echo 13 > /sys/class/gpio/export
 echo 16 > /sys/class/gpio/export
 echo 17 > /sys/class/gpio/export
 echo 18 > /sys/class/gpio/export
+echo 19 > /sys/class/gpio/export
 echo 20 > /sys/class/gpio/export
 echo 21 > /sys/class/gpio/export
 echo 22 > /sys/class/gpio/export
