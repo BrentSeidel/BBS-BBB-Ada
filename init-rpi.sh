@@ -35,6 +35,7 @@ echo 27 > /sys/class/gpio/export
 # Set value to "0" or "1" for output or read "0" or "1" for input.
 #
 echo "GPIO control files"
+chmod 666 /sys/class/gpio/*/active_low
 chmod 666 /sys/class/gpio/*/direction
 chmod 666 /sys/class/gpio/*/value
 #
