@@ -12,7 +12,7 @@
 # The GPIO pins are not exported by default on the Raspberry Pi.  The following
 # commands export them.
 #
-echo "Additional GPIO"
+echo "Activating GPIO Pins"
 echo 4 > /sys/class/gpio/export
 echo 5 > /sys/class/gpio/export
 echo 6 > /sys/class/gpio/export

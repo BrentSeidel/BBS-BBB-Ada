@@ -23,7 +23,8 @@ package BBS.embed.RPI is
    GPIO_20 : aliased constant string := "/sys/class/gpio/gpio20/";
    GPIO_21 : aliased constant string := "/sys/class/gpio/gpio21/";
    GPIO_22 : aliased constant string := "/sys/class/gpio/gpio22/";
-   GPIO_24 : aliased constant string := "/sys/class/gpio/gpio23/";
+   GPIO_23 : aliased constant string := "/sys/class/gpio/gpio23/";
+   GPIO_24 : aliased constant string := "/sys/class/gpio/gpio24/";
    GPIO_25 : aliased constant string := "/sys/class/gpio/gpio25/";
    GPIO_26 : aliased constant string := "/sys/class/gpio/gpio26/";
    GPIO_27 : aliased constant string := "/sys/class/gpio/gpio27/";
