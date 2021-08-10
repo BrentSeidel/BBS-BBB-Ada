@@ -16,7 +16,7 @@ package BBS.embed.SPI.Linux is
    -- have multiple functions on the SPI pins.  This configureation procedure
    -- sets the pins to the SPI function.
    --
-   overriding
+--   overriding
    procedure configure(self : in out Linux_SPI_record; SPI_file : string;
                        SCL : string; SDA : string);
    --
@@ -24,7 +24,7 @@ package BBS.embed.SPI.Linux is
    -- dedicated pins for the SPI interface.  This would also work on a system
    -- with shared pins if the pins had already been set to the SPI function.
    --
-   overriding
+--   overriding
    procedure configure(self : in out Linux_SPI_record; SPI_file : string);
    --
    -- Write a value to the SPI
