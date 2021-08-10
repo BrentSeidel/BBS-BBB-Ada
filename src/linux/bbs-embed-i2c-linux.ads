@@ -65,7 +65,7 @@ package BBS.embed.i2c.linux is
    -- The I2C interface object
    --
    type linux_i2c_interface_record is new i2c_interface_record with private;
-   type linux_i2c_interface is access linux_i2c_interface_record'Class;
+   type linux_i2c_interface is access all linux_i2c_interface_record'Class;
    --
    -- The root class for I2C device objects
    --
