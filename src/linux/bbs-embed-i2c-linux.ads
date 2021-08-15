@@ -25,7 +25,6 @@ package BBS.embed.i2c.linux is
    -- buffer to use for reading and writing from i2c bus.  In most cases, only
    -- a few bytes are needed.  This should be quite adequate.
    --
---   type buffer is array(0 .. 127) of uint8;
    type cbuff_ptr is new buff_ptr;
    pragma Convention(C, cbuff_ptr);
    --
@@ -66,13 +65,6 @@ package BBS.embed.i2c.linux is
    --
    type linux_i2c_interface_record is new i2c_interface_record with private;
    type linux_i2c_interface is access all linux_i2c_interface_record'Class;
-   --
-   -- The root class for I2C device objects
-   --
---   type linux_i2c_device_record is new i2c_device_record with private;
---   type linux_i2c_device is access linux_i2c_device_record'Class;
-   --
---   function i2c_new return i2c_interface;
    --
    -- Configure the I2C interface on a BeagleBone Black or other systems that
    -- have multiple functions on the I2C pins.  This configureation procedure
@@ -123,12 +115,7 @@ package BBS.embed.i2c.linux is
    procedure read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                   size : buff_index; error : out err_code);
    -- -------------------------------------------------------
-   -- Create a new I2C device.  Each I2C device object should implement these
-   -- two routines.
    --
---   function i2c_new return i2c_device;
---   procedure configure(self : not null access i2c_device_record'class; port : i2c_interface;
---                       addr : addr7);
 private
    --
    -- The rest of the stuff is private to hid the ugliness required to be
@@ -146,7 +133,7 @@ private
    -- buffer.
    --
    type size_t is new long_integer
-   range long_integer(buffer'First) .. long_integer(buffer'Last);
+      range long_integer(buffer'First) .. long_integer(buffer'Last);
    subtype ssize_t is size_t;
    --
    -- File flags for opening a file read/write.  This is the only one used here
@@ -179,26 +166,30 @@ private
          len : uint16;
          buff : cbuff_ptr;
       end record;
+   pragma Convention(C, i2c_msg);
    --
    type i2c_msg_arr is array (0 .. 1) of i2c_msg;
    pragma Convention(C, i2c_msg_arr);
+   --
    type i2c_msg_ptr is access all i2c_msg_arr;
    pragma Convention(C, i2c_msg_ptr);
+   --
    type i2c_rdwr_ioctl_data is
       record
          messages : i2c_msg_ptr;
          nmsgs : integer;
       end record;
+   pragma Convention(C, i2c_rdwr_ioctl_data);
    --
    -- ioctl command numbers taken from /usr/include/linux/i2c_dev.h
    --
-   i2c_slave : Interfaces.C.unsigned_long := 16#0703#;
+   i2c_slave       : Interfaces.C.unsigned_long := 16#0703#;
    i2c_slave_force : Interfaces.C.unsigned_long := 16#0706#;
-   i2c_tenbit : Interfaces.C.unsigned_long := 16#0704#; -- Apparently broken
-   i2c_funcs : Interfaces.C.unsigned_long := 16#0705#;
-   i2c_rdwr : Interfaces.C.unsigned_long := 16#0707#;
-   i2c_pec : Interfaces.C.unsigned_long := 16#0708#;
-   i2c_smbus : Interfaces.C.unsigned_long := 16#0720#;
+   i2c_tenbit      : Interfaces.C.unsigned_long := 16#0704#; -- Apparently broken
+   i2c_funcs       : Interfaces.C.unsigned_long := 16#0705#;
+   i2c_rdwr        : Interfaces.C.unsigned_long := 16#0707#;
+   i2c_pec         : Interfaces.C.unsigned_long := 16#0708#;
+   i2c_smbus       : Interfaces.C.unsigned_long := 16#0720#;
    --
    -- Since C supports variadic argument lists and Ada doesn't, define different
    -- Ada functions all pointing to ioctl to cover the cases that are used.
