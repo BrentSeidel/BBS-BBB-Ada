@@ -4,27 +4,37 @@ package body BBS.embed.i2c.linux is
    -- This works with Debian Jessy for the Beaglebone Black.  The configuration
    -- system has changed and it will probably not work on earlier versions.
    --
+   --  This has been updated to work with Ubuntu 21.04 (Hirsute Huppo) on
+   --  a Raspberry PI 4 using Linux kernal 5.11.0-1015-raspi.  For some
+   --  reason, using the i2c_rdwr option for writing no longer works
+   --  properly.  This is odd since the read option still works and is a
+   --  more complex transaction.  The object oriented write has been up
+   --  dated to use i2c_slave to set the device address and then C_write
+   --  to write the actual data (including the register number if
+   --  applicable).  The old non-object oriented routines have not been
+   --  updated as they are considered to be obsolete.
+   --
    -- A status ioctl call produced the following options for the i2c bus.
    --
    -- On my system, this produces    16#efe_000d#
-   -- I2C_FUNC_I2C          0x0000_0001 set
-   -- I2C_FUNC_10BIT_ADDR       0x0000_0002
-   -- I2C_FUNC_PROTOCOL_MANGLING    0x0000_0004 set
-   -- I2C_FUNC_SMBUS_PEC        0x0000_0008 set
-   -- I2C_FUNC_NOSTART      0x0000_0010
-   -- I2C_FUNC_SMBUS_BLOCK_PROC_CALL    0x0000_8000
-   -- I2C_FUNC_SMBUS_QUICK      0x0001_0000
-   -- I2C_FUNC_SMBUS_READ_BYTE  0x0002_0000 set
-   -- I2C_FUNC_SMBUS_WRITE_BYTE 0x0004_0000 set
-   -- I2C_FUNC_SMBUS_READ_BYTE_DATA 0x0008_0000 set
-   -- I2C_FUNC_SMBUS_WRITE_BYTE_DATA    0x0010_0000 set
-   -- I2C_FUNC_SMBUS_READ_WORD_DATA 0x0020_0000 set
-   -- I2C_FUNC_SMBUS_WRITE_WORD_DATA    0x0040_0000 set
-   -- I2C_FUNC_SMBUS_PROC_CALL  0x0080_0000 set
-   -- I2C_FUNC_SMBUS_READ_BLOCK_DATA    0x0100_0000
+   -- I2C_FUNC_I2C                    0x0000_0001 set
+   -- I2C_FUNC_10BIT_ADDR             0x0000_0002
+   -- I2C_FUNC_PROTOCOL_MANGLING      0x0000_0004 set
+   -- I2C_FUNC_SMBUS_PEC              0x0000_0008 set
+   -- I2C_FUNC_NOSTART                0x0000_0010
+   -- I2C_FUNC_SMBUS_BLOCK_PROC_CALL  0x0000_8000
+   -- I2C_FUNC_SMBUS_QUICK            0x0001_0000
+   -- I2C_FUNC_SMBUS_READ_BYTE        0x0002_0000 set
+   -- I2C_FUNC_SMBUS_WRITE_BYTE       0x0004_0000 set
+   -- I2C_FUNC_SMBUS_READ_BYTE_DATA   0x0008_0000 set
+   -- I2C_FUNC_SMBUS_WRITE_BYTE_DATA  0x0010_0000 set
+   -- I2C_FUNC_SMBUS_READ_WORD_DATA   0x0020_0000 set
+   -- I2C_FUNC_SMBUS_WRITE_WORD_DATA  0x0040_0000 set
+   -- I2C_FUNC_SMBUS_PROC_CALL        0x0080_0000 set
+   -- I2C_FUNC_SMBUS_READ_BLOCK_DATA  0x0100_0000
    -- I2C_FUNC_SMBUS_WRITE_BLOCK_DATA 0x0200_0000 set
-   -- I2C_FUNC_SMBUS_READ_I2C_BLOCK 0x0400_0000 set
-   -- I2C_FUNC_SMBUS_WRITE_I2C_BLOCK    0x0800_0000 set
+   -- I2C_FUNC_SMBUS_READ_I2C_BLOCK   0x0400_0000 set
+   -- I2C_FUNC_SMBUS_WRITE_I2C_BLOCK  0x0800_0000 set
    --
    procedure configure(i2c_file : string) is
       ctrl_file : Ada.Text_IO.File_Type;
@@ -269,24 +279,8 @@ package body BBS.embed.i2c.linux is
       status : interfaces.C.int;
       err : integer;
    begin
-      self.msg(0).addr  := uint16(addr);
-      self.msg(0).flags := 0;  -- Write
-      self.msg(0).len   := 2;
-      self.msg(0).buff  := self.buff1'Unchecked_Access;
-      self.buff1(0)     := reg;
-      self.buff1(1)     := data;
-      self.ioctl_msg.nmsgs := 1;
-      status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
-      if (integer(status) < 0) then
-         err := get_errno;
-         if (debug) then
-            BBS.embed.log.debug.Put("I2C: Write byte error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
-         end if;
-         error := failed;
-      else
-         error := none;
-      end if;
+      self.b(0) := data;
+      self.write(addr, reg, buff_index(1), error);
    end;
    --
    -- Write an arbitrary number of bytes to a device on the i2c bus.
@@ -300,6 +294,10 @@ package body BBS.embed.i2c.linux is
 --      self.msg(0).flags := 0; -- write
 --      self.msg(0).len   := uint16(size + 1);
 --      self.msg(0).buff  := self.buff1'Unchecked_Access;
+      --
+      --  Build the data buffer including the register address in the
+      --  first byte.
+      --
       self.buff1(0) := reg;
       for x in 0 .. size loop
          self.buff1(buff_index(x + 1)) := self.b(buff_index(x));
@@ -313,6 +311,9 @@ package body BBS.embed.i2c.linux is
       --
       --  For some reasion i2c_rdwr doesn't seem to work anymore for writing
       --  data.
+      --
+      --  Use i2c_slave to set the slave device address
+      --
       status := Interfaces.C.int(basic_ioctl(self.port, i2c_slave, Interfaces.C.long(addr)));
       if Integer(status) < 0 then
          err := get_errno;
@@ -324,6 +325,9 @@ package body BBS.embed.i2c.linux is
          error := failed;
          return;
       end if;
+      --
+      --  Use C_write to write the data buffer.
+      --
       reset_errno;
       status := Interfaces.C.int(C_write(self.port, self.buff1, size_t(size + 1)));
       if Integer(status) /= Integer(size + 1) then
