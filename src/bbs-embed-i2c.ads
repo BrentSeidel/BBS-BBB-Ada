@@ -1,4 +1,3 @@
-with BBS.embed;
 --
 --  This is effectively an abstract base class for I2C interfaces.  It defines
 --  some common data in the interface and device clases (thus they can't be
@@ -8,7 +7,7 @@ with BBS.embed;
 --  subclass.
 --
 package BBS.embed.i2c is
-
+   pragma Preelaborate;
    --
    --  Possible error codes
    --

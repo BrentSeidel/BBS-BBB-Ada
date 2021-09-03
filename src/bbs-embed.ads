@@ -1,9 +1,10 @@
-with Ada.Unchecked_Conversion;
-package BBS.embed is
 --
--- This package contains useful items for programming the BeagleBone Black in
+-- This package contains useful items for programming the embedded systems in
 -- Ada.  The intention is to include I2C, SPI, and GPIO interfaces.
 --
+with Ada.Unchecked_Conversion;
+package BBS.embed is
+   pragma Pure;
    author : constant String := "Brent Seidel";
    version : constant String := "V01.00";
 

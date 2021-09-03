@@ -1,4 +1,5 @@
 package BBS.embed.i2c.MCP23008 is
+   pragma Preelaborate;
    --
    -- Addresses for MCP23008 - 8 Bit I/O Expander
    --

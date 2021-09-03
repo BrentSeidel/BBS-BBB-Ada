@@ -3,8 +3,7 @@
 --  can be used to drive a single stepper motor or two DC motors.
 --
 package BBS.embed.gpio.tb6612 is
-
-      --
+   --
    -- Stuff for object oriented interface.  A non-object oriented interface
    -- is not provided for this device.  If you need one, it should be fairly
    -- easy to write one.

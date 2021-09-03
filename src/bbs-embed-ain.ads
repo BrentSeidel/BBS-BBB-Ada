@@ -1,5 +1,6 @@
 package BBS.embed.AIN is
---
+   pragma Preelaborate;
+   --
    type AIN_record is abstract tagged limited null record;
    type AIN is access AIN_record'Class;
    --

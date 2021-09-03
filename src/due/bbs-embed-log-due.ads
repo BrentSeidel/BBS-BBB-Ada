@@ -1,5 +1,5 @@
 package BBS.embed.log.due is
-
+   --
    type due_log_record is new log_record with private;
    type due_log_ptr is access all due_log_record'Class;
    --
