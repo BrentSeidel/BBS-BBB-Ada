@@ -259,14 +259,8 @@ private
       record
          port : file_id;
          buff1 : aliased buffer;
---         buff2 : aliased buffer;
          msg : aliased i2c_msg_arr;
          ioctl_msg : i2c_rdwr_ioctl_data;
       end record;
    --
---   type Linux_i2c_device_record is tagged
---      record
---         port : i2c_interface;
---         address : addr7;
---      end record;
 end;

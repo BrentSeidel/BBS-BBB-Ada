@@ -1,15 +1,13 @@
 --
 --  This package provides a list of device addresses for various know I2C devices.
 --
-with BBS.embed.i2c;
 package BBS.embed.i2c.devices is
-   pragma Pure;
    --
    --  List of addresses for devices in separate packages.  These are listed
    --  here in address order to help check for duplicate addresses.
    --
    addr_LMS303DLHC_accel : constant addr7 := 16#19#; -- Accelerometer
-   addr_LMS303DLHC_mag : constant addr7 := 16#1e#; -- Magnetometer
+   addr_LMS303DLHC_mag   : constant addr7 := 16#1e#; -- Magnetometer
    --
    --  Addresses for MCP23008 - 8 Bit I/O Expander
    --
@@ -46,9 +44,20 @@ package BBS.embed.i2c.devices is
    addr_PCA9685_00 : constant addr7 := 16#40#;
    --
    addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
+   --
+   --  Addresses for MCP4725 12 bit Digital to Analog converter
+   --
+   addr_MCP4724_0 : constant addr7 := 16#60#;
+   addr_MCP4724_1 : constant addr7 := 16#61#;
+   addr_MCP4724_2 : constant addr7 := 16#62#;
+   addr_MCP4724_3 : constant addr7 := 16#63#;
+   addr_MCP4724_4 : constant addr7 := 16#64#;
+   addr_MCP4724_5 : constant addr7 := 16#65#;
+   addr_MCP4724_6 : constant addr7 := 16#66#;
+   addr_MCP4724_7 : constant addr7 := 16#67#;
+   --
    addr_BMP180 : constant addr7 := 16#77#;
    addr_BME280 : constant addr7 := 16#77#; --  Same as BMP180
-   --
    -- Define some useful constants.
    --
 end;
