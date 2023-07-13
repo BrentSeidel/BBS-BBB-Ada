@@ -64,7 +64,6 @@ package body BBS.embed.i2c.MCP4725 is
        --  command is used for this.  The register address is the first
        --  byte and the value is the two following bytes.
        --
---       BBS.embed.log.debug.Put_Line("Writing DAC value " & value'Image & ", address " & msb'Image);
        self.hw.writem1(self.address, msb, uint16(value)*16#10#, err);
      end if;
    end;
