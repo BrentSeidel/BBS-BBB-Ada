@@ -36,6 +36,13 @@ package BBS.embed.i2c.devices is
    addr_MCP23017_7 : constant addr7 := 16#26#;
    addr_MCP23017_8 : constant addr7 := 16#27#;
    --
+   --  The ADS1015 is a four channel, 12 bit ADC
+   --
+   addr_ADS1015_1 : constant addr7 := 16#48#;  --  GND
+   addr_ADS1015_2 : constant addr7 := 16#49#;  --  Vdd
+   addr_ADS1015_3 : constant addr7 := 16#4A#;  --  SDA
+   addr_ADS1015_4 : constant addr7 := 16#4B#;  --  SCL
+   --
    --  Addresses for PCA9685 PWM Controllers.  This has 6 address select pins so
    --  it can have 64 different addresses (apparently only 62 are usable).
    --  The addresses have the forms: 16#4x#, 16#5x#, 16#6x#, and 16#7x#.  Be
@@ -49,7 +56,7 @@ package BBS.embed.i2c.devices is
    --
    addr_MCP4724_0 : constant addr7 := 16#60#;
    addr_MCP4724_1 : constant addr7 := 16#61#;
-   addr_MCP4724_2 : constant addr7 := 16#62#;
+   addr_MCP4724_2 : constant addr7 := 16#62#;  --  Default address of AdaFruit unit
    addr_MCP4724_3 : constant addr7 := 16#63#;
    addr_MCP4724_4 : constant addr7 := 16#64#;
    addr_MCP4724_5 : constant addr7 := 16#65#;

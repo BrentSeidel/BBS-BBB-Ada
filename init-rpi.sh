@@ -39,3 +39,8 @@ chmod 666 /sys/class/gpio/*/active_low
 chmod 666 /sys/class/gpio/*/direction
 chmod 666 /sys/class/gpio/*/value
 #
+#  the I2C device file needs to be set to be accessible.
+#
+echo "I2C device file"
+chmod 666 /dev/i2c-1
+#
