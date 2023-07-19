@@ -42,6 +42,25 @@ package body BBS.embed.I2C.ADS1015 is
     self.hw.writem1(self.address, reg_config, config_to_uint16(self.config), error);
   end;
   --
+  procedure set_gain(self : in out ADS1015_record;
+                    gain : pga_type; error : out err_code) is
+  begin
+    self.config.pga := gain;
+    self.hw.writem1(self.address, reg_config, config_to_uint16(self.config), error);
+  end;
+  --
+  procedure set_continuous(self : in out ADS1015_record; error : out err_code) is
+  begin
+    self.config.mode := false;
+    self.hw.writem1(self.address, reg_config, config_to_uint16(self.config), error);
+  end;
+  --
+  procedure set_1shot(self : in out ADS1015_record; error : out err_code) is
+  begin
+    self.config.mode := true;
+    self.hw.writem1(self.address, reg_config, config_to_uint16(self.config), error);
+  end;
+  --
   procedure start_conversion(self : in out ADS1015_record; error : out err_code) is
     temp : ADS1015_config := self.config;
   begin

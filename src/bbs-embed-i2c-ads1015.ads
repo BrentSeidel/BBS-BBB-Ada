@@ -140,13 +140,17 @@ package BBS.embed.I2C.ADS1015 is
     os at 0 range 15 .. 15;
   end record;
   --
-  --  Initial configuration
+  --  Initial configuration to default configuration
   --
   procedure configure(self : in out ADS1015_record; port : i2c_interface;
                       addr : addr7; error : out err_code);
   --
+  --  Initial configuration to specified configuration
+  --
   procedure configure(self : in out ADS1015_record; port : i2c_interface;
                       addr : addr7; config : ADS1015_config; error : out err_code);
+  --
+  --  Set ADC configuration to new value
   --
   procedure change_config(self : in out ADS1015_record;
                           config : ADS1015_config; error : out err_code);
@@ -154,8 +158,22 @@ package BBS.embed.I2C.ADS1015 is
   procedure set_mux(self : in out ADS1015_record;
                     mux : mux_mode_type; error : out err_code);
   --
+  procedure set_gain(self : in out ADS1015_record;
+                    gain : pga_type; error : out err_code);
+  --
+  procedure set_continuous(self : in out ADS1015_record; error : out err_code);
+  --
+  procedure set_1shot(self : in out ADS1015_record; error : out err_code);
+  --
+  --  Use to start conversion when in single shot mode.  No effect in
+  --  continuous mode.
+  --
   procedure start_conversion(self : in out ADS1015_record; error : out err_code);
   --
+  --  Checks if conversion is in progress.  Will always return false
+  --  (conversion in progress) while in continuous mode.  Returns true
+  --  when no conversion is in progress.
+  --  
   function conversion_done(self : in out ADS1015_record; error : out err_code)
     return Boolean;
   --

@@ -59,11 +59,9 @@ an object from either the BBS.embed.I2C.Due or BBS.embed.I2C.Linux packages.
 **Note** after a bug fix, the I2C interface works on a Raspberry PI 3.  It should
 work on other models as well.  Just pass "/dev/null" as the pin control files.  A
 configuration routine has been provided that omits the pin control parameters.
-The Linux version used is: Linux raspberrypi 4.4.13-v7+ #894 SMP
-Mon Jun 13 13:13:27 BST 2016 armv7l GNU/Linux
-It has also been used on a Raspberry PI 4 with Linux pi-desktop 5.15.0-1033-raspi
-#36-Ubuntu SMP PREEMPT Thu Jun 22 08:10:31 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux
-
+The Linux version tested are:
+* Raspberry Pi-3 Linux 4.4.13-v7+ #894 SMP Mon Jun 13 13:13:27 BST 2016 armv7l GNU/Linux
+* Raspberry PI 4 Linux 5.15.0-1033-raspi #36-Ubuntu SMP PREEMPT Thu Jun 22 08:10:31 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux
 
 ## i2c subpackages
 Subpackages have been created for the following devices to provide a higher level interface.
@@ -72,7 +70,9 @@ Subpackages have been created for the following devices to provide a higher leve
 This is a four channel 12 bit Analog to Digital Converter.  The four channels
 can be used individually in a single ended mode.  Channel 0 and 1 can be
 paired for differential measurements.  Channels 0, 1, and 2 can be paired
-with channel 3 for differential measurements.
+with channel 3 for differential measurements.  The 12 bit value is a signed
+twos complement format.  This means that for single ended conversions, it
+is effectively 11 bits.
 
 ### BME280
 This chip contains pressure, temperature, and humidity sensors along with calibration
