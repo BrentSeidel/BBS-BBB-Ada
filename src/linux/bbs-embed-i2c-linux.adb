@@ -281,6 +281,26 @@ package body BBS.embed.i2c.linux is
       self.write(addr, reg, buff_index(1), error);
    end;
    --
+   --  Write a word with MSB first.
+   --
+   procedure writem1(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8((data/16#100#) and 16#FF#);
+      self.b(1) := uint8(data and 16#FF#);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
+   --  Write a word with MSB second (LSB first).
+   --
+   procedure writem2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is
+   begin
+      self.b(0) := uint8(data and 16#FF#);
+      self.b(1) := uint8((data/16#100#) and 16#FF#);
+      self.write(addr, reg, buff_index(2), error);
+   end;
+   --
    -- Write an arbitrary number of bytes to a device on the i2c bus.
    --
    procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;

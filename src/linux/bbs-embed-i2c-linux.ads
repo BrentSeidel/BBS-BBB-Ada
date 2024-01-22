@@ -103,6 +103,18 @@ package BBS.embed.i2c.linux is
    function readm2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                  error : out err_code) return uint16;
    --
+   --  Write a word with MSB first.
+   --
+   overriding
+   procedure writem1(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code);
+   --
+   --  Write a word with MSB second (LSB first).
+   --
+   overriding
+   procedure writem2(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code);
+   --
    -- Write an arbitrary number of bytes to a device on the i2c bus.
    --
    overriding
@@ -259,14 +271,8 @@ private
       record
          port : file_id;
          buff1 : aliased buffer;
---         buff2 : aliased buffer;
          msg : aliased i2c_msg_arr;
          ioctl_msg : i2c_rdwr_ioctl_data;
       end record;
    --
---   type Linux_i2c_device_record is tagged
---      record
---         port : i2c_interface;
---         address : addr7;
---      end record;
 end;
