@@ -276,8 +276,6 @@ package body BBS.embed.i2c.linux is
    --
    procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                    data : uint8; error : out err_code) is
-      status : interfaces.C.int;
-      err : integer;
    begin
       self.b(0) := data;
       self.write(addr, reg, buff_index(1), error);

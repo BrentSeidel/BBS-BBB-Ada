@@ -17,7 +17,7 @@ package BBS.embed.i2c is
    --  a few bytes are needed.  This should be quite adequate.
    --
    type buff_index is new Integer range 0 .. 127;
-   type buffer is array(buff_index'Range) of BBS.embed.uint8;
+   type buffer is array(buff_index'Range) of uint8;
    type buff_ptr is access all buffer;
    --
    --   The I2C  object

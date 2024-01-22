@@ -51,7 +51,7 @@ private
    --
    --  Phase sequence for stepper motor.
    --
-   step_phase : constant array (1 .. 8, 1 .. 4) of BBS.embed.bit :=
+   step_phase : constant array (1 .. 8, 1 .. 4) of bit :=
      ((1, 0, 1, 0),  --  1. +A +B
       (1, 0, 0, 0),  --  2. +A 0B
       (1, 0, 0, 1),  --  3. +A -B

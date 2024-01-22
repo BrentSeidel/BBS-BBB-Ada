@@ -3,7 +3,6 @@
 --
 with BBS.embed.i2c;
 package BBS.embed.i2c.devices is
-   pragma Pure;
    --
    --  List of addresses for devices in separate packages.  These are listed
    --  here in address order to help check for duplicate addresses.
