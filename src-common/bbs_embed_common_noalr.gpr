@@ -1,6 +1,6 @@
-with "config/bbs_embed_common_config.gpr";
+with "../../BBS-Ada/bbs.gpr";
 
-Library project bbs_embed_common is
+Library project bbs_embed_common_noalr is
 
    for Source_Dirs use (".");
    for Languages use ("Ada");
@@ -20,5 +20,5 @@ Library project bbs_embed_common is
       for Default_Switches ("c") use ("-g");
    end Compiler;
 
-end bbs_embed_common;
+end bbs_embed_common_noalr;
 

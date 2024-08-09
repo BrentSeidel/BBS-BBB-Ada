@@ -1,3 +1,21 @@
+--
+--  Author: Brent Seidel
+--  Date: 9-Aug-2024
+--
+--  This file is part of bbs_embed.
+--  Bbs_embed is free software: you can redistribute it and/or modify it
+--  under the terms of the GNU General Public License as published by the
+--  Free Software Foundation, either version 3 of the License, or (at your
+--  option) any later version.
+--
+--  bbs_embed is distributed in the hope that it will be useful, but
+--  WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+--  Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License along
+--  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
+--
 with Ada.Text_IO;
 with BBS.embed.BBB;
 package BBS.embed.LED is
@@ -66,11 +84,6 @@ private
    -- This will have to be fiddled with if the names ever change, but at
    -- least it's in one spot.
    --
---   led_names : constant array (led_num) of String(1 .. 48) :=
---     ("/sys/class/leds/beaglebone:green:usr0/brightness",
---      "/sys/class/leds/beaglebone:green:usr1/brightness",
---      "/sys/class/leds/beaglebone:green:usr2/brightness",
---      "/sys/class/leds/beaglebone:green:usr3/brightness");
    led_names : constant array (led_num) of String(1 .. 48) :=
      (BBS.embed.BBB.LED_0 & "brightness",
       BBS.embed.BBB.LED_0 & "brightness",

@@ -5,6 +5,10 @@
 */obj/*
 */lib/*
 
+# Alire directories
+*/alire/*
+*/config/*
+
 # Ada Library Information
 *.ali
 

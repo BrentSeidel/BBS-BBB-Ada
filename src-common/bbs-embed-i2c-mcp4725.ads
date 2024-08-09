@@ -1,4 +1,22 @@
 --
+--  Author: Brent Seidel
+--  Date: 9-Aug-2024
+--
+--  This file is part of bbs_embed.
+--  Bbs_embed is free software: you can redistribute it and/or modify it
+--  under the terms of the GNU General Public License as published by the
+--  Free Software Foundation, either version 3 of the License, or (at your
+--  option) any later version.
+--
+--  bbs_embed is distributed in the hope that it will be useful, but
+--  WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+--  Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License along
+--  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
+--
+--
 --  Package for driving the MCP4725 DAC.
 --
 --  On a Rasperry PI 400 under Ubuntu, this could generate a square wave
@@ -25,7 +43,7 @@ package BBS.embed.i2c.MCP4725 is
    Fast_Write   : constant CMD_type := 0;
    Write_CMD    : constant CMD_type := 2;
    Write_EEPROM : constant CMD_type := 3;
--- 
+--
 --  Power-Down select
 --  0 - Normal Mode
 --  1 - 1k resistance to ground

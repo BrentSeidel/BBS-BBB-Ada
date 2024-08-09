@@ -1,12 +1,13 @@
-with "config/bbs_embed_common_config.gpr";
+with "../../BBS-Ada/bbs.gpr";
+with "../src-common/bbs_embed_common_noalr.gpr";
 
-Library project bbs_embed_common is
+Library project bbs_embed_linux_noalr is
 
    for Source_Dirs use (".");
-   for Languages use ("Ada");
+   for Languages use ("Ada", "C");
    for Object_Dir use "obj";
    for Library_Dir use "lib";
-   for Library_Name use "BBS-embed";
+   for Library_Name use "BBS-embed-linux";
 
    package Builder is
       for Default_Switches ("ada") use ("-s", "-g");
@@ -20,5 +21,5 @@ Library project bbs_embed_common is
       for Default_Switches ("c") use ("-g");
    end Compiler;
 
-end bbs_embed_common;
+end bbs_embed_linux_noalr;
 
