@@ -1,4 +1,4 @@
-# Arduino Due Specific Files
+# Linux Specific Files
 
 This directory contains files specific to Linux.  Some of these may also be specific
 to the BeagleBone Black, Raspberry PI, or other Linux based board.

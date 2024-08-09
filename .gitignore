@@ -1,6 +1,10 @@
 # Object file
 *.o
 
+# Build directories
+*/obj/*
+*/lib/*
+
 # Ada Library Information
 *.ali
 

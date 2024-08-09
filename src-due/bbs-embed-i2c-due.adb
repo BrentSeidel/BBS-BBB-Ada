@@ -3,8 +3,9 @@ use type SAM3x8e.Bit;
 with SAM3x8e.PMC;  --  Needed to enable I2C clocking
 with SAM3x8e.PIO;  --  Needed to configure I2C pins
 with SAM3x8e.TWI;  --  Needed for I2C interface
+with BBS;
+use type BBS.uint32;
 with BBS.embed;
-use type BBS.embed.uint32;
 with BBS.embed.due.serial.int;
 with BBS.embed.log;
 --
