@@ -18,6 +18,7 @@
 --
 with Ada.Real_Time;
 use type Ada.Real_Time.Time;
+with BBS.embed.log;
 package body BBS.embed.gpio.tb6612 is
 
    --
