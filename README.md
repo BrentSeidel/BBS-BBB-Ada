@@ -5,6 +5,14 @@ ARM based Arduino Due.  Due to differences between platforms and the limited
 amount of time I have to work on things, something may work on one platform,
 but not on another.
 
+[![Alire](https://img.shields.io/endpoint?url=https://alire.ada.dev/badges/bbs_embed_common.json)]
+(https://alire.ada.dev/crates/bbs_embed_common.html)
+
+
+[![Alire](https://img.shields.io/endpoint?url=https://alire.ada.dev/badges/bbs_embed_linux.json)]
+(https://alire.ada.dev/crates/bbs_embed_linux.html)
+
+
 # Notices
 ## Note
 As a result of bringing in the Arduino Due, the non-object oriented interfaces

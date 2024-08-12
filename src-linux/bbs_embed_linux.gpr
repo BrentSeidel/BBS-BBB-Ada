@@ -1,5 +1,4 @@
-with "../../BBS-Ada/bbs.gpr";
-with "../src-common/bbs_embed_common.gpr";
+with "config/bbs_embed_linux_config.gpr";
 
 Library project bbs_embed_linux is
 
