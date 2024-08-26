@@ -1,0 +1,220 @@
+\documentclass[10pt, openany]{book}
+%
+%  Packages to use
+%
+\usepackage{fancyhdr}
+\usepackage{fancyvrb}
+\usepackage{fancybox}
+%
+\usepackage{lastpage}
+\usepackage{imakeidx}
+%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+%
+\usepackage{geometry}
+\geometry{letterpaper}
+%
+\usepackage{url}
+\usepackage{gensymb}
+\usepackage{multicol}
+\usepackage{xcolor}
+%
+\usepackage{tikz}
+\usepackage[pdf]{pstricks}
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.pdf}
+\DeclareGraphicsRule{.pdf}{pdf}{.pdf}{}
+%
+% Rules to allow import of graphics files in EPS format
+%
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.eps}
+\DeclareGraphicsRule{.eps}{eps}{.eps}{}
+%
+%  Include the listings package
+%
+\usepackage{listings}
+%
+% Macro definitions
+%
+\newcommand{\operation}[1]{\textbf{\texttt{#1}}}
+\newcommand{\package}[1]{\texttt{#1}}
+\newcommand{\function}[1]{\texttt{#1}}
+\newcommand{\constant}[1]{\emph{\texttt{#1}}}
+\newcommand{\keyword}[1]{\texttt{#1}}
+\newcommand{\datatype}[1]{\texttt{#1}}
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\cli}[1]{\texttt{#1}}
+\newcommand{\uvec}[1]{\textnormal{\bfseries{#1}}}
+\newcommand{\comment}[1]{{\color{red}{#1}}}
+%
+\newcommand{\docname}{Users's Manual for \\ Device Interfaces}
+%
+% Front Matter
+%
+\title{\docname}
+\author{Brent Seidel \\ Phoenix, AZ}
+\date{ \today }
+%========================================================
+%%% BEGIN DOCUMENT
+\begin{document}
+%
+%  Header's and Footers
+%
+\fancypagestyle{plain}{
+  \fancyhead[L]{}%
+  \fancyhead[R]{}%
+  \fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}%
+  \fancyfoot[L]{Ada Programming}
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+}
+\fancypagestyle{myfancy}{
+  \fancyhead[L]{\docname}%
+  \fancyhead[R]{\leftmark}
+  \fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}%
+  \fancyfoot[L]{Ada Programming}
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+}
+\pagestyle{myfancy}
+%
+% Produce the front matter
+%
+\frontmatter
+\maketitle
+\begin{center}
+This document is \copyright 2024, Brent Seidel.  All rights reserved.
+
+\paragraph{}Note that this is a draft version and not the final version for publication.
+\end{center}
+\tableofcontents
+
+\mainmatter
+%========================================================
+\chapter{Introduction}
+
+\section{About the Project}
+
+
+\section{License}
+This project is licensed using the GNU General Public License V3.0.  Should you wish other licensing terms, contact the author.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+%========================================================
+\chapter{How to Obtain}
+
+This collection is currently available on GitHub at \url{https://github.com/BrentSeidel/BBS-BBB-Ada}.  Parts are available through alire via ``\keyword{alr get bbs\_embed\_common}'' and ``\keyword{alr get bbs\_embed\_linux}''
+
+\section{Dependencies}
+\subsection{bbs\_embed\_common}
+\subsubsection{Ada Libraries}
+The following Ada packages are used:
+\begin{itemize}
+  \item \package{Ada.Integer\_Text\_IO}
+  \item \package{Ada.Numerics.Generic\_Elementary\_Functions} (used only by lsm303dlhc)
+  \item \package{Ada.Real\_Time}
+  \item \package{Ada.Text\_IO}
+  \item \package{Ada.Unchecked\_Conversion}
+\end{itemize}
+\subsubsection{Other Libraries}
+This library depends on the root package \package{BBS} available at \url{https://github.com/BrentSeidel/BBS-Ada} and through alire via ``\keyword{alr get bbs}''.  Packages external to this library are marked with an asterisk.
+\begin{itemize}
+  \item \package{BBS.embed.GPIO}
+  \item \package{BBS.embed.i2c}
+  \item \package{BBS.embed.log}
+  \item \package{BBS.embed.SPI}
+  \item \package{BBS.units}*
+\end{itemize}
+
+\subsection{bbs\_embed\_linux}
+\subsubsection{Ada Libraries}
+The following Ada packages are used:
+\begin{itemize}
+  \item \package{Ada.Direct\_IO}
+  \item \package{Ada.IO\_Exceptions}
+  \item \package{Ada.Long\_Integer\_Text\_IO}
+  \item \package{Ada.Strings.Fixed}
+  \item \package{Ada.Text\_IO}
+  \item \package{Interfaces.C}
+\end{itemize}
+\subsubsection{Other Libraries}
+This library depends on the root package \package{BBS} available at \url{https://github.com/BrentSeidel/BBS-Ada} and through alire via ``\keyword{alr get bbs}''.  Packages external to this library are marked with an asterisk.
+\begin{itemize}
+  \item \package{BBS.embed}*
+  \item \package{BBS.embed.BBB}*
+  \item \package{BBS.embed.GPIO}*
+  \item \package{BBS.embed.log}*
+  \item \package{BBS.embed.SPI}*
+  \item \package{BBS.units}*
+\end{itemize}
+
+\subsection{bbs\_embed\_due}
+The Arduino Due requires an appropriate run-time system and cross-compiler.
+\subsubsection{Ada Libraries}
+The following Ada packages are used:
+\begin{itemize}
+  \item \package{Ada.Interrupts}
+  \item \package{Ada.Interrupts.Names}
+  \item \package{Ada.Real\_Time}
+  \item \package{Ada.Synchronous\_Task\_Control}
+  \item \package{Interfaces}
+  \item \package{System}
+  \item \package{System.Sam3x8}
+\end{itemize}
+\subsubsection{SAM3x8e Stuff}
+The following SAM3x8e hardware definition packages are used:
+\begin{itemize}
+  \item \package{SAM3x8e}
+  \item \package{SAM3x8e.ADC}
+  \item \package{SAM3x8e.PIO}
+  \item \package{SAM3x8e.PMC}
+  \item \package{SAM3x8e.TWI}
+  \item \package{SAM3x8e.UART}
+\end{itemize}
+\subsubsection{Other Libraries}
+This library depends on the root package \package{BBS} available at \url{https://github.com/BrentSeidel/BBS-Ada} and through alire via ``\keyword{alr get bbs}''.  Packages external to this library are marked with an asterisk.
+\begin{itemize}
+  \item \package{BBS}*
+  \item \package{BBS.embed}*
+  \item \package{BBS.embed.due.dev}
+  \item \package{BBS.embed.due.serial.int}
+  \item \package{BBS.embed.due.serial.polled}
+  \item \package{BBS.embed.GPIO.Due}
+  \item \package{BBS.embed.log}*
+  \item \package{BBS.embed.SPI}*
+\end{itemize}
+
+
+%========================================================
+\chapter{Usage Instructions}
+\comment{This chapter contains the high level usage instructions for the project.  If it is a library, what needs to be done to use it from another project.  If it is an application, how to build and run the application.}
+
+\subsection{How to Include in Your Project}
+\comment{If this project is a library, this will probably be just editing your .gpr file to point to this project's .gpr file.  Something is definitely needed if it is more complicated.  If the project is not a library, then this section can be omitted.}
+
+%========================================================
+\chapter{API Description}
+\comment{If the project does not have a public API, this chapter can be omitted.  Otherwise include an API description here.  This would include packages, data types, routines to call, how to instantiate generics, and anything else that would be valuable to someone using the project.}
+
+%========================================================
+\chapter{User Interface}
+\comment{If there is no user interface, this chapter can be omitted.  Otherwise, if the project has a user interface, put instructions in this chapter.}
+
+%========================================================
+\chapter{Other Stuff}
+\comment{If there is anything else that should be added, additional chapters may be added as needed.}
+
+%========================================================
+\clearpage
+\nocite{Ada95}
+\nocite{Ada2012}
+\nocite{Ada2022}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plain}
+\bibliography{Users.bib}
+\comment{This section can be omitted, if you have no bibliography.}
+
+\end{document}

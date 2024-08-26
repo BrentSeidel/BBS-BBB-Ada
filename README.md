@@ -170,7 +170,7 @@ class supports 12 bit conversions.  The concrete implementations for Linux or
 Arduino Due may support other options.
 
 On the BeagleBone Black, there are seven analog inputs available and the pins
-that they are on are fixed purpose.  The A/D converted is a 12 bit converter,
+that they are on are fixed purpose.  The A/D converter is a 12 bit converter,
 so the result should be in the range 0..4095.
 
 The Arduino Due has 16 analog inputs, 12 of which are actually wired up and are

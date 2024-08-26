@@ -12,30 +12,28 @@
 # Ada Library Information
 *.ali
 
+# LaTex auxiliary files
+doc/*.aux
+doc/*.log
+doc/*.synctex.gz
+doc/*.toc
+doc/*.bbl
+doc/*.blg
+
 # Other files
 *.stdout
 *.stderr
 
 b__main.adb
-
 b__main.ads
-
 b~main.adb
-
 b~main.ads
-
 gnatinspect.db
-
 auto.cgpr
-
 gnatinspect.db-shm
-
 gnatinspect.db-wal
-
 errors.d
-
 i2c-loc.xml
-
 i2c-loc.xml
 *.cswi
 *.xml
