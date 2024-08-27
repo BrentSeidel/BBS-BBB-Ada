@@ -277,7 +277,7 @@ The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use a
 The following routines are used for communicating with devices on the I2C bus.  Note that there is no standard about whether multibyte data should be transferred LSB first or MSB first (I've even seen devices that use both depending on which data you're getting).  Routines are provided for MSB first (m1 routines) or MSB second (m2 routines) for 16 bit transfers.  For longer transfers, use the block transfer routines and decode the data yourself.  The 8 and 16 bit routines cover most of the cases.
 \begin{lstlisting}
 function read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                 error : out err_code) return uint8 is (0);
+              error : out err_code) return uint8 is (0);
 \end{lstlisting}
 Read a single byte of data from the specified register in the specified device.
 \begin{itemize}
@@ -290,7 +290,7 @@ Read a single byte of data from the specified register in the specified device.
 
 \begin{lstlisting}
 function readm1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                 error : out err_code) return uint16 is (0);
+                error : out err_code) return uint16 is (0);
 \end{lstlisting}
 Read two bytes of data with MSB transferred first from the specified register in the specified device.
 \begin{itemize}
@@ -303,7 +303,7 @@ Read two bytes of data with MSB transferred first from the specified register in
 
 \begin{lstlisting}
 function readm2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                 error : out err_code) return uint16 is (0);
+                error : out err_code) return uint16 is (0);
 \end{lstlisting}
 Read two bytes of data with MSB transferred second from the specified register in the specified device.
 \begin{itemize}
@@ -316,7 +316,7 @@ Read two bytes of data with MSB transferred second from the specified register i
 
 \begin{lstlisting}
 procedure read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                  size : buff_index; error : out err_code) is null;
+               size : buff_index; error : out err_code) is null;
 \end{lstlisting}
 Reads a block of data into the interface record's buffer.  The user's code will need to extract the data from that buffer and process it as needed.
 \begin{itemize}
@@ -329,7 +329,7 @@ Reads a block of data into the interface record's buffer.  The user's code will 
 
 \begin{lstlisting}
 procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                   data : uint8; error : out err_code) is null;
+                data : uint8; error : out err_code) is null;
 \end{lstlisting}
 Write a single byte of data to the specified register in the specified device.
 \begin{itemize}
@@ -342,7 +342,7 @@ Write a single byte of data to the specified register in the specified device.
 
 \begin{lstlisting}
 procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                   data : uint16; error : out err_code) is null;
+                  data : uint16; error : out err_code) is null;
 \end{lstlisting}
 Writes two bytes of data with the MSB transferred first to the specified register in the specified device.
 \begin{itemize}
@@ -355,7 +355,7 @@ Writes two bytes of data with the MSB transferred first to the specified registe
 
 \begin{lstlisting}
 procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                   data : uint16; error : out err_code) is null;
+                  data : uint16; error : out err_code) is null;
 \end{lstlisting}
 Writes two bytes of data with the MSB transferred second to the specified register in the specified device.
 \begin{itemize}
@@ -368,7 +368,7 @@ Writes two bytes of data with the MSB transferred second to the specified regist
 
 \begin{lstlisting}
 procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
-                   size : buff_index; error : out err_code) is null;
+                size : buff_index; error : out err_code) is null;
 \end{lstlisting}
 Send the specified number of bytes in the interface record's buffer to the specified device and register.
 \begin{itemize}
@@ -400,6 +400,58 @@ Reads a byte from the SPI bus.
 \end{itemize}
 
 \subsection{Higher-Level Device Drivers}
+These higher-level device drivers build on the lower-level devices.  Typically these are devices that attach to a databus.
+
+\subsubsection{\package{BBS.embed.gpio.tb6612}}
+This is a driver for the Toshiba TB6612 dual DC motor controller \cite{TB6612}.  The device driver is designed to sequence the output to drive a stepper motor, or it can control two DC motors separately.  It requires four GPIO output pins.
+
+\begin{lstlisting}
+procedure init(self : in out TB6612_record; pin_a : BBS.embed.GPIO.GPIO;
+               pin_b : BBS.embed.GPIO.GPIO; pin_c : BBS.embed.GPIO.GPIO;
+               pin_d : BBS.embed.GPIO.GPIO);
+\end{lstlisting}
+Initialize the TB6612 driver with the 4 GPIO devices.
+\begin{itemize}
+  \item $self$ - The TB6612 device to initialize.
+  \item $pin\_a$ - The first GPIO pin.
+  \item $pin\_b$ - The second GPIO pin.
+  \item $pin\_c$ - The third GPIO pin.
+  \item $pin\_d$ - The fourth GPIO pin.
+\end{itemize}
+\begin{lstlisting}
+procedure set_delay(self : in out TB6612_record; wait_time : Natural);
+\end{lstlisting}
+Set a time delay between steps to use when stepping the motor a number of steps.  If not needed, it can be set to zero.
+\begin{itemize}
+  \item $self$ - The TB6612 device to modify.
+  \item $wait\_time$ - The time delay between steps in mS.
+\end{itemize}
+\begin{lstlisting}
+procedure step(self : in out TB6612_record; steps : Integer);
+\end{lstlisting}
+Move the stepper motor a specified number of steps.  A negative number will move in the opposite direction as a positive number.  Zero steps will do nothing.  If no delay has been specified, a default of 5mS between steps will be used.
+\begin{itemize}
+  \item $self$ - The TB6612 device to modify.
+  \item $steps$ - The number of steps to move the motor.
+\end{itemize}
+\begin{lstlisting}
+procedure stepper_off(self : in out TB6612_record);
+\end{lstlisting}
+De-energize the coils for a stepper motor (or both DC motors).
+\begin{itemize}
+  \item $self$ - The TB6612 device to modify.
+\end{itemize}
+\begin{lstlisting}
+procedure set_bridge_a(self : in out TB6612_record; value : Integer);
+procedure set_bridge_b(self : in out TB6612_record; value : Integer);
+\end{lstlisting}
+Each of the two H-bridges can be controlled separately.  This would allow two DC motors to be driven.
+\begin{itemize}
+  \item $self$ - The TB6612 device to modify.
+  \item $value$ - A value of zero sets the bridge off.  A positive value sets the polarity in one direction.  A negative value sets the polarity in the opposite direction.
+\end{itemize}
+
+Note that polarities are not specified as they depend on how the hardware is wired.
 
 %--------------------------------------------------------------------------------------------------
 \section{Linux}
@@ -415,12 +467,11 @@ Reads a byte from the SPI bus.
 
 %========================================================
 \clearpage
-\nocite{Ada95}
-\nocite{Ada2012}
-\nocite{Ada2022}
+%\nocite{Ada95}
+%\nocite{Ada2012}
+%\nocite{Ada2022}
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliographystyle{plain}
-\bibliography{Users.bib}
-\comment{This section can be omitted, if you have no bibliography.}
+\bibliography{devices.bib}
 
 \end{document}
