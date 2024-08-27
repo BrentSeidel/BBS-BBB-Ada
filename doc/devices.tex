@@ -95,9 +95,11 @@ This document is \copyright 2024, Brent Seidel.  All rights reserved.
 %========================================================
 \chapter{Introduction}
 
+%--------------------------------------------------------------------------------------------------
 \section{About the Project}
+This project provides an interface to hardware available on some Linux based systems and the Arduino Due.  It consists of two main components:  First an abstract set of classes for certain generic hardware items, and second specific classes to interface with the hardware on specific devices.  This separation is done to ease porting of software between different devices.  The two Linux based devices that are currently supported are the Raspberry Pi and the BeagleBone Black.  Other devices may be added by creating a set of specific classes for the device.
 
-
+%--------------------------------------------------------------------------------------------------
 \section{License}
 This project is licensed using the GNU General Public License V3.0.  Should you wish other licensing terms, contact the author.
 
@@ -108,6 +110,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 This collection is currently available on GitHub at \url{https://github.com/BrentSeidel/BBS-BBB-Ada}.  Parts are available through alire via ``\keyword{alr get bbs\_embed\_common}'' and ``\keyword{alr get bbs\_embed\_linux}''
 
+%--------------------------------------------------------------------------------------------------
 \section{Dependencies}
 \subsection{bbs\_embed\_common}
 \subsubsection{Ada Libraries}
@@ -190,18 +193,221 @@ This library depends on the root package \package{BBS} available at \url{https:/
 
 %========================================================
 \chapter{Usage Instructions}
-\comment{This chapter contains the high level usage instructions for the project.  If it is a library, what needs to be done to use it from another project.  If it is an application, how to build and run the application.}
+This chapter contains high-level instructions on using this library in your project.  First, all projects will need to include the \package{bbs\_embed\_common} packages to gain access to the base classes and some device drivers that build on these base classes.  The second step is platform specific, as described below.
 
-\subsection{How to Include in Your Project}
-\comment{If this project is a library, this will probably be just editing your .gpr file to point to this project's .gpr file.  Something is definitely needed if it is more complicated.  If the project is not a library, then this section can be omitted.}
+%--------------------------------------------------------------------------------------------------
+\section{Linux Based Raspberry Pi and BeagleBone Black}
+You will need to include the \package{bbs\_embed\_linux} packages in your project.  The \package{BBS.embed.rpi} package contains constants for various device names available on the Raspberry Pi.  The \package{BBS.embed.BBB} package contains constants for various devices names on the BeagleBone Black.  There is a script, \package{init-bbb.sh} for the BeagleBone Black or \package{init-rpi.sh} for the Raspberry Pi that needs to be run to activate some of the devices and set protections on the device files.  The script will need to be run as superuser, using the \cli{sudo} command.  Among other things, it sets protection on the device files so that your software does not need to run as superuser.
+
+%--------------------------------------------------------------------------------------------------
+\section{Arduino Due}
+This has not been worked on for a while.  To use this, you will need an ARM ELF Ada compiler and a board support package for the Arduino Due.  It did work with a board support package that I'd cobbled together a few generations of gnat ago.  Consider this to be experimental, but it should provide a good start to accessing hardware on the Arduino Due.
 
 %========================================================
 \chapter{API Description}
-\comment{If the project does not have a public API, this chapter can be omitted.  Otherwise include an API description here.  This would include packages, data types, routines to call, how to instantiate generics, and anything else that would be valuable to someone using the project.}
+Dealing with hardware can be complex, especially if you want your software to be portable.  The various different boards have different devices (or different numbers of devices) available.  Sometimes options are available on one board that are not available on another.
 
-%========================================================
-\chapter{User Interface}
-\comment{If there is no user interface, this chapter can be omitted.  Otherwise, if the project has a user interface, put instructions in this chapter.}
+%--------------------------------------------------------------------------------------------------
+\section{Common}
+The common library (\package{bbs\_embed\_common} in alire) contains base classes for hardware devices and higher-level drivers for devices that attach to the basic hardware, for example devices that connect via an I2C bus.
+\subsection{Basic Devices}
+The package \package{BBS.embed} defines the following types and functions:
+\begin{lstlisting}
+type addr7 is mod 2**7
+  with size => 7;
+type int12 is range -(2**11) .. 2**11 - 1
+  with size => 12;
+type uint12 is mod 2**12
+  with size => 12;
+\end{lstlisting}
+The \datatype{addr7} is used for addressing devices on an I2C bus.  the \datatype{int12} and \datatype{uint12} are used for the return values from typical analog to digital converters and anywhere else a 12 bit number is needed.
+\begin{lstlisting}
+function uint12_to_int12 is
+  new Ada.Unchecked_Conversion(source => uint12, target => int12);
+\end{lstlisting}
+This is used to convert from unsigned to signed 12 bit integers.  Should the reverse conversion be needed, it would be easy enough to add it here.
+\begin{lstlisting}
+function highByte(x : uint16) return uint8 is
+     (uint8(x / 2**8));
+function lowByte(x : uint16) return uint8 is
+      (uint8(x and 16#FF#));
+\end{lstlisting}
+These are used to extract the MSB and LST from \datatype{uint16} values.
+
+\subsubsection{Analog Inputs}
+Analog inputs have one common routine to read the value.  Everything else is implementation dependent.
+\begin{lstlisting}
+function get(self : AIN_record) return uint12 is abstract;
+\end{lstlisting}
+Read the value of the specified analog to digital converter.
+\begin{itemize}
+  \item $self$ - The object for the analog input device.
+  \item Returns the 12-bit value from the analog to digital converter.
+\end{itemize}
+
+\subsubsection{General-Purpose Input/Output (GPIO)}
+A GPIO is a device capable of reading or writing a single bit.  The physical characteristics are hardware dependent.  Some device specific routines may be needed to convert between input and output.
+\begin{lstlisting}
+procedure set(self : GPIO_record; value : bit) is abstract;
+\end{lstlisting}
+Sets the output value of a GPIO device.  The effect if the device is set to input is device specific.
+\begin{itemize}
+  \item $self$ - The object for the GPIO device.
+  \item $value$ - The value to write to the GPIO device.
+\end{itemize}
+\begin{lstlisting}
+function get(self : GPIO_record) return bit is abstract;
+\end{lstlisting}
+Reads the value of a GPIO device.  The value returned if the device is set to output is device specific.
+\begin{itemize}
+  \item $self$ - The object for the GPIO device.
+  \item Returns the value read from the GPIO device.
+\end{itemize}
+
+\subsubsection{I2C Bus}
+An I2C bus can interface with a number of devices on the bus.  It operates with the CPU being the master and the addressed device responding.  The basic I2C bus uses 7 bit addressing for devices and operates at 100kHz.  Any other options (10 bit addressing or higher speeds would be device specific, if supported).
+
+The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use are:
+\begin{itemize}
+  \item \datatype{err\_code} is an enumeration of error statuses that can be returned.  The possible values are \datatype{none}, \datatype{nack}, \datatype{ovre}, \datatype{invalid\_addr}, and \datatype{failed}.  In most cases you'll just want to compare the returned error to \datatype{none}.
+  \item \datatype{buff\_index} is an \datatype{Integer} index into a buffer with a range of 0 .. 127.
+  \item \datatype{buffer} is an array of \datatype{uint8} and bounds of \datatype{buff\_index}.  It is used for buffering data for I2C bus transfers.
+\end{itemize}
+
+The following routines are used for communicating with devices on the I2C bus.  Note that there is no standard about whether multibyte data should be transferred LSB first or MSB first (I've even seen devices that use both depending on which data you're getting).  Routines are provided for MSB first (m1 routines) or MSB second (m2 routines) for 16 bit transfers.  For longer transfers, use the block transfer routines and decode the data yourself.  The 8 and 16 bit routines cover most of the cases.
+\begin{lstlisting}
+function read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint8 is (0);
+\end{lstlisting}
+Read a single byte of data from the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $error$ - The error code from the transaction.
+  \item Returns the register contents.
+\end{itemize}
+
+\begin{lstlisting}
+function readm1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16 is (0);
+\end{lstlisting}
+Read two bytes of data with MSB transferred first from the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $error$ - The error code from the transaction.
+  \item Returns the register contents.
+\end{itemize}
+
+\begin{lstlisting}
+function readm2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                 error : out err_code) return uint16 is (0);
+\end{lstlisting}
+Read two bytes of data with MSB transferred second from the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $error$ - The error code from the transaction.
+  \item Returns the register contents.
+\end{itemize}
+
+\begin{lstlisting}
+procedure read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                  size : buff_index; error : out err_code) is null;
+\end{lstlisting}
+Reads a block of data into the interface record's buffer.  The user's code will need to extract the data from that buffer and process it as needed.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $size$ - The number of bytes to transfer.
+  \item $error$ - The error code from the transaction.
+\end{itemize}
+
+\begin{lstlisting}
+procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint8; error : out err_code) is null;
+\end{lstlisting}
+Write a single byte of data to the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $data$ - The data to write.
+  \item $error$ - The error code from the transaction.
+\end{itemize}
+
+\begin{lstlisting}
+procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is null;
+\end{lstlisting}
+Writes two bytes of data with the MSB transferred first to the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $data$ - The data to write.
+  \item $error$ - The error code from the transaction.
+\end{itemize}
+
+\begin{lstlisting}
+procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   data : uint16; error : out err_code) is null;
+\end{lstlisting}
+Writes two bytes of data with the MSB transferred second to the specified register in the specified device.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $data$ - The data to write.
+  \item $error$ - The error code from the transaction.
+\end{itemize}
+
+\begin{lstlisting}
+procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
+                   size : buff_index; error : out err_code) is null;
+\end{lstlisting}
+Send the specified number of bytes in the interface record's buffer to the specified device and register.
+\begin{itemize}
+  \item $self$ - The I2C interface device to use for communication.
+  \item $addr7$ - The 7 bit address of the device to communicate with.
+  \item $reg$ - The register address in the device.
+  \item $size$ - The number of bytes to transfer.
+  \item $error$ - The error code from the transaction.
+\end{itemize}
+In most cases these routines should only be used when writing a driver for an I2C device.
+
+\subsubsection{SPI Bus}
+The exposed interface for the SPI bus is much simpler than for the I2C bus.  If needed, more routines may be added here, but this hasn't been developed as much as the I2C bus interface.
+\begin{lstlisting}
+procedure set(self : SPI_record; value : uint8) is abstract;
+\end{lstlisting}
+Writes a byte to the SPI bus.
+\begin{itemize}
+  \item $self$ - The SPI interface device to use for communication.
+  \item $data$ - The data to write.
+\end{itemize}
+\begin{lstlisting}
+function get(self : SPI_record) return uint8 is abstract;
+\end{lstlisting}
+Reads a byte from the SPI bus.
+\begin{itemize}
+  \item $self$ - The SPI interface device to use for communication.
+  \item Returns the byte read from the bus.
+\end{itemize}
+
+\subsection{Higher-Level Device Drivers}
+
+%--------------------------------------------------------------------------------------------------
+\section{Linux}
+\subsection{Raspberry Pi}
+\subsection{BeagleBone Black}
+
+%--------------------------------------------------------------------------------------------------
+\section{Arduino Due}
 
 %========================================================
 \chapter{Other Stuff}
