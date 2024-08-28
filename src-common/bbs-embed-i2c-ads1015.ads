@@ -105,7 +105,7 @@ package BBS.embed.I2C.ADS1015 is
   --
   --  Comp_mode (Comparator Mode)
   --  0 - Traditional, with hysteresis (default)
-  --  1 - Window comparitor
+  --  1 - Window comparator
   --
   --  Comp_pol (Comparator Polarity)
   --  0 - Active low (default)

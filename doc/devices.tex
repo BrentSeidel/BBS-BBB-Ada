@@ -204,13 +204,13 @@ You will need to include the \package{bbs\_embed\_linux} packages in your projec
 This has not been worked on for a while.  To use this, you will need an ARM ELF Ada compiler and a board support package for the Arduino Due.  It did work with a board support package that I'd cobbled together a few generations of gnat ago.  Consider this to be experimental, but it should provide a good start to accessing hardware on the Arduino Due.
 
 %========================================================
-\chapter{API Description}
+\chapter{Common API Description}
 Dealing with hardware can be complex, especially if you want your software to be portable.  The various different boards have different devices (or different numbers of devices) available.  Sometimes options are available on one board that are not available on another.
 
-%--------------------------------------------------------------------------------------------------
-\section{Common}
 The common library (\package{bbs\_embed\_common} in alire) contains base classes for hardware devices and higher-level drivers for devices that attach to the basic hardware, for example devices that connect via an I2C bus.
-\subsection{Basic Devices}
+
+%--------------------------------------------------------------------------------------------------
+\section{Basic Devices}
 The package \package{BBS.embed} defines the following types and functions:
 \begin{lstlisting}
 type addr7 is mod 2**7
@@ -234,7 +234,7 @@ function lowByte(x : uint16) return uint8 is
 \end{lstlisting}
 These are used to extract the MSB and LST from \datatype{uint16} values.
 
-\subsubsection{Analog Inputs}
+\subsection{Analog Inputs}
 Analog inputs have one common routine to read the value.  Everything else is implementation dependent.
 \begin{lstlisting}
 function get(self : AIN_record) return uint12 is abstract;
@@ -245,7 +245,7 @@ Read the value of the specified analog to digital converter.
   \item Returns the 12-bit value from the analog to digital converter.
 \end{itemize}
 
-\subsubsection{General-Purpose Input/Output (GPIO)}
+\subsection{General-Purpose Input/Output (GPIO)}
 A GPIO is a device capable of reading or writing a single bit.  The physical characteristics are hardware dependent.  Some device specific routines may be needed to convert between input and output.
 \begin{lstlisting}
 procedure set(self : GPIO_record; value : bit) is abstract;
@@ -264,7 +264,7 @@ Reads the value of a GPIO device.  The value returned if the device is set to ou
   \item Returns the value read from the GPIO device.
 \end{itemize}
 
-\subsubsection{I2C Bus}
+\subsection{I2C Bus}
 An I2C bus can interface with a number of devices on the bus.  It operates with the CPU being the master and the addressed device responding.  The basic I2C bus uses 7 bit addressing for devices and operates at 100kHz.  Any other options (10 bit addressing or higher speeds would be device specific, if supported).
 
 The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use are:
@@ -380,7 +380,10 @@ Send the specified number of bytes in the interface record's buffer to the speci
 \end{itemize}
 In most cases these routines should only be used when writing a driver for an I2C device.
 
-\subsubsection{SPI Bus}
+\subsection{Logging}
+\comment{This is only for debugging purposes.  Should say something here briefly.}
+
+\subsection{SPI Bus}
 The exposed interface for the SPI bus is much simpler than for the I2C bus.  If needed, more routines may be added here, but this hasn't been developed as much as the I2C bus interface.
 \begin{lstlisting}
 procedure set(self : SPI_record; value : uint8) is abstract;
@@ -399,10 +402,11 @@ Reads a byte from the SPI bus.
   \item Returns the byte read from the bus.
 \end{itemize}
 
-\subsection{Higher-Level Device Drivers}
+%--------------------------------------------------------------------------------------------------
+\section{Higher-Level Device Drivers}
 These higher-level device drivers build on the lower-level devices.  Typically these are devices that attach to a databus.
 
-\subsubsection{\package{BBS.embed.gpio.tb6612}}
+\subsection{\package{BBS.embed.gpio.tb6612}}
 This is a driver for the Toshiba TB6612 dual DC motor controller \cite{TB6612}.  The device driver is designed to sequence the output to drive a stepper motor, or it can control two DC motors separately.  It requires four GPIO output pins.
 
 \begin{lstlisting}
@@ -453,7 +457,7 @@ Each of the two H-bridges can be controlled separately.  This would allow two DC
 
 Note that polarities are not specified as they depend on how the hardware is wired.
 
-\subsubsection{\package{BBS.embed.I2C.ADS1015}}
+\subsection{\package{BBS.embed.I2C.ADS1015}}
 This is a driver for the Texas Instruments ADS1015 4 channel analog to digital convertor that attaches to an I2C bus \cite{ADS1015}.  This converter has a wide variety of configuration options.  Refer to the datasheet for details.  A number of constants have been defined to support the various configuration options (see Tables \ref{tbl:ADS1015mux}, \ref{tbl:ADS1015PGA}. \ref{tbl:ADS1015DRC}, and \ref{tbl:ADS1015CompQ}).
 
 \begin{table}[!h]
@@ -670,13 +674,129 @@ Returns the conversion value.
   \item Returns the conversion value
 \end{itemize}
 
-%--------------------------------------------------------------------------------------------------
-\section{Linux}
-\subsection{Raspberry Pi}
-\subsection{BeagleBone Black}
+\subsection{\package{BBS.embed.i2c.BME280}}
+This is a driver for the Bosch BME280 temperature, pressure, and humidity sensor that attaches to an I2C bus \cite{BME280}.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the BME280 sensor and is intended for use in the \function{configure} call.
+
+\begin{lstlisting}
+procedure configure(self : in out BME280_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure a BME280 device.  This needs to be called before the device can be used.
+\begin{itemize}
+  \item $self$ - The BME280 device to configure.
+  \item $port$ - The I2C bus object that the BME280 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+\begin{lstlisting}
+procedure start_conversion(self : BME280_record; error : out err_code);
+\end{lstlisting}
+Instruct the BME280 to start converting temperature, pressure, and humidity readings.  These are converted at the same time.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+\begin{lstlisting}
+function data_ready(self : BME280_record; error : out err_code) return boolean;
+\end{lstlisting}
+Checks to see if conversion is complete.  The user software should wait until conversion is complete before attempting to read otherwise the results will be undefined.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if the conversion is complete and \constant{False} otherwise.
+\end{itemize}
+\begin{lstlisting}
+procedure read_data(self : in out BME280_record; error : out err_code);
+\end{lstlisting}
+Instructs the BME280 to read the converted temperature, pressure, and humidity values into BME280 object and compute calibrated values.  There is less overhead to read all three at once.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+\begin{lstlisting}
+procedure get_raw(self : BME280_record; raw_temp : out uint32;
+                  raw_press : out uint32; raw_hum : out uint32);
+\end{lstlisting}
+Return the raw, uncompensated values after \function{read\_data()} has been called.  This is primarily for debugging purposes.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item $raw\_temp$ - The raw temperature value.
+  \item $raw\_press$ - The raw pressure value.
+  \item $raw\_hum$ - The raw humidity value.
+\end{itemize}
+\begin{lstlisting}
+function get_t_fine(self : BME280_record) return int32;
+\end{lstlisting}
+Returns the \package{t\_fine} value after \function{read\_data()} has been called.  This is primarily for debugging purposes.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the \package{t\_fine} value.
+\end{itemize}
+\begin{lstlisting}
+function get_temp(self : BME280_record) return integer;
+\end{lstlisting}
+Returns the calibrated temperature value as an integer.  The LSB unit is 0.01\degree{}C.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the temperature in units of 0.01\degree{}C.
+\end{itemize}
+\begin{lstlisting}
+function get_temp(self : BME280_record) return BBS.units.temp_c;
+function get_temp(self : BME280_record) return BBS.units.temp_f;
+function get_temp(self : BME280_record) return BBS.units.temp_k;
+\end{lstlisting}
+Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on datatype of the destination.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the temperature in units of \degree{}C, \degree{}F, or K.
+\end{itemize}
+\begin{lstlisting}
+function get_press(self : BME280_record) return integer;
+\end{lstlisting}
+Returns the calibrated pressure value as an integer.  The LSB unit is $\frac{1}{256}$Pa.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the pressure in units of $\frac{1}{256}$Pa.
+\end{itemize}
+\begin{lstlisting}
+function get_press(self : BME280_record) return BBS.units.press_p;
+function get_press(self : BME280_record) return BBS.units.press_mb;
+function get_press(self : BME280_record) return BBS.units.press_atm;
+function get_press(self : BME280_record) return BBS.units.press_inHg;
+\end{lstlisting}
+Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatype of the destination.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the pressure in units of Pa, mB, Atm, or inHg.
+\end{itemize}
+\begin{lstlisting}
+function get_hum(self : BME280_record) return integer;
+\end{lstlisting}
+Returns the calibrated relative humidity as an integer.  The LSB unit is $\frac{1}{1024}$\% humidity.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the humidity in units of $\frac{1}{1024}$\% humidity.
+\end{itemize}
+\begin{lstlisting}
+function get_hum(self : BME280_record) return float;
+\end{lstlisting}
+Returns the relative humidity as a percentage relative humidity.
+\begin{itemize}
+  \item $self$ - The BME280 device to instruct.
+  \item Returns the humidity as a percentage relative humidity.
+\end{itemize}
+
+%========================================================
+\chapter{Linux API Description}
 
 %--------------------------------------------------------------------------------------------------
-\section{Arduino Due}
+\section{Raspberry Pi}
+
+%--------------------------------------------------------------------------------------------------
+\section{BeagleBone Black}
+
+%========================================================
+\chapter{Arduino Due API Description}
 
 %========================================================
 \chapter{Other Stuff}
@@ -684,9 +804,6 @@ Returns the conversion value.
 
 %========================================================
 \clearpage
-%\nocite{Ada95}
-%\nocite{Ada2012}
-%\nocite{Ada2022}
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliographystyle{plain}
 \bibliography{devices.bib}
