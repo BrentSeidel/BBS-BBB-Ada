@@ -56,8 +56,7 @@ package BBS.embed.i2c.BMP180 is
    cvt_press3 : constant uint8 := 16#f4#;
    --
   --
-   -- Stuff for object oriented interface.  These basically emulate the function
-   -- of the conventional routines above.
+   -- Stuff for object oriented interface.
    --
    type BMP180_record is new i2c_device_record with private;
    type BMP180_ptr is access BMP180_record;

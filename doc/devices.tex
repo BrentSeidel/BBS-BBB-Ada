@@ -688,6 +688,7 @@ Called to configure a BME280 device.  This needs to be called before the device 
   \item $addr$ - The I2C address of the device.
   \item $error$ - The error code from any I2C transactions.
 \end{itemize}
+
 \begin{lstlisting}
 procedure start_conversion(self : BME280_record; error : out err_code);
 \end{lstlisting}
@@ -696,6 +697,7 @@ Instruct the BME280 to start converting temperature, pressure, and humidity read
   \item $self$ - The BME280 device to instruct.
   \item $error$ - The error code from any I2C transactions.
 \end{itemize}
+
 \begin{lstlisting}
 function data_ready(self : BME280_record; error : out err_code) return boolean;
 \end{lstlisting}
@@ -705,6 +707,7 @@ Checks to see if conversion is complete.  The user software should wait until co
   \item $error$ - The error code from any I2C transactions.
   \item Returns \constant{True} if the conversion is complete and \constant{False} otherwise.
 \end{itemize}
+
 \begin{lstlisting}
 procedure read_data(self : in out BME280_record; error : out err_code);
 \end{lstlisting}
@@ -713,6 +716,7 @@ Instructs the BME280 to read the converted temperature, pressure, and humidity v
   \item $self$ - The BME280 device to instruct.
   \item $error$ - The error code from any I2C transactions.
 \end{itemize}
+
 \begin{lstlisting}
 procedure get_raw(self : BME280_record; raw_temp : out uint32;
                   raw_press : out uint32; raw_hum : out uint32);
@@ -724,6 +728,7 @@ Return the raw, uncompensated values after \function{read\_data()} has been call
   \item $raw\_press$ - The raw pressure value.
   \item $raw\_hum$ - The raw humidity value.
 \end{itemize}
+
 \begin{lstlisting}
 function get_t_fine(self : BME280_record) return int32;
 \end{lstlisting}
@@ -732,14 +737,16 @@ Returns the \package{t\_fine} value after \function{read\_data()} has been calle
   \item $self$ - The BME280 device to instruct.
   \item Returns the \package{t\_fine} value.
 \end{itemize}
+
 \begin{lstlisting}
 function get_temp(self : BME280_record) return integer;
 \end{lstlisting}
-Returns the calibrated temperature value as an integer.  The LSB unit is 0.01\degree{}C.
+Returns the calibrated temperature value as an \datatype{Integer}.  The LSB unit is 0.01\degree{}C.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
   \item Returns the temperature in units of 0.01\degree{}C.
 \end{itemize}
+
 \begin{lstlisting}
 function get_temp(self : BME280_record) return BBS.units.temp_c;
 function get_temp(self : BME280_record) return BBS.units.temp_f;
@@ -750,14 +757,16 @@ Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on d
   \item $self$ - The BME280 device to instruct.
   \item Returns the temperature in units of \degree{}C, \degree{}F, or K.
 \end{itemize}
+
 \begin{lstlisting}
 function get_press(self : BME280_record) return integer;
 \end{lstlisting}
-Returns the calibrated pressure value as an integer.  The LSB unit is $\frac{1}{256}$Pa.
+Returns the calibrated pressure value as an \datatype{Integer}.  The LSB unit is $\frac{1}{256}$Pa.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
   \item Returns the pressure in units of $\frac{1}{256}$Pa.
 \end{itemize}
+
 \begin{lstlisting}
 function get_press(self : BME280_record) return BBS.units.press_p;
 function get_press(self : BME280_record) return BBS.units.press_mb;
@@ -769,14 +778,16 @@ Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatyp
   \item $self$ - The BME280 device to instruct.
   \item Returns the pressure in units of Pa, mB, Atm, or inHg.
 \end{itemize}
+
 \begin{lstlisting}
 function get_hum(self : BME280_record) return integer;
 \end{lstlisting}
-Returns the calibrated relative humidity as an integer.  The LSB unit is $\frac{1}{1024}$\% humidity.
+Returns the calibrated relative humidity as an \datatype{Integer}.  The LSB unit is $\frac{1}{1024}$\% humidity.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
   \item Returns the humidity in units of $\frac{1}{1024}$\% humidity.
 \end{itemize}
+
 \begin{lstlisting}
 function get_hum(self : BME280_record) return float;
 \end{lstlisting}
@@ -784,6 +795,124 @@ Returns the relative humidity as a percentage relative humidity.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
   \item Returns the humidity as a percentage relative humidity.
+\end{itemize}
+
+\subsection{\package{BBS.embed.i2c.BMP180}}
+This is a driver for the Bosch BMP180 temperature and pressure sensor that attaches to an I2C bus \cite{BMP180}.  It has been discontinued by Bosch and is not recommended for new projects.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the BMP180 sensor and is intended for use in the \function{configure} call.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Conversion Kind \\
+    \hline
+    \constant{cvt\_temp} & Convert Temperature \\
+    \constant{cvt\_press0} & Convert pressure with no oversampling \\
+    \constant{cvt\_press1} & Convert pressure with oversampling of two \\
+    \constant{cvt\_press2} & Convert pressure with oversampling of four  \\
+    \constant{cvt\_press3} & Convert pressure with oversampling of eight  \\
+  \end{tabular}
+  \caption{Constants for BMP180 Conversion Kinds}
+  \label{tbl:BMP180Conv}
+\end{center}
+\end{table}
+
+\begin{lstlisting}
+procedure configure(self : in out BMP180_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure a BMP180 device.  This needs to be called before the device can be used.
+\begin{itemize}
+  \item $self$ - The BMP180 device to configure.
+  \item $port$ - The I2C bus object that the BMP180 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure start_conversion(self : in out BMP180_record;
+                           kind : uint8; error : out err_code);
+\end{lstlisting}
+Instruct the BMP180 to start converting temperature or pressure.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $kind$ - The kind of conversion to start.  See Table \ref{tbl:BMP180Conv} for options.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function data_ready(self : BMP180_record; error : out err_code)
+   return boolean;
+\end{lstlisting}
+Checks to see if conversion is complete.  The user software should wait until conversion is complete before attempting to read otherwise the results will be undefined.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if the conversion is complete and \constant{False} otherwise.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temp(self : in out BMP180_record; error : out err_code)
+   return float;
+\end{lstlisting}
+Returns the calibrated temperature value as a \datatype{Float} in \degree{}C.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the temperature as a \datatype{Float} in \degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temp(self : in out BMP180_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Returns the calibrated temperature value as an \datatype{Integer}.  The LSB unit is 0.1\degree{}C.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the temperature in units of 0.1\degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temp(self : in out BMP180_record; error : out err_code)
+   return BBS.units.temp_c;
+function get_temp(self : in out BMP180_record; error : out err_code)
+   return BBS.units.temp_f;
+function get_temp(self : in out BMP180_record; error : out err_code)
+   return BBS.units.temp_k;
+\end{lstlisting}
+Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on datatype of the destination.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.  \item $error$ - The error code from any I2C transactions.
+
+  \item Returns the temperature in units of \degree{}C, \degree{}F, or K.
+\end{itemize}
+
+\begin{lstlisting}
+function get_press(self : BMP180_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Returns the calibrated pressure value as an \datatype{Integer}.  The LSB unit is 1Pa.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the temperature in units of 0.1\degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_press(self : BMP180_record; error : out err_code)
+   return BBS.units.press_p;
+function get_press(self : BMP180_record; error : out err_code)
+   return BBS.units.press_mb;
+function get_press(self : BMP180_record; error : out err_code)
+   return BBS.units.press_atm;
+function get_press(self : BMP180_record; error : out err_code)
+   return BBS.units.press_inHg;
+\end{lstlisting}
+Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatype of the destination.
+\begin{itemize}
+  \item $self$ - The BMP180 device to instruct.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the pressure in units of Pa, mB, Atm, or inHg.
 \end{itemize}
 
 %========================================================
