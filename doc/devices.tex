@@ -453,6 +453,223 @@ Each of the two H-bridges can be controlled separately.  This would allow two DC
 
 Note that polarities are not specified as they depend on how the hardware is wired.
 
+\subsubsection{\package{BBS.embed.I2C.ADS1015}}
+This is a driver for the Texas Instruments ADS1015 4 channel analog to digital convertor that attaches to an I2C bus \cite{ADS1015}.  This converter has a wide variety of configuration options.  Refer to the datasheet for details.  A number of constants have been defined to support the various configuration options (see Tables \ref{tbl:ADS1015mux}, \ref{tbl:ADS1015PGA}. \ref{tbl:ADS1015DRC}, and \ref{tbl:ADS1015CompQ}).
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Mux Mode Configuration \\
+    \hline
+    \constant{mux\_a0\_a1} & Difference between AIN0 and AIN1 (default) \\
+    \constant{mux\_a0\_a3} & Difference between AIN0 and AIN3 \\
+    \constant{mux\_a1\_a3} & Difference between AIN1 and AIN3 \\
+    \constant{mux\_a2\_a3} & Difference between AIN2 and AIN3 \\
+    \constant{mux\_a0\_gnd} & Single ended AIN0 value \\
+    \constant{mux\_a1\_gnd} & Single ended AIN1 value \\
+    \constant{mux\_a2\_gnd} & Single ended AIN2 value \\
+    \constant{mux\_a3\_gnd} & Single ended AIN3 value \\
+  \end{tabular}
+  \caption{Constants for ADS1015 Mux Mode Configuration}
+  \label{tbl:ADS1015mux}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & PGA Configuration \\
+    \hline
+    \constant{pga\_6\_144} & Full scale voltage is 6.144V \\
+    \constant{pga\_4\_096} & Full scale voltage is 4.096V \\
+    \constant{pga\_2\_048} & Full scale voltage is 2.048V (default) \\
+    \constant{pga\_1\_024} & Full scale voltage is 1.024V \\
+    \constant{pga\_0\_512} & Full scale voltage is 0.512V \\
+    \constant{pga\_0\_256} & Full scale voltage is 0.256V \\
+  \end{tabular}
+  \caption{Constants for ADS1015 Programmable Gain Amplifier Configuration}
+  \label{tbl:ADS1015PGA}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Data Rate in Samples per Second (S/S) \\
+    \hline
+    \constant{dr\_0128} & Data rate is 128S/S \\
+    \constant{dr\_0250} & Data rate is 250S/S \\
+    \constant{dr\_0490} & Data rate is 490S/S \\
+    \constant{dr\_0920} & Data rate is 920S/S \\
+    \constant{dr\_1600} & Data rate is 1600S/S (default) \\
+    \constant{dr\_2400} & Data rate is 2400S/S \\
+    \constant{dr\_3300} & Data rate is 3300S/S \\
+  \end{tabular}
+  \caption{Constants for ADS1015 Data Rate Configuration}
+  \label{tbl:ADS1015DRC}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Comparator Queue Configuration \\
+    \hline
+    \constant{comp\_que\_1} & Assert after one conversion \\
+    \constant{comp\_que\_2} & Assert after two conversions \\
+    \constant{comp\_que\_3} & Assert after three conversion \\
+    \constant{comp\_que\_d} & Disable comparator (default) \\
+  \end{tabular}
+  \caption{Constants for ADS1015 Comparator Queue Configuration}
+  \label{tbl:ADS1015CompQ}
+\end{center}
+\end{table}
+
+There are some additional configuration parameters that don't have constants defined.  These just have values of 0 or 1.  See Table \ref{tbl:ADS1015Misc}.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Value & Conversion Mode \\
+    0 & Continuous conversion mode \\
+    1 & Power-down single-shot mode (default) \\
+    \hline
+    Value & Comparator Mode \\
+    0 & Traditional, with hysteresis (default) \\
+    1 & Window comparator \\
+    \hline
+    Value & Comparator Polarity \\
+    0 & Active low (default) \\
+    1 & Active high \\
+    \hline
+    Value & Comparator Latching \\
+    0 & Non-latching comparator (default) \\
+    1 & Latching comparator \\
+  \end{tabular}
+  \caption{Constants for ADS1015 Miscellaneous Configuration}
+  \label{tbl:ADS1015Misc}
+\end{center}
+\end{table}
+
+The datatype \datatype{ADS1015\_config} is defined as a record containing the configuration values.  It has the following fields:
+\begin{itemize}
+    \item \datatype{os} - Operational status, used to start a conversion if in single shot mode.  Don't use when setting configuration.
+    \item \datatype{mux} - The mux mode (see Table \ref{tbl:ADS1015mux}).
+    \item \datatype{pga} - The programmable gain type (see Table \ref{tbl:ADS1015PGA}).
+    \item \datatype{mode} - Conversion mode (see Table \ref{tbl:ADS1015Misc}).
+    \item \datatype{dr} - The data rate (see Table \ref{tbl:ADS1015DRC}).
+    \item \datatype{comp\_mode} - The comparator mode (see Table \ref{tbl:ADS1015Misc}).
+    \item \datatype{comp\_pol} - The comparator polarity (see Table \ref{tbl:ADS1015Misc}).
+    \item \datatype{comp\_lat} - The comparator latching (see Table \ref{tbl:ADS1015Misc}).
+    \item \datatype{comp\_que} - The comparator queue configuration  (see Table \ref{tbl:ADS1015CompQ}).
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out ADS1015_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Initializes the device to the default configuration.
+\begin{itemize}
+  \item $self$ - The device to initialize.
+  \item $port$ - The I2C interface that the device is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out ADS1015_record; port : i2c_interface;
+                    addr : addr7; config : ADS1015_config; error : out err_code);
+\end{lstlisting}
+Initialize the device using the specified configuration.
+\begin{itemize}
+  \item $self$ - The device to initialize.
+  \item $port$ - The I2C interface that the device is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $config$ - A configuration record containing the desired configuration
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure change_config(self : in out ADS1015_record;
+                        config : ADS1015_config; error : out err_code);
+\end{lstlisting}
+Changes the device configuration to new values
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $config$ - A configuration record containing the desired configuration
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_mux(self : in out ADS1015_record;
+                  mux : mux_mode_type; error : out err_code);
+\end{lstlisting}
+Changes only the mux mode configuration.
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $mux$ - The new mux mode configuration value.
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_gain(self : in out ADS1015_record;
+                  gain : pga_type; error : out err_code);
+\end{lstlisting}
+Changes only the converter gain value.
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $gain$ - The new gain value.
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_continuous(self : in out ADS1015_record; error : out err_code);
+\end{lstlisting}
+Sets the converter to operate in continuous mode.
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $error$ - The I2C error code.
+\end{itemize}
+\begin{lstlisting}
+procedure set_1shot(self : in out ADS1015_record; error : out err_code);
+\end{lstlisting}
+Sets the converter to operate in single shot mode.
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+procedure start_conversion(self : in out ADS1015_record; error : out err_code);
+\end{lstlisting}
+Start a conversion when in single shot mode.  No effect in continuous mode.
+\begin{itemize}
+  \item $self$ - The device to modify.
+  \item $error$ - The I2C error code.
+\end{itemize}
+
+\begin{lstlisting}
+function conversion_done(self : in out ADS1015_record; error : out err_code)
+    return Boolean;
+\end{lstlisting}
+Checks if conversion is in progress.  Will always return \constant{False} (conversion in progress) while in continuous mode.  Returns \constant{True} when no conversion is in progress.
+\begin{itemize}
+  \item $self$ - The device to initialize.
+  \item $error$ - The I2C error code.
+  \item Returns a conversion in progress flag.
+\end{itemize}
+
+\begin{lstlisting}
+function get_result(self : in out ADS1015_record; error : out err_code)
+    return uint12;
+\end{lstlisting}
+Returns the conversion value.
+\begin{itemize}
+  \item $self$ - The device to initialize.
+  \item $error$ - The I2C error code.
+  \item Returns the conversion value
+\end{itemize}
+
 %--------------------------------------------------------------------------------------------------
 \section{Linux}
 \subsection{Raspberry Pi}
