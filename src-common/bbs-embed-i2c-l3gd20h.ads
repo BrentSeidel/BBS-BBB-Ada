@@ -82,7 +82,6 @@ package BBS.embed.i2c.L3GD20H is
    --
    -- Define some datatypes
    --
-   --
    -- Record to hold all three rotation values in sensor values
    --
    type rotations is
@@ -101,8 +100,7 @@ package BBS.embed.i2c.L3GD20H is
          z : BBS.units.rot_d_s;
       end record;
    --
-   -- Stuff for object oriented interface.  These basically emulate the function
-   -- of the conventional routines above.
+   -- Stuff for object oriented interface.
    --
    type L3GD20H_record is new i2c_device_record with private;
    type L3GD20H_ptr is access L3GD20H_record;
@@ -130,8 +128,7 @@ package BBS.embed.i2c.L3GD20H is
    --
    -- When stationary, the sensors may not report 0.  This function should be
    -- called when the sensor is stationary.  It reads the rotations several times
-   -- and averages the results.  This is used to calculate offset values.  Note
-   -- that this feature is only available using the object oriented interface.
+   -- and averages the results.  This is used to calculate offset values.
    --
    -- This function returns true if the measurement was successful - that is all
    -- of the values measured are reasonably close to the mean.  If it returns false,

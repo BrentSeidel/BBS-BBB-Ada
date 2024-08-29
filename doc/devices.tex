@@ -91,6 +91,8 @@ This document is \copyright 2024, Brent Seidel.  All rights reserved.
 \end{center}
 \tableofcontents
 
+\listoftables
+
 \mainmatter
 %========================================================
 \chapter{Introduction}
@@ -914,6 +916,189 @@ Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatyp
   \item $error$ - The error code from any I2C transactions.
   \item Returns the pressure in units of Pa, mB, Atm, or inHg.
 \end{itemize}
+
+\subsection{\package{BBS.embed.i2c.L3GD20H}}
+This is a driver for the STMicrosystems L3GD20H three-axis digital output gyroscope \cite{L3GD20}.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the L3GD20H sensor and is intended for use in the \function{configure} call.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Full-Scale Deflection \\
+    \hline
+    \constant{fs\_245dps} & Full scale is 245\degree{}/S \\
+    \constant{fs\_500dps} & Full scale is 500\degree{}/S \\
+    \constant{fs\_2000dps} & Full scale is 2000\degree{}/S \\
+  \end{tabular}
+  \caption{Constants for L3GD20H Full-Scale Deflection}
+  \label{tbl:L3GD20HDef}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Status \\
+    \hline
+    \constant{zyx\_or} & X,Y,Z axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{z\_or} & Z axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{y\_or} & Y axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{x\_or} & X axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{zyxda} & X,Y,Z axis new data available \\
+    \constant{zda} & Z axis new data available \\
+    \constant{yda} & Y axis new data available \\
+    \constant{xda} & X axis new data available \\
+  \end{tabular}
+  \caption{Constants for L3GD20H Status}
+  \label{tbl:L3GD20HStat}
+\end{center}
+\end{table}
+
+Two utility datatypes are defined for holding rotations.  The first,  \datatype{rotations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw rotation values from the sensor.  The second, \datatype{rotations\_dps} is similar, but the components are all of type \datatype{BBS.units.rot\_d\_s} for rotation in degrees per second.
+
+\begin{lstlisting}
+procedure configure(self : in out L3GD20H_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the L3GD20H device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to configure.
+  \item $port$ - The I2C bus object that the L3GD20H is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out L3GD20H_record; port : i2c_interface;
+                    addr : addr7; deflection : uint8; error : out err_code);
+\end{lstlisting}
+Called to configure the L3GD20H device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to configure.
+  \item $port$ - The I2C bus object that the L3GD20H is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $deflection$ - Set the full-scale deflection (See constants in Table \ref{tbl:L3GD20HDef}).
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temperature(self : L3GD20H_record; error : out err_code)
+    return integer;
+\end{lstlisting}
+Return the device temperature in \degree{}C.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{Integer} representing the temperature in \degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_rotation_x(self : L3GD20H_record; error : out err_code)
+   return integer;
+function get_rotation_y(self : L3GD20H_record; error : out err_code)
+   return integer;
+function get_rotation_z(self : L3GD20H_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Return the rotation around the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to configure.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{Integer} representing the rotation around the specified axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_rotations(self : L3GD20H_record; error : out err_code)
+   return rotations;
+\end{lstlisting}
+Return a \datatype{rotations} record containing the raw sensor values for the rotations around each of the axis.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{rotations} representing the rotation around all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temperature(self : L3GD20H_record; error : out err_code)
+   return BBS.units.temp_c;
+\end{lstlisting}
+Return the device temperature in \degree{}C.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns a \datatype{BBS.units.temp\_c} representing the temperature in \degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_rotation_x(self : L3GD20H_record; error : out err_code)
+   return BBS.units.rot_d_s;
+function get_rotation_y(self : L3GD20H_record; error : out err_code)
+   return BBS.units.rot_d_s;
+function get_rotation_z(self : L3GD20H_record; error : out err_code)
+   return BBS.units.rot_d_s;
+\end{lstlisting}
+Return the rotation around the specified axis, $x$, $y$, or $z$ as a \datatype{rotations\_dps} containing the rotation in \degree{}/S.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns a \datatype{rotations\_dps} representing the rotation around the specified axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_rotations(self : L3GD20H_record; error : out err_code)
+   return rotations_dps;
+\end{lstlisting}
+Return a \datatype{otations\_dps} record containing the rotation in \degree{}/S around each of the axis.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{rotations\_dps} representing the rotation around all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_status(self : L3GD20H_record; error : out err_code)
+   return uint8;
+\end{lstlisting}
+Return the device status.  The constants in Table \ref{tbl:L3GD20HStat} can be used to decode the status.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{uint8} representing the device status.
+\end{itemize}
+
+\begin{lstlisting}
+function data_ready(self : L3GD20H_record; error : out err_code)
+   return boolean;
+\end{lstlisting}
+Checks if the sensor has data ready.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if data is ready.
+\end{itemize}
+
+\begin{lstlisting}
+ function measure_offsets(self : in out L3GD20H_record) return boolean;
+\end{lstlisting}
+When stationary, the sensors may not report 0.  This function should be called when the sensor is stationary.  It reads the rotations several times and averages the results.  This is used to calculate offset values.  The offset values are used when returning the rotations in \datatype{rotations\_dps}.
+
+This function returns \constant{True} if the measurement was successful - that is all of the values measured are reasonably close to the mean.  If it returns false, the sensor may be moving.
+\begin{itemize}
+  \item $self$ - The L3GD20H device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if the offset measurement was successful.
+\end{itemize}
+
+\subsection{\package{BBS.embed.i2c.LSM303DLHC}}
+
+\subsection{\package{BBS.embed.i2c.MCP4725}}
+
+\subsection{\package{BBS.embed.i2c.MCP23008}}
+
+\subsection{\package{BBS.embed.i2c.MCP23017}}
+
+\subsection{\package{BBS.embed.i2c.PCA9685}}
+
+\subsection{\package{BBS.embed.SPI.RA8875}}
 
 %========================================================
 \chapter{Linux API Description}
