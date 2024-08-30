@@ -1446,10 +1446,156 @@ General set command.  Use the defined constants for the command and mode.  Other
   \item $error$ - The error code from any I2C transactions.
 \end{itemize}
 
-
 \subsection{\package{BBS.embed.i2c.MCP23008}}
+This is a driver for the Microchip MCP23008 8-bit I/O port extender\cite{MCP23008}.  The driver does not support all of the options that the device has.  Should more options be needed, the driver can be extended to support them.  The device can be configured to be at one of eight different I2C addresses.  Constants are defined for each of the possible addresses.  They are \constant{addr\_0} through \constant{addr\_7}.  Refer to your hardware documentation to determine which address you need.
+
+\begin{lstlisting}
+procedure configure(self : in out MCB23008_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the MCP23008 device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The MCP23008 device to configure.
+  \item $port$ - The I2C bus object that the MCP23008 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_dir(self : MCB23008_record; dir : uint8;
+                  error : out err_code);
+\end{lstlisting}
+Set the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint8}.
+\begin{itemize}
+  \item $self$ - The MCP23008 device to configure.
+  \item $dir$ - The \datatype{uint8} containing the direction bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_data(self : MCB23008_record; data : uint8;
+                   error : out err_code);
+\end{lstlisting}
+Sets the output bits.  Bits are packed into a \datatype{uint8}.
+\begin{itemize}
+  \item $self$ - The MCP23008 device to set.
+  \item $data$ - The \datatype{uint8} containing the output bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function read_data(self : MCB23008_record; error : out err_code)
+   return uint8;
+\end{lstlisting}
+Read the port.  Bits are packed into a \datatype{uint8}.
+\begin{itemize}
+  \item $self$ - The MCP23008 device to set.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the status if the bits packed into a \datatype{uint8}.
+\end{itemize}
 
 \subsection{\package{BBS.embed.i2c.MCP23017}}
+This is a driver for the Microchip MCP23017 8-bit I/O port extender\cite{MCP23017}.  The driver does not support all of the options that the device has.  Should more options be needed, the driver can be extended to support them.  The device can be configured to be at one of eight different I2C addresses.  Constants are defined for each of the possible addresses.  They are \constant{addr\_0} through \constant{addr\_7}.  Refer to your hardware documentation to determine which address you need.
+
+\begin{lstlisting}
+procedure configure(self : in out MCP23017_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the MCP23017 device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to configure.
+  \item $port$ - The I2C bus object that the MCP23017 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_dir(self : MCP23017_record; dir : uint16;
+                  error : out err_code);
+\end{lstlisting}
+Set the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to configure.
+  \item $dir$ - The \datatype{uint16} containing the direction bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function get_dir(self : MCP23017_record;
+                  error : out err_code) return uint16;
+\end{lstlisting}
+Read the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the direction bits packed into a \datatype{uint16}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_polarity(self : MCP23017_record; dir : uint16;
+                  error : out err_code);
+\end{lstlisting}
+Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The direction bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to configure.
+  \item $dir$ - The \datatype{uint16} containing the polarity bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function get_polarity(self : MCP23017_record;
+                  error : out err_code) return uint16;
+\end{lstlisting}
+Read the polarity (normal(0)/inverted(1)) for each of the input bits.  The direction bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the polarity bits packed into a \datatype{uint16}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_pullup(self : MCP23017_record; dir : uint16;
+                  error : out err_code);
+\end{lstlisting}
+Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each of the output bits.  The bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to configure.
+  \item $dir$ - The \datatype{uint16} containing the pullup bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function get_pullup(self : MCP23017_record;
+                  error : out err_code) return uint16;
+\end{lstlisting}
+Read weak pullup resistors (disable(0)/enable(1)) for each of the output bits.  The bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the pullup bits packed into a \datatype{uint16}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_data(self : MCP23017_record; data : uint16;
+                   error : out err_code);
+\end{lstlisting}
+Sets the output bits.  Bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to set.
+  \item $data$ - The \datatype{uint16} containing the output bits.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+function get_data(self : MCP23017_record; error : out err_code)
+                   return uint16;
+\end{lstlisting}
+Read the port.  Bits are packed into a \datatype{uint16}.
+\begin{itemize}
+  \item $self$ - The MCP23017 device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the status if the bits packed into a \datatype{uint16}.
+\end{itemize}
 
 \subsection{\package{BBS.embed.i2c.PCA9685}}
 
