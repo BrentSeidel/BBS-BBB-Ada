@@ -148,8 +148,7 @@ package BBS.embed.i2c.LSM303DLHC is
          z : BBS.units.mag_g;
       end record;
    --
-   -- Definitions for object oriented interface.  They basically do the same
-   -- thing as the standard routines above.
+   -- Definitions for object oriented interface.
    --
    type LSM303DLHC_record is new i2c_device_record with private;
    type LSM303DLHC_ptr is access LSM303DLHC_record;
@@ -163,9 +162,9 @@ package BBS.embed.i2c.LSM303DLHC is
    -- The calibrate accel procedure can be called when the sensor is stationary
    -- in a 1G acceleration or gravitational field.  It takes multiple measurements
    -- of the X, Y, and Z acceleration and computes the average of X^2 + Y^2 + Z^2.
-   -- This value should be 1.0.  A more sophesticated approach would be to
+   -- This value should be 1.0.  A more sophisticated approach would be to
    -- compute a calibration value for each of the axis separately, but that would
-   -- require the sensor to be precicely positioned three time.
+   -- require the sensor to be precisely positioned three time.
    --
    procedure calibrate_accel(self : in out LSM303DLHC_record);
    --

@@ -918,14 +918,14 @@ Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatyp
 \end{itemize}
 
 \subsection{\package{BBS.embed.i2c.L3GD20H}}
-This is a driver for the STMicrosystems L3GD20H three-axis digital output gyroscope \cite{L3GD20}.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the L3GD20H sensor and is intended for use in the \function{configure} call.
+This is a driver for the STMicrosystems L3GD20H three-axis digital output gyroscope \cite{L3GD20}.  This device has a number of operating modes that have not been implemented in this driver.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the L3GD20H sensor and is intended for use in the \function{configure} call.
 
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
     Constant & Full-Scale Deflection \\
     \hline
-    \constant{fs\_245dps} & Full scale is 245\degree{}/S \\
+    \constant{fs\_245dps} & Full scale is 245\degree{}/S (default) \\
     \constant{fs\_500dps} & Full scale is 500\degree{}/S \\
     \constant{fs\_2000dps} & Full scale is 2000\degree{}/S \\
   \end{tabular}
@@ -1001,7 +1001,7 @@ function get_rotation_z(self : L3GD20H_record; error : out err_code)
 \end{lstlisting}
 Return the rotation around the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
 \begin{itemize}
-  \item $self$ - The L3GD20H device to configure.
+  \item $self$ - The L3GD20H device to read.
   \item $error$ - The error code from any I2C transactions.
   \item Returns an \datatype{Integer} representing the rotation around the specified axis.
 \end{itemize}
@@ -1014,7 +1014,7 @@ Return a \datatype{rotations} record containing the raw sensor values for the ro
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
   \item $error$ - The error code from any I2C transactions.
-  \item Returns an \datatype{rotations} representing the rotation around all axis.
+  \item Returns a \datatype{rotations} record containing the rotations around all axis.
 \end{itemize}
 
 \begin{lstlisting}
@@ -1051,7 +1051,7 @@ Return a \datatype{otations\_dps} record containing the rotation in \degree{}/S 
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
   \item $error$ - The error code from any I2C transactions.
-  \item Returns an \datatype{rotations\_dps} representing the rotation around all axis.
+  \item Returns a \datatype{rotations\_dps} record containing the rotations around all axis.
 \end{itemize}
 
 \begin{lstlisting}
@@ -1089,6 +1089,301 @@ This function returns \constant{True} if the measurement was successful - that i
 \end{itemize}
 
 \subsection{\package{BBS.embed.i2c.LSM303DLHC}}
+This is a driver for the STMicrosystems LSM303DLHC three-axis digital output gyroscope \cite{LSM303DLHC}.  This device has a number of operating modes that have not been implemented in this driver.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr\_accel} is the I2C address of the LSM303DLHC accelerometer sensor; the constant \constant{addr\_mag} is the I2C address of the magnetometer sensor.  They are intended for use in the \function{configure} call.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Full-Scale Deflection \\
+    \hline
+    \constant{fs\_2g} & Full scale is 2G (default) \\
+    \constant{fs\_4g} & Full scale is 4G \\
+    \constant{fs\_8g} & Full scale is 8G \\
+    \constant{fs\_16gs} & Full scale is 16G \\
+  \end{tabular}
+  \caption{Constants for LSM303DLHC Full-Scale Accelerometer}
+  \label{tbl:LSM303DLHCafs}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Status \\
+    \hline
+    \constant{accel\_stat\_zyxor} & X,Y,Z axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{accel\_stat\_zor} & Z axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{accel\_stat\_yor} & Y axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{accel\_stat\_xorr} & X axis data overrun - New data has overwritten previous data before it was read \\
+    \constant{accel\_stat\_zyxda} & X,Y,Z axis new data available \\
+    \constant{accel\_stat\_zda} & Z axis new data available \\
+    \constant{accel\_stat\_yda} & Y axis new data available \\
+    \constant{accel\_stat\_xda} & X axis new data available \\
+  \end{tabular}
+  \caption{Constants for LSM303DLHC Accelerometer Status}
+  \label{tbl:LSM303DLHCaStat}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Full-Scale Deflection \\
+    \hline
+    \constant{fa\_1\_3\_gauss} & Full scale is 1.3 gauss \\
+    \constant{fs\_1\_9\_gauss} & Full scale is 1.9 gauss \\
+    \constant{fs\_2\_5\_gauss} & Full scale is 2.5 gauss \\
+    \constant{fs\_4\_0\_gauss} & Full scale is 4.0 gauss\\
+    \constant{fs\_4\_7\_gauss} & Full scale is 4.7 gauss \\
+    \constant{fs\_5\_6\_gauss} & Full scale is 5.6 gauss \\
+    \constant{fs\_8\_1\_gauss} & Full scale is 8.1 gauss\\
+  \end{tabular}
+  \caption{Constants for LSM303DLHC Full-Scale Magnetometer}
+  \label{tbl:LSM303DLHCmfs}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Status \\
+    \hline
+    \constant{mag\_lock} & Data output register lock. \\
+    \constant{mag\_drdy} & Data ready \\
+  \end{tabular}
+  \caption{Constants for LSM303DLHC Magnetometer Status}
+  \label{tbl:LSM303DLHCmStat}
+\end{center}
+\end{table}
+
+Two utility datatypes are defined for holding accelerations.  The first,  \datatype{accelerations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw acceleration values from the sensor.  The second, \datatype{accelerations\_g} is similar, but the components are all of type \datatype{BBS.units.accel\_g} for acceleration in units on 1 earth gravity.
+
+Two utility datatypes are defined for holding magnetic fields.  The first,  \datatype{magnetism} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw magnetometer values from the sensor.  The second, \datatype{magnetism\_gauss} is similar, but the components are all of type \datatype{BBS.units.mag\_g} for magnetism in units on 1 gauss.
+
+\begin{lstlisting}
+   --
+   -- Status bits
+   mag_lock : constant uint8 := 16#02#;
+   mag_drdy : constant uint8 := 16#01#;
+   --
+\end{lstlisting}
+\begin{lstlisting}
+procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
+                    accel : addr7; mag : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the LSM303DLHC device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to configure.
+  \item $port$ - The I2C bus object that the LSM303DLHC is connected to.
+  \item $accel$ - The I2C address of the device accelerometer.
+  \item $mag$ - The I2C address of the device magnetometer.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out LSM303DLHC_record;
+                    port : i2c_interface; addr_accel : addr7; addr_mag : addr7;
+                    accel_fs : uint8; mag_fs : uint8; error : out err_code);
+\end{lstlisting}
+Called to configure the LSM303DLHC device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to configure.
+  \item $port$ - The I2C bus object that the LSM303DLHC is connected to.
+  \item $addr\_accel$ - The I2C address of the device accelerometer.
+  \item $addr\_mag$ - The I2C address of the device magnetometer.
+  \item $accel\_fs$ - The acceleration full scale value.  See Table \ref{tbl:LSM303DLHCafs}.
+  \item $mag\_fs$ - The acceleration full scale value.  See Table \ref{tbl:LSM303DLHCmfs}.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure calibrate_accel(self : in out LSM303DLHC_record);
+\end{lstlisting}
+The calibrate accel procedure can be called when the sensor is stationary in a 1G acceleration or gravitational field.  It takes multiple measurements of the X, Y, and Z acceleration and computes the average of $X^2 + Y^2 + Z^2$.  This value should be 1.0.  A more sophisticated approach would be to compute a calibration value for each of the axis separately, but that would require the sensor to be precisely positioned three time.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to calibrate.
+\end{itemize}
+
+\begin{lstlisting}
+function get_acceleration_x(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+function get_acceleration_y(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+function get_acceleration_z(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Return the acceleration along the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{Integer} representing the acceleration along the specified axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_accelerations(self : LSM303DLHC_record; error : out err_code)
+   return accelerations;
+\end{lstlisting}
+Return the acceleration along all axis, $x$, $y$, or $z$ as an \datatype{accelerations} containing the raw sensor value.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{accelerations} record containing the acceleration along the all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_acceleration_x(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.accel_g;
+function get_acceleration_y(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.accel_g;
+function get_acceleration_z(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.accel_g;
+\end{lstlisting}
+Return the acceleration along the specified axis, $x$, $y$, or $z$ as a \datatype{BBS.units.accel\_g} containing the acceleration in units of 1 gravity.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns a \datatype{BBS.units.accel\_g} representing the acceleration along the specified axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_accelerations(self : LSM303DLHC_record; error : out err_code)
+   return accelerations_g;
+\end{lstlisting}
+Return the acceleration along all axis, $x$, $y$, or $z$ as an \datatype{accelerations\_g} containing the acceleration in units of 1 gravity.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{accelerations\_g} record containing the acceleration along the all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_accel_status(self : LSM303DLHC_record; error : out err_code)
+   return uint8;
+\end{lstlisting}
+Return the accelerometer status.  The constants in Table \ref{tbl:LSM303DLHCaStat} can be used to decode the status.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{uint8} representing the device status.
+\end{itemize}
+
+\begin{lstlisting}
+function accel_data_ready(self : LSM303DLHC_record; error : out err_code)
+   return boolean;
+\end{lstlisting}
+Checks if the sensor has data ready.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if data is ready.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temperature(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Return the device temperature as an \datatype{Integer} in units of $\frac{1}{8}$\degree{}C.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{Integer} representing the temperature in units of $\frac{1}{8}$\degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temperature(self : LSM303DLHC_record; error : out err_code)
+   return float;
+\end{lstlisting}
+Return the device temperature as a \datatype{Float} in units of 1\degree{}C.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns a \datatype{Float} representing the temperature in \degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_temperature(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.temp_c;
+\end{lstlisting}
+Return the device temperature in \degree{}C.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns a \datatype{BBS.units.temp\_c} representing the temperature in \degree{}C.
+\end{itemize}
+
+\begin{lstlisting}
+function get_magnet_x(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+function get_magnet_y(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+function get_magnet_z(self : LSM303DLHC_record; error : out err_code)
+   return integer;
+\end{lstlisting}
+Return the magnetic field along the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{Integer} representing the magnetic field along the specified axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_magnetism(self : LSM303DLHC_record; error : out err_code)
+   return magnetism;
+\end{lstlisting}
+Return the magnetic field along all axis, $x$, $y$, or $z$ as an \datatype{magnetism} containing the raw sensor value.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{magnetism} record containing the magnetic field along the all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_magnet_x(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.mag_g;
+function get_magnet_y(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.mag_g;
+function get_magnet_z(self : LSM303DLHC_record; error : out err_code)
+   return BBS.units.mag_g;
+\end{lstlisting}
+Return the magnetic field along the specified axis, $x$, $y$, or $z$ as a \datatype{BBS.units.mag\_g} in units of gauss.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{BBS.units.mag\_g} representing the magnetic field along the specified axis in units of gauss.
+\end{itemize}
+
+\begin{lstlisting}
+function get_magnetism(self : LSM303DLHC_record; error : out err_code)
+   return magnetism_gauss;
+\end{lstlisting}
+Return the magnetic field along all axis, $x$, $y$, or $z$ as an \datatype{magnetism\_gauss} in units of gauss.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{magnetism\_gauss} record containing the magnetic field along the all axis.
+\end{itemize}
+
+\begin{lstlisting}
+function get_mag_status(self : LSM303DLHC_record; error : out err_code)
+   return uint8;
+\end{lstlisting}
+Return the magnetometer status.  The constants in Table \ref{tbl:LSM303DLHCmStat} can be used to decode the status.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns an \datatype{uint8} representing the device status.
+\end{itemize}
+
+\begin{lstlisting}
+function mag_data_ready(self : LSM303DLHC_record; error : out err_code)
+   return boolean;
+\end{lstlisting}
+Checks if the sensor has data ready.
+\begin{itemize}
+  \item $self$ - The LSM303DLHC device to read.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns \constant{True} if data is ready.
+\end{itemize}
 
 \subsection{\package{BBS.embed.i2c.MCP4725}}
 
