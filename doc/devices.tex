@@ -1161,13 +1161,6 @@ Two utility datatypes are defined for holding accelerations.  The first,  \datat
 Two utility datatypes are defined for holding magnetic fields.  The first,  \datatype{magnetism} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw magnetometer values from the sensor.  The second, \datatype{magnetism\_gauss} is similar, but the components are all of type \datatype{BBS.units.mag\_g} for magnetism in units on 1 gauss.
 
 \begin{lstlisting}
-   --
-   -- Status bits
-   mag_lock : constant uint8 := 16#02#;
-   mag_drdy : constant uint8 := 16#01#;
-   --
-\end{lstlisting}
-\begin{lstlisting}
 procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
                     accel : addr7; mag : addr7; error : out err_code);
 \end{lstlisting}
@@ -1386,6 +1379,73 @@ Checks if the sensor has data ready.
 \end{itemize}
 
 \subsection{\package{BBS.embed.i2c.MCP4725}}
+This is a driver for the Microchip MCP4725 digital to analog convertor that attaches to an I2C bus \cite{MCP4725}.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Command \\
+    \hline
+    \constant{Fast\_Write} & Fast write. \\
+    \constant{Write\_CMD} & Write CMD. \\
+    \constant{Write\_EEPROM} & Write EEPROM. \\
+  \end{tabular}
+  \caption{Constants for MCP4725 Commands}
+  \label{tbl:MCP4725cmd}
+\end{center}
+\end{table}
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Constant & Power-Down Mode \\
+    \hline
+    \constant{PD\_Normal} & Normal mode. \\
+    \constant{PD\_1k} & 1k$\Omega$ to groupd. \\
+    \constant{PD\_100k} & 100k$\Omega$ to ground. \\
+    \constant{PD\_500k} & 500k$\Omega$ to ground. \\
+  \end{tabular}
+  \caption{Constants for MCP4725 Power-Down Modes}
+  \label{tbl:MCP4725pdm}
+\end{center}
+\end{table}
+
+\begin{lstlisting}
+procedure configure(self : in out MCP4725_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the MCP4725 device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The MCP4725 device to configure.
+  \item $port$ - The I2C bus object that the MCP4725 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set(self : in out MCP4725_record; value : uint12;
+              err : out err_code);
+\end{lstlisting}
+The DAC is only single channel, so this just sets the value using fast write and PD normal mode.
+\begin{itemize}
+  \item $self$ - The MCP4725 device to set.
+  \item $value$ - The output value to use for the DAC.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set(self : in out MCP4725_record; cmd : CMD_type; mode : Mode_type;
+              value : uint12; err : out err_code);
+\end{lstlisting}
+General set command.  Use the defined constants for the command and mode.  Other values may cause unexpected behavior.
+\begin{itemize}
+  \item $self$ - The MCP4725 device to set.
+  \item $cmd$ - The command to use.  See Table \ref{tbl:MCP4725cmd} for available commands.
+  \item $mode$ - The power-down mode to use.  See Table \ref{tbl:MCP4725pdm} for available modes.
+  \item $value$ - The output value to use for the command and mode.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
 
 \subsection{\package{BBS.embed.i2c.MCP23008}}
 

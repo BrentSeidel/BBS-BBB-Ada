@@ -65,7 +65,7 @@ package BBS.embed.i2c.MCP4725 is
                        addr : addr7; error : out err_code);
    --
    --  The DAC is only single channel, so this just sets the value using
-   --  fast write and PD nprmal mode.
+   --  fast write and PD normal mode.
    --
    procedure set(self : in out MCP4725_record; value : uint12; err : out err_code);
    --
