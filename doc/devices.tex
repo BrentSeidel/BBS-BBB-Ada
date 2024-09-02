@@ -1598,11 +1598,126 @@ Read the port.  Bits are packed into a \datatype{uint16}.
 \end{itemize}
 
 \subsection{\package{BBS.embed.i2c.PCA9685}}
+This is a driver for the NXP Semiconductors PCA9685 16-channel, 12-bit PWM with I2C bus LED controller\cite{PCA9685}.  The driver does not support all of the options that the device has, but these can be added if needed.  The device can be configured to respond to one of four different I2C addresses.  The constants \constant{addr\_0} through \constant{addr\_3} are defined for these addresses.
+
+In addition to controlling LEDs, it can control other PWM devices such as servo motors.  Note that LED brightness is controlled by the duty cycle and any duty cycle is valid.  Servos are controlled by the pulse width which should range from 1.5 to 2.5 mS.  See Table \ref{tbl:PCA9685Servo} for some measured values.  Note that all measured numbers are approximate.  There are probably a few  counts left before hitting full scale movement.  It's also entirely possible  that these values may vary with time, temperature, or other factors.
+
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l|l}
+    Servo & Min-position & Max-position \\
+    \hline
+    SG90 & 500mS & 2100mS \\
+    SG99 & 450mS & 2050mS \\
+    SG5010 & 500mS & 2100mS \\
+  \end{tabular}
+  \caption{Measured Values for PCA9685 Controlling Servos}
+  \label{tbl:PCA9685Servo}
+\end{center}
+\end{table}
+
+There are some things to keep in mind:
+\begin{enumerate}
+  \item Test your own servos to determine their appropriate values.
+  \item If you want any sort of precision, you need some sort of position feed-back to the program.
+  \item The documentation that says that the pulse width for servos should range from 1.5 to 2.5 mS may not be accurate.
+\end{enumerate}
+
+PWM channels are 0 to 15.  Channel 16 is the all call channel.  For each channel there is a 12 bit counter and two thresholds: the on and the off threshold.  When the counter is equal to the on threshold, the output turns on.  When the counter is equal to the off threshold, the output turns off.  This allows the pulses to be staggered between the channels, if needed.
+
+For driving servo motors, the \datatype{servo\_range} datatype is defined as a \datatype{Float} with a range from -1.0 to 1.0.  Once the \function{set\_servo\_range} procedure has been called, the \function{set\_servo} procedure can be used to set the servo position using \datatype{servo\_range} rather than figuring out the settings for the duty cycle.  Thus, when changing between servos with different characteristics, all that needs to change is the \function{set\_servo\_range} call.
+
+\begin{lstlisting}
+procedure configure(self : in out PS9685_record; port : i2c_interface;
+                    addr : addr7; error : out err_code);
+\end{lstlisting}
+Called to configure the PCA9685 device.  This must be done before using the device.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $port$ - The I2C bus object that the PCA9685 is connected to.
+  \item $addr$ - The I2C address of the device.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set(self : PS9685_record; chan : channel;
+              on : uint12; off : uint12; error : out err_code);
+\end{lstlisting}
+Set on and off times for a specific channel.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $chan$ - The channel number.
+  \item $on$ - The on time for the channel.
+  \item $off$ - The off time for the channel.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_full_on(self : PS9685_record; chan : channel;
+                      error : out err_code);
+\end{lstlisting}
+Sets the specified channel to full on.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $chan$ - The channel number.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_full_off(self : PS9685_record; chan : channel;
+                       error : out err_code);
+\end{lstlisting}
+Sets the specified channel to full off.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $chan$ - The channel number.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure sleep(self : PS9685_record; state : boolean;
+                error : out err_code);
+\end{lstlisting}
+If state is \constant{True}, send the device to sleep, otherwise wake it up.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $state$ - \constant{True} for sleep, \constant{False} for wake.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_servo_range(self : in out PS9685_record; chan : channel;
+                          min : uint12; max : uint12);
+\end{lstlisting}
+Sets the maximum and minimum duty cycles for a channel.  Once these are set, a servo motor can be controlled using the \function{set\_servo} procedure using a servo position in the range on -1.0 to 1.0.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $chan$ - The channel number.
+  \item $min$ - The minimum duty cycle for the servo, corresponding to servo position -1.0.
+  \item $max$ - The maximum duty cycle for the servo, corresponding to servo position 1.0.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_servo(self : PS9685_record; chan : channel;
+                    position : servo_range; error : out err_code);
+\end{lstlisting}
+Once the servo range has been set by the \function{set\_servo\_range} procedure, the servo can be controlled by this function using a servo position from -1.0 to 1.0 rather than the duty cycle.
+\begin{itemize}
+  \item $self$ - The PCA9685 device to configure.
+  \item $chan$ - The channel number.
+  \item $position$ - The servo position in a range from -1.0 to 1.0.
+  \item $error$ - The error code from any I2C transactions.
+\end{itemize}
 
 \subsection{\package{BBS.embed.SPI.RA8875}}
 
+\cite{RA8875}
+
 %========================================================
 \chapter{Linux API Description}
+
+%--------------------------------------------------------------------------------------------------
+\section{Common}
 
 %--------------------------------------------------------------------------------------------------
 \section{Raspberry Pi}

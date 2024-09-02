@@ -44,7 +44,7 @@ package BBS.embed.i2c.PCA9685 is
    -- that these values may vary with time, temperature, or other factors.
    --
    -- There are two things to keep in mind:
-   -- 1. Test your own servos to determin their appropriate values.
+   -- 1. Test your own servos to determine their appropriate values.
    -- 2. If you want any sort of precision, you need some sort of position feed-
    --    back to the program.
    -- 3. The documentation that says that the pulse width for servos should range
@@ -72,6 +72,9 @@ package BBS.embed.i2c.PCA9685 is
    SUBADR2 : constant uint8 := 16#03#;
    SUBADR3 : constant uint8 := 16#04#;
    ALLCALLADDR : constant uint8 := 16#05#;
+   --
+   --  Arrays containing register addresses for LED ON (High & Low byte)
+   --  and LED OFF (High & Low byte) times.  The index is the channel number.
    --
    LED_ON_L : constant array (channel) of uint8 := (16#06#, 16#0A#, 16#0E#, 16#12#,
                                                     16#16#, 16#1A#, 16#1E#, 16#22#,
@@ -104,8 +107,7 @@ package BBS.embed.i2c.PCA9685 is
    -- output turns off.  This allows the pulses to be staggered between the
    -- channels, if needed.
    -- --------------------------------------------------------
-   -- Stuff for object oriented interface.  These basically emulate the function
-   -- of the conventional routines above.
+   -- Stuff for object oriented interface.
    --
    type PS9685_record is new i2c_device_record with private;
    type PS9685_ptr is access PS9685_record;
