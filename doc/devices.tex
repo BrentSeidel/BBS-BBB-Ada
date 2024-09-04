@@ -1717,9 +1717,56 @@ The intention of this driver is to provide an Ada interface to the various text 
 There are a number of constants defined.  I expect that most of these are used internal to the driver and should be moved out of the spec.  There are also some types that are used in the API.  These are documented below.
 
 \begin{lstlisting}
-   type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
+type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
 \end{lstlisting}
 The datatype \datatype{RA8875\_sizes} is an enumeration defined for the screen sizes supported by the RA8875.  The sizes supported by the RA8875 are 320x240, 320x480, 480x272, 640x480, and 800x480.  Right now I only have an 800x480 panel for testing so nothing is tested for other sizes.
+
+\begin{lstlisting}
+type RA8875_MWCR0_MODE is (graphic, text);
+\end{lstlisting}
+The datatype \datatype{RA8875\_MWCR0\_MODE} is used to determine if the RA8875 is operating in text mode or graphics mode.
+
+\begin{lstlisting}
+type RA8875_MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
+\end{lstlisting}
+The datatype \datatype{RA8875\_MWCR0\_CURDIR} is used to determine the memory write direction for graphics mode.  The options are left to right top down (\constant{LRTD}), right to left top down (\constant{RLTD}), top down left to right (\constant{TDLR}), and down to top left to right (\constant {DTLR}).
+
+\begin{lstlisting}
+type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
+\end{lstlisting}
+The datatype \datatype{RA8875\_MWCR1\_GCURS\_ENABLE} is used to determine if the graphics cursor should be enabled or disabled.
+
+\begin{lstlisting}
+type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
+\end{lstlisting}
+The datatype \datatype{RA8875\_MWCR1\_GCURS\_SET} is used to select which set of graphics cursors to use.
+
+\begin{lstlisting}
+type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
+\end{lstlisting}
+The datatype \datatype{RA8875\_MWCR1\_WRITE\_DEST} is used to select the destination for graphics writing.
+
+\begin{lstlisting}
+type R5G6B5_color is record
+   R : uint8 range 0 .. 31;
+   G : uint8 range 0 .. 63;
+   B : uint8 range 0 .. 31;
+end record;
+\end{lstlisting}
+The datatype \datatype{R5G6B5\_color} is used to represent colors with five bits for the red, six bits for the green, and five bits for the blue channels.  This adds up to sixteen bits.
+
+\begin{lstlisting}
+type RA8875_FNCR0_Code_Page is
+     (RA8875_FNCR0_ISO8859_1, RA8875_FNCR0_ISO8859_2,
+      RA8875_FNCR0_ISO8859_3, RA8875_FNCR0_ISO8859_4);
+\end{lstlisting}
+The datatype \datatype{RA8875\_FNCR0\_Code\_Page} is used to select which code page to use when translating character codes to glyphs on the display.
+
+\begin{lstlisting}
+type RA8875_ELLIPSE_PART is (RA8875_ELLIPSE_LL, RA8875_ELLIPSE_UL,
+                             RA8875_ELLIPSE_UR, RA8875_ELLIPSE_LR);
+\end{lstlisting}
+The datatype \datatype{RA8875\_ELLIPSE\_PART} is used to select which part of an ellipse is drawn.  The options are lower-left (\constant{RA8875\_ELLIPSE\_LL}), upper-left (\constant{RA8875\_ELLIPSE\_UL}), upper-right (\constant{RA8875\_ELLIPSE\_UR}), and lower-right (\constant{RA8875\_ELLIPSE\_LR}).
 
 \begin{lstlisting}
 \end{lstlisting}
@@ -1926,8 +1973,6 @@ The datatype \datatype{RA8875\_sizes} is an enumeration defined for the screen s
    RA8875_MWCR0_TXTMODE : constant uint8 := 16#80#;
    RA8875_MWCR0_CURVIS : constant uint8 := 16#40#;
    RA8875_MWCR0_CURBLINK : constant uint8 := 16#20#;
-   type RA8875_MWCR0_MODE is (graphic, text);
-   type RA8875_MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
    RA8875_MWCR0_CURDIR_SCALE : constant uint8 := 16#04#;
    RA8875_MWCR0_WRITE_NOINCR : constant uint8 := 16#02#;
    RA8875_MWCR0_READ_NOINCR : constant uint8 := 16#01#;
@@ -1937,9 +1982,6 @@ The datatype \datatype{RA8875\_sizes} is an enumeration defined for the screen s
    RA8875_NWCR1_GCURS_EN : constant uint8 := 16#80#;
    RA8875_MWCR1_CUR_SEL_SCALE : constant uint8 := 16#10#;
    RA8875_MWCR_WRITE_DEST_SCALE : constant uint8 := 16#04#;
-   type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
-   type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
-   type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
    --
    -- Blink time control register
    RA8875_BTCR : constant uint8 := 16#44#;
@@ -2391,35 +2433,6 @@ The datatype \datatype{RA8875\_sizes} is an enumeration defined for the screen s
    ----------------------------------------------------------------------------
    -- Type definitions
    --
-   -- Colors (RGB565)
-   --
-   type R5G6B5_color is record
-      R : uint8 range 0 .. 31;
-      G : uint8 range 0 .. 63;
-      B : uint8 range 0 .. 31;
-end record;
---
--- To match the 16 bit definition, add the following:
---
---     with pack, size => 16;
---   for R5G6B5_color use
---      record
---         B at 0 range 0 .. 4;
---         G at 0 range 5 .. 10;
---         R at 0 range 11 .. 15;
---      end record;
-   --
-   -- Define some common colors
-   --
-   R5G6B5_BLACK : constant R5G6B5_color := (R => 0, G => 0, B => 0);
-   R5G6B5_BLUE : constant R5G6B5_color := (R => 0, G => 0, B => 31);
-   R5G6B5_RED : constant R5G6B5_color := (R => 31, G => 0, B => 0);
-   R5G6B5_GREEN : constant R5G6B5_color := (R => 0, G => 63, B => 0);
-   R5G6B5_CYAN : constant R5G6B5_color := (R => 0, G => 63, B => 31);
-   R5G6B5_MAGENTA : constant R5G6B5_color := (R => 31, G => 0, B => 31);
-   R5G6B5_YELLOW : constant R5G6B5_color := (R => 31, G => 63, B => 0);
-   R5G6B5_WHITE : constant R5G6B5_color := (R => 31, G => 63, B => 31);
-   --
    -- Colors (RGB332)
    --
    type R3G3B2_color is record
@@ -2658,72 +2671,351 @@ Sets some of the RA8875 display control parameters.
   \item $self$ - The RA8875 device to control.
   \item $layer$ - 0 For one layer configuration, 128 for two layer configuration.
   \item $hdir$ - 0 For increasing SEG number, 8 for decreasing SEG number.
-  \item $vdir$ - 0 For increasing COM number, 4 for decreasing COM number
+  \item $vdir$ - 0 For increasing COM number, 4 for decreasing COM number.
 \end{itemize}
 
 \begin{lstlisting}
-   procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE; cursorVisible : boolean;
-                           cursorBlink : boolean; writeDir : RA8875_MWCR0_CURDIR; WriteCursorIncr : boolean;
-                           ReadCursorIncr : boolean);
+procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE;
+                        cursorVisible : boolean; cursorBlink : boolean;
+                        writeDir : RA8875_MWCR0_CURDIR;
+                        WriteCursorIncr : boolean; ReadCursorIncr : boolean);
 \end{lstlisting}
+Configures the RA8875 memory write control register 0.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $mode$ - Text or graphics mode.
+  \item $cursorVisible$ - Set to \constant{True} to make the cursor visible.
+  \item $cursorBlink$ - Set to \constant{True} to make the cursor blink.
+  \item $writeDir$ - The direction to write data in graphics mode.
+  \item $WriteCursorIncr$ - Set to \constant{True} to increment the cursor when writing memory.
+  \item $ReadCursorIncr$ - Set to \constant{True} to increment the cursor when reading memory.
+\end{itemize}
+
 \begin{lstlisting}
-   procedure setWriteCtrl1(self : RA8875_record; cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
-                           GCursorSelect : RA8875_MWCR1_GCURS_SET; writeDest : RA8875_MWCR1_WRITE_DEST;
-                           layer : RA8875_LAYER);
+procedure setWriteCtrl1(self : RA8875_record;
+                        cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
+                        GCursorSelect : RA8875_MWCR1_GCURS_SET;
+                        writeDest : RA8875_MWCR1_WRITE_DEST;
+                        layer : RA8875_LAYER);
 \end{lstlisting}
+Configures the RA8875 memory write control register 1.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $cursorEnable$ - Selects if the graphics cursor is enabled or not.
+  \item $GCursorSelect$ - Selects which graphics cursor to use.
+  \item $writeDest$ - Selects the destination for graphics writing.
+  \item $writeDir$ - The direction to write data in graphics mode.
+  \item $layer$ - Selects the layer for graphics writing (used only if the resolution is $\le$480x4000 or the color depth is 8 bits/pixel).
+\end{itemize}
 
 \subsubsection{Text Methods}
 \begin{lstlisting}
-   procedure textMode(self : RA8875_record);
-   procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
-   procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
-   procedure textSetAttribute(self : RA8875_record; align : boolean; transparent : boolean;
+procedure textMode(self : RA8875_record);
+\end{lstlisting}
+Sets the RA8875 to text mode.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+\end{itemize}
+
+\begin{lstlisting}
+procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
+\end{lstlisting}
+Sets the foreground and background color for text.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $bg$ - The background color.
+  \item $fg$ - The foreground color.
+\end{itemize}
+
+\begin{lstlisting}
+procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
+\end{lstlisting}
+Selects the code page to used when translating character codes to glyphs on the screen.  The options are: \constant{RA8875\_FNCR0\_ISO8859\_1}, \constant{RA8875\_FNCR0\_ISO8859\_2}, \constant{RA8875\_FNCR0\_ISO8859\_3}, and \constant{RA8875\_FNCR0\_ISO8859\_4}.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $page$ - The code page to use.
+\end{itemize}
+
+\begin{lstlisting}
+procedure textSetAttribute(self : RA8875_record; align : boolean;
+                              transparent : boolean;
                               rotate : boolean; h_size : uint8; v_size : uint8);
-   procedure textSetLineHeight(self : RA8875_record; size : uint8);
-   procedure textSetFontWidth(self : RA8875_record; size : uint8);
+\end{lstlisting}
+Sets the attributes in the font control register for drawing text.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $align$ - Enables or disables text alignment.
+  \item $transparent$ - If \constant{True}, the background is transparent instead of the background color.
+  \item $rotate$ - If \constant{True}, rotate text by 90$\degree{}$.
+  \item $h\_size$ - Horizontal size scale factor (1 .. 4).
+  \item $v\_size$ - Vertical size scale factor (1 .. 4).
+\end{itemize}
+
+\begin{lstlisting}
+procedure textSetLineHeight(self : RA8875_record; size : uint8);
+\end{lstlisting}
+Set the font line distance setting.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $size$ - The distance between lines of text in pixels.
+\end{itemize}
+
+\begin{lstlisting}
+procedure textSetFontWidth(self : RA8875_record; size : uint8);
+\end{lstlisting}
+Set the spacing between characters in pixels.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $size$ - The distance between characters in pixels.
+\end{itemize}
+
+\begin{lstlisting}
    procedure textWrite(self : RA8875_record; str : string);
 \end{lstlisting}
+Writes a string of text to the display using the currently selected attributes.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $str$ - The text to write.
+\end{itemize}
 
 \subsubsection{Graphics Methods}
 \begin{lstlisting}
-   procedure graphicsMode(self : RA8875_record);
-   -- Set the color for drawing
-   procedure drawColor(self : RA8875_record; color : R5G6B5_color);
-   -- Use these procedures to draw in whatever color has already been set
-   procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                      y2 : uint16; fill : boolean);
-   procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                         y2 : uint16; rad : uint16; fill : boolean);
-   procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                      y2 : uint16);
-   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
-                        fill : boolean);
-   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
-                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
-                          fill : boolean);
-   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
-                        vRad : uint16; fill : boolean);
-   procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
-                                vRad : uint16; seg : RA8875_ELLIPSE_PART; fill : boolean);
-   -- Use these procedures to specify the color to draw
-   procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                      y2 : uint16; color : R5G6B5_color; fill : boolean);
-   procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                      y2 : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
-   procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
-                      y2 : uint16; color : R5G6B5_color);
-   procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
-                        color : R5G6B5_color; fill : boolean);
-   procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
-                          x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
-                          color : R5G6B5_color; fill : boolean);
-   procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
-                        vRad : uint16; color : R5G6B5_color; fill : boolean);
-   procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
-                                vRad : uint16; seg : RA8875_ELLIPSE_PART; color : R5G6B5_color; fill : boolean);
-   --
-   procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
+procedure graphicsMode(self : RA8875_record);
 \end{lstlisting}
+Sets the RA8875 to graphics mode.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawColor(self : RA8875_record; color : R5G6B5_color);
+\end{lstlisting}
+Set the color for drawing graphics.  The graphics commands will use this color until it is changed.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $color$ - The color to draw.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                   y2 : uint16; fill : boolean);
+\end{lstlisting}
+Draws a rectangle on the display.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one corner.
+  \item $y1$ - The Y-coordinate of one corner.
+  \item $x2$ - The opposite X-coordinate.
+  \item $y2$ - The opposite Y-coordinate.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                      y2 : uint16; rad : uint16; fill : boolean);
+\end{lstlisting}
+Draws a rectangle on the display.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one corner.
+  \item $y1$ - The Y-coordinate of one corner.
+  \item $x2$ - The opposite X-coordinate.
+  \item $y2$ - The opposite Y-coordinate.
+  \item $rad$ - The radius of the corner curves.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                   y2 : uint16);
+\end{lstlisting}
+Draw a line between two points.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one end of the line.
+  \item $y1$ - The Y-coordinate of one end of the line.
+  \item $x2$ - The X-coordinate of the other end of the line.
+  \item $y2$ - The Y-coordinate of the other end of the line.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                     fill : boolean);
+\end{lstlisting}
+Draw a circle.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $rad$ - The radius of the circle.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                       x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                       fill : boolean);
+\end{lstlisting}
+Draw a triangle.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of the first point.
+  \item $y1$ - The Y-coordinate of the first point.
+  \item $x2$ - The X-coordinate of the second point.
+  \item $y2$ - The Y-coordinate of the second point.
+  \item $x3$ - The X-coordinate of the third point.
+  \item $y3$ - The Y-coordinate of the third point.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16;
+                     hRad : uint16; vRad : uint16; fill : boolean);
+\end{lstlisting}
+Draw an ellipse oriented either horizontally or vertically.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $hRad$ - The radius in the horizontal direction.
+  \item $vRad$ - The radius in the vertical direction.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
+                             hRad : uint16;  vRad : uint16;
+                             seg : RA8875_ELLIPSE_PART; fill : boolean);
+\end{lstlisting}
+Draw a segment of an ellipse oriented either horizontally or vertically.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $hRad$ - The radius in the horizontal direction.
+  \item $vRad$ - The radius in the vertical direction.
+  \item $seg$ - Which segment to draw.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                   y2 : uint16; color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draws a rectangle on the display.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one corner.
+  \item $y1$ - The Y-coordinate of one corner.
+  \item $x2$ - The opposite X-coordinate.
+  \item $y2$ - The opposite Y-coordinate.
+  \item $color$ - The color for the rectangle.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                   y2 : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draws a rectangle on the display.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one corner.
+  \item $y1$ - The Y-coordinate of one corner.
+  \item $x2$ - The opposite X-coordinate.
+  \item $y2$ - The opposite Y-coordinate.
+  \item $rad$ - The radius of the corner curves.
+  \item $color$ - The color for the rectangle.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
+                   y2 : uint16; color : R5G6B5_color);
+\end{lstlisting}
+Draw a line between two points.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of one end of the line.
+  \item $y1$ - The Y-coordinate of one end of the line.
+  \item $x2$ - The X-coordinate of the other end of the line.
+  \item $y2$ - The Y-coordinate of the other end of the line.
+  \item $color$ - The color for the line.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
+                     color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draw a circle.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $rad$ - The radius of the circle.
+  \item $color$ - The color for the circle.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
+                       x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
+                       color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draw a triangle.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x1$ - The X-coordinate of the first point.
+  \item $y1$ - The Y-coordinate of the first point.
+  \item $x2$ - The X-coordinate of the second point.
+  \item $y2$ - The Y-coordinate of the second point.
+  \item $x3$ - The X-coordinate of the third point.
+  \item $y3$ - The Y-coordinate of the third point.
+  \item $color$ - The color for the triangle.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
+                     vRad : uint16; color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draw an ellipse oriented either horizontally or vertically.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $hRad$ - The radius in the horizontal direction.
+  \item $vRad$ - The radius in the vertical direction.
+  \item $color$ - The color for the ellipse.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
+                             hRad : uint16; vRad : uint16; seg : RA8875_ELLIPSE_PART;
+                             color : R5G6B5_color; fill : boolean);
+\end{lstlisting}
+Draw a segment of an ellipse oriented either horizontally or vertically.
+\begin{itemize}
+  \item $self$ - The RA8875 device to control.
+  \item $x$ - The X-coordinate of the center of the circle.
+  \item $y$ - The Y-coordinate of the center of the circle.
+  \item $hRad$ - The radius in the horizontal direction.
+  \item $vRad$ - The radius in the vertical direction.
+  \item $seg$ - Which segment to draw.
+  \item $color$ - The color for the ellipse segment.
+  \item $fill$ - \constant{True} for fill, \constant{False} for outline.
+\end{itemize}
+
+\begin{lstlisting}
+procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
+\end{lstlisting}
+Repeatedly reads a register and checks for a bit to be cleared.  This is commonly used at the end of drawing routines to ensure that the drawing is complete before proceeding.  This is intended primarily for use by other of the RA8875 routines and not by user code.
+\begin{itemize}
+  \item $self$ - The RA8875 device to check.
+  \item $reg$ - The register to check.
+  \item $flag$ - The set of bits to check.  This value is \keyword{AND}ed with the register value and execution proceeds if the result is zero.
+\end{itemize}
 
 \subsubsection{Touch Methods}
 \begin{lstlisting}
