@@ -776,7 +776,7 @@ end record;
    --
    -- Note that the coordinates for GCursor are reversed from what one would
    -- expect.  The Y axis coordinate is the first array index and the X axis
-   -- coordinate is the second array index.  Once can think of it as being in
+   -- coordinate is the second array index.  One can think of it as being in
    -- row, column order.
    --
    type RA8875_GCursor is array (0 .. 31, 0 .. 31) of integer range 0 .. 3
@@ -913,7 +913,6 @@ end record;
    -- Miscellaneous methods
    --
    procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
-
 --
 private
    ----------------------------------------------------------------------------

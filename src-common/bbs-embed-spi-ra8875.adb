@@ -410,7 +410,7 @@ package body BBS.embed.SPI.RA8875 is
       temp : uint8;
    begin
       self.writeCmd(RA8875_FWTSR);
-      temp := self.readData;
+      temp := self.readData;  --  BUG? Constant on next line should probably be 16#C0# rather than 16#FC#.
       temp := (temp and 16#FC#) or (size and 16#3F#);
       self.writeData(temp);
    end;
@@ -848,10 +848,10 @@ package body BBS.embed.SPI.RA8875 is
          self.writeReg(RA8875_TPCR0, RA8875_TPCR0_ENABLE or RA8875_TPCR0_WAIT_4096CLK or
                     RA8875_TPCR0_WAKEENABLE or adcClock);
          self.writeReg(RA8875_TPCR1, RA8875_TPCR1_AUTO or RA8875_TPCR1_DEBOUNCE);
-      self.writeCmd(RA8875_INTC1);
-      temp := self.readData;
-      temp := temp and RA8875_INTC1_TP;
-      self.writeData(temp);
+         self.writeCmd(RA8875_INTC1);
+         temp := self.readData;
+         temp := temp and RA8875_INTC1_TP;
+         self.writeData(temp);
       else
          self.writeReg(RA8875_TPCR0, RA8875_TPCR0_DISABLE);
          self.writeCmd(RA8875_INTC1);
