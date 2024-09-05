@@ -20,7 +20,7 @@
 --  This package provides the definitions for logging capabilities.  Since not
 --  all embedded systems have access to Ada.Text_IO, this package is provided.
 --  It defines a logging object that can be subclassed to perform logging on
---  the specific target without having to modify the client packags.  This basic
+--  the specific target without having to modify the client packages.  This basic
 --  class will simply discard any text.  Note that multiple logging streams may
 --  be defined.
 --

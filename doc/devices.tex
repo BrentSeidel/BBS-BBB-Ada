@@ -383,7 +383,49 @@ Send the specified number of bytes in the interface record's buffer to the speci
 In most cases these routines should only be used when writing a driver for an I2C device.
 
 \subsection{Logging}
-\comment{This is only for debugging purposes.  Should say something here briefly.}
+This package provides the definitions for logging capabilities.  Since not all embedded systems have access to \package{Ada.Text\_IO}, this package is provided.  It defines a logging object that can be subclassed to perform logging on the specific target without having to modify the client packages.  This basic class will simply discard any text.  Note that multiple logging streams may be defined.
+
+The following are the interface to logging:
+\begin{lstlisting}
+procedure enable(self : in out log_record);
+\end{lstlisting}
+Enables logging on a log stream.
+\begin{itemize}
+  \item $self$ - The log stream to enable.
+\end{itemize}
+
+\begin{lstlisting}
+procedure disable(self : in out log_record)
+\end{lstlisting}
+Disables logging on a log stream.
+\begin{itemize}
+  \item $self$ - The log stream to disable.
+\end{itemize}
+
+\begin{lstlisting}
+procedure put(self : log_record; text : String);
+\end{lstlisting}
+Writes text to a log stream without adding a newline at the end.
+\begin{itemize}
+  \item $self$ - The log stream to add text to.
+  \item $text$ - The text to add.
+\end{itemize}
+
+\begin{lstlisting}
+procedure put_line(self : log_record; text : String) is null;
+\end{lstlisting}
+Writes text to a log stream with a newline at the end.
+\begin{itemize}
+  \item $self$ - The log stream to add text to.
+  \item $text$ - The text to add.
+\end{itemize}
+
+The following log streams are defined and can be used for various purposes.  These streams may be used by some of the software in this project for debugging purposes.  They are initialized to the dummy log stream which simply discards any text logged.  Should you wish to use them, you would need to create your own logging class based on \package{log\_record} that actually does something with the text and set the appropriate stream(s) to point to your new subclass.
+\begin{lstlisting}
+   debug : log_ptr := dummy_log'Access;
+   info  : log_ptr := dummy_log'Access;
+   error : log_ptr := dummy_log'Access;
+\end{lstlisting}
 
 \subsection{SPI Bus}
 The exposed interface for the SPI bus is much simpler than for the I2C bus.  If needed, more routines may be added here, but this hasn't been developed as much as the I2C bus interface.
