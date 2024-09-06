@@ -2714,9 +2714,180 @@ Configure the SPI interface on a Raspberry PI or other systems that have dedicat
 
 %--------------------------------------------------------------------------------------------------
 \section{Raspberry Pi}
+This section covers items specific to the Raspberry Pi.
 
+\subsection{Initialization Script}
+This initialization script needs to be run after the Raspberry Pi is booted and before attempting to run software using this package.  It contains shell commands to activate the GPIO pins and set the protection on the pin control files so that non-root users can write to them.  It also sets the protection on the I2C device file for non-root access.  The script is called \filename{init-bbb.sh} and is in the project root directory.  It needs to be run as root (typically using the \cli{sudo} command).
+
+\subsection{\package{BBS.embed.RPI}}
+This package contains string constants for the available GPIO pins, I2C device, and SPI device.  These constants should be used rather that using string literals for the path names.
 %--------------------------------------------------------------------------------------------------
 \section{BeagleBone Black}
+This section covers items specific to the BeagleBone Black.  Note that the BeagleBone Black has more I/O options than the Raspberry Pi.  This includes PWM outputs, analog inputs, and four on-board LEDs.
+
+\subsection{Initialization Script}
+This initialization script needs to be run after the BeagleBone Black is booted and before attempting to run software using this package.  It contains shell commands to activate the various I/O options and set the protection on the pin control files and device files so that non-root users can write to them.  The script is called \filename{init-rpi.sh} and is in the project root directory.  It needs to be run as root (typically using the \cli{sudo} command).  Read through the script if you are interested in more details about what it does.  It also seems that the PWM devices get renumbered on boot.  This script does some wildcard matches and creates hard links to the appropriate device files.
+
+\subsection{\package{BBS.embed.BBB}}
+This package contains string constants for the available I/O device files.  These constants should be used rather than using string literals for the path names.  They are more extensive than the Raspberry Pi's I/O.  The comments in this package may give some insight into the I/O devices.
+
+\subsection{\package{BBS.embed.LED}}
+This package is for controlling the BeagleBone Black's four on-board LEDs.  This will probably always be unique to the BeagleBone Black.  This package hasn't changed much since the initial development.
+\begin{lstlisting}
+subtype led_num is Integer range 0 .. 3;
+\end{lstlisting}
+Since there are four LEDs, the datatype \datatype{led\_num} is defined to identify them.
+
+\begin{lstlisting}
+type led_state is (off, on);
+\end{lstlisting}
+The datatype \datatype{led\_state} is used to turn LEDs on or off.
+
+\begin{lstlisting}
+type led_states is array (led_num) of led_state;
+\end{lstlisting}
+The datatype \datatype{led\_states} combines a state for all of the LEDs into a single array.
+
+\begin{lstlisting}
+procedure open(l : in led_num);
+\end{lstlisting}
+Open a specific LED device file.  This needs to be done before the LED can be used.
+\begin{itemize}
+  \item $l$ - The LED to open.
+\end{itemize}
+
+\begin{lstlisting}
+procedure open;
+\end{lstlisting}
+Open all of the LED device files.  This makes all LEDs ready to be used.
+
+\begin{lstlisting}
+procedure set(l : in led_num; s : in led_state);
+\end{lstlisting}
+Sets the state of a specific LED.
+\begin{itemize}
+  \item $l$ - The LED to change.
+  \item $s$ - The state for the LED.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set(led0 : in led_state; led1 : in led_state;
+              led2 : in led_state; led3 : in led_state);
+\end{lstlisting}
+Sets the state of all LEDs by individually specifying the state.
+\begin{itemize}
+  \item $led0$ - The state for LED 0.
+  \item $led1$ - The state for LED 1.
+  \item $led2$ - The state for LED 2.
+  \item $led3$ - The state for LED 3.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set(leds : in led_states);
+\end{lstlisting}
+Set the state of all LEDs by providing a \datatype{led\_states} array.
+\begin{itemize}
+  \item $leds$ - The array containing states for all LEDs.
+\end{itemize}
+
+\begin{lstlisting}
+procedure close(l : in led_num);
+\end{lstlisting}
+Close a specific LED device file.
+\begin{itemize}
+  \item $l$ - The LED to close.
+\end{itemize}
+
+\begin{lstlisting}
+procedure close;
+\end{lstlisting}
+Close all of the LED device files.
+
+\subsection{\package{BBS.embed.PWM}}
+This package is for controlling the BeagleBone Black's PWM outputs.
+
+\begin{lstlisting}
+type nanoseconds is range 0 .. integer'Last;
+\end{lstlisting}
+The Linux PWM driver uses period and duty-cycle (actually time high) expressed  in nanoseconds.  By the time that this is translated to the device, the
+ actual resolution may be something different.  It is also not clear what  the maximum value of period may be.  The maximum value may also depend on
+ the specific PWM device being accessed.  Some experimentation would be in  order to determine what works for your application.
+
+\begin{lstlisting}
+procedure configure(self : not null access PWM_record'class;
+                    pin : string; index : pwm_range);
+\end{lstlisting}
+Configure a PWM device.  The pin control file and the PWM number must correspond, otherwise things will not work correctly.  Pin should be one of the pin constants.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $pin$ - The path to the pin control file for the PWM.
+  \item $index$ - The PWM number.
+\end{itemize}
+
+\begin{lstlisting}
+procedure enable(self : not null access PWM_record'class; state : boolean);
+\end{lstlisting}
+Enables or disables a PWN device.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $state$ - \constant{True} to enable, \constant{False} to disable.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_period(self : not null access PWM_record'class; period : nanoseconds);
+\end{lstlisting}
+Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero or positive.  Some of the PWM devices may have additional restrictions on the range.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $period$ - The time in nS between pulses on the PWM given as \datatype{nanoseconds}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_period(self : not null access PWM_record'class; period : Duration);
+\end{lstlisting}
+Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero or positive.  Some of the PWM devices may have additional restrictions on the range.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $period$ - The time in nS between pulses on the PWM given as \datatype{Duration}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_high(self : not null access PWM_record'class; high : nanoseconds);
+\end{lstlisting}
+Set the time that the output is in the high state.  This must be between zero and the period.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $high$ - The time the output is in the high state in nS given as \datatype{nanoseconds}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_high(self : not null access PWM_record'class; high : Duration);
+\end{lstlisting}
+Set the time that the output is in the high state.  This must be between zero and the period.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $high$ - The time the output is in the high state in nS given as \datatype{Duration}.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_rate(self : not null access PWM_record'class; rate : BBS.units.freq_hz);
+\end{lstlisting}
+Sets the rate in Hz.  This is essentially the inverse of \function{set\_period}.  The rate is given as a floating point number and is converted to an integer number of nanoseconds.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $rate$ - The frequency of the PWM.
+\end{itemize}
+
+\begin{lstlisting}
+   procedure set_duty(self : not null access PWM_record'class; duty : float)
+     with
+     pre => (duty >= 0.0) and (duty <= 100.0);
+\end{lstlisting}
+Sets the duty cycle.  The duty cycle is a percentage of the period that the output is high.  The input is a floating point number and is converted to the appropriate number of nanoseconds.
+\begin{itemize}
+  \item $self$ - The PWM object to configure.
+  \item $duty$ - The duty cycle of the PWM in percent (this must be between 0.0 and 100.0 inclusive).
+\end{itemize}
 
 %========================================================
 \chapter{Arduino Due API Description}
