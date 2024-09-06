@@ -85,7 +85,7 @@ package BBS.embed.i2c.linux is
    type linux_i2c_interface is access all linux_i2c_interface_record'Class;
    --
    -- Configure the I2C interface on a BeagleBone Black or other systems that
-   -- have multiple functions on the I2C pins.  This configureation procedure
+   -- have multiple functions on the I2C pins.  This configuration procedure
    -- sets the pins to the I2C function.
    --
    procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
@@ -97,7 +97,7 @@ package BBS.embed.i2c.linux is
    --
    procedure configure(self : in out linux_i2c_interface_record; i2c_file : string);
    --
-   -- Reading or writing a single byte is straigtforward.
+   -- Reading or writing a single byte is straightforward.
    --
    overriding
    procedure write(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;

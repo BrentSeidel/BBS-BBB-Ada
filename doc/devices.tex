@@ -223,11 +223,13 @@ type uint12 is mod 2**12
   with size => 12;
 \end{lstlisting}
 The \datatype{addr7} is used for addressing devices on an I2C bus.  the \datatype{int12} and \datatype{uint12} are used for the return values from typical analog to digital converters and anywhere else a 12 bit number is needed.
+
 \begin{lstlisting}
 function uint12_to_int12 is
-  new Ada.Unchecked_Conversion(source => uint12, target => int12);
+new Ada.Unchecked_Conversion(source => uint12, target => int12);
 \end{lstlisting}
 This is used to convert from unsigned to signed 12 bit integers.  Should the reverse conversion be needed, it would be easy enough to add it here.
+
 \begin{lstlisting}
 function highByte(x : uint16) return uint8 is
      (uint8(x / 2**8));
@@ -236,7 +238,7 @@ function lowByte(x : uint16) return uint8 is
 \end{lstlisting}
 These are used to extract the MSB and LST from \datatype{uint16} values.
 
-\subsection{Analog Inputs}
+\subsection{\package{BBS.embed.AIN}}
 Analog inputs have one common routine to read the value.  Everything else is implementation dependent.
 \begin{lstlisting}
 function get(self : AIN_record) return uint12 is abstract;
@@ -247,7 +249,7 @@ Read the value of the specified analog to digital converter.
   \item Returns the 12-bit value from the analog to digital converter.
 \end{itemize}
 
-\subsection{General-Purpose Input/Output (GPIO)}
+\subsection{\package{BBS.embed.GPIO}}
 A GPIO is a device capable of reading or writing a single bit.  The physical characteristics are hardware dependent.  Some device specific routines may be needed to convert between input and output.
 \begin{lstlisting}
 procedure set(self : GPIO_record; value : bit) is abstract;
@@ -266,7 +268,7 @@ Reads the value of a GPIO device.  The value returned if the device is set to ou
   \item Returns the value read from the GPIO device.
 \end{itemize}
 
-\subsection{I2C Bus}
+\subsection{\package{BBS.embed.i2c}}
 An I2C bus can interface with a number of devices on the bus.  It operates with the CPU being the master and the addressed device responding.  The basic I2C bus uses 7 bit addressing for devices and operates at 100kHz.  Any other options (10 bit addressing or higher speeds would be device specific, if supported).
 
 The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use are:
@@ -382,7 +384,7 @@ Send the specified number of bytes in the interface record's buffer to the speci
 \end{itemize}
 In most cases these routines should only be used when writing a driver for an I2C device.
 
-\subsection{Logging}
+\subsection{\package{BBS.embed.log}}
 This package provides the definitions for logging capabilities.  Since not all embedded systems have access to \package{Ada.Text\_IO}, this package is provided.  It defines a logging object that can be subclassed to perform logging on the specific target without having to modify the client packages.  This basic class will simply discard any text.  Note that multiple logging streams may be defined.
 
 The following are the interface to logging:
@@ -427,7 +429,7 @@ The following log streams are defined and can be used for various purposes.  The
    error : log_ptr := dummy_log'Access;
 \end{lstlisting}
 
-\subsection{SPI Bus}
+\subsection{\package{BBS.embed.SPI}}
 The exposed interface for the SPI bus is much simpler than for the I2C bus.  If needed, more routines may be added here, but this hasn't been developed as much as the I2C bus interface.
 \begin{lstlisting}
 procedure set(self : SPI_record; value : uint8) is abstract;
@@ -2592,9 +2594,123 @@ Fills the display with a solid color.
 
 %========================================================
 \chapter{Linux API Description}
+Linux defines some common methods for interfacing with devices.  This is typically using device files.  However, each platform may have different devices.  So, the Linux API description describes the implemented common API.  Then there is a discussion of Raspberry PI specific and BeagleBone Black specific items.  Since the differences are manly in which device files to use, it should be fairly easy to add new boards.
 
 %--------------------------------------------------------------------------------------------------
 \section{Common}
+This section describes the implementation differences between the base common software and the Linux implementation.
+
+\subsection{\package{BBS.embed.AIN.linux}}
+As the analog inputs are handled using device files, the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.
+
+\begin{lstlisting}
+procedure configure(self : in out Linux_AIN_record;
+                    port : string);
+\end{lstlisting}
+Configures a Linux analog input.  This needs to be done before the analog input can be used.
+\begin{itemize}
+  \item $self$ - The analog input to configure.
+  \item $port$ - The name of the device file for the analog input.
+\end{itemize}
+
+\begin{lstlisting}
+procedure close(self : in out Linux_AIN_record);
+\end{lstlisting}
+Closes a Linux analog input device file.  This should be done when the software is finished with the device.
+\begin{itemize}
+  \item $self$ - The analog input to close.
+\end{itemize}
+
+\subsection{\package{BBS.embed.GPIO.Linux}}
+As the general-purpose I/O pins are handled using device files (sometimes multiple files), the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.
+
+\begin{lstlisting}
+procedure configure(self : in out Linux_GPIO_record;
+                    pin : string; port : string; dir : direction);
+\end{lstlisting}
+In some cases, pins may have multiple uses.  In these cases, a pin control file needs to be accessed to select the use for the pin.
+\begin{itemize}
+  \item $self$ - The GPIO device to configure.
+  \item $pin$ - The path to the pin control file for this GPIO.
+  \item $port$ - This is a path to a directory containing various GPIO control files.
+  \item $dir$ - The direction (input or output) for the GPIO pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out Linux_GPIO_record;
+                    port : string; dir : direction);
+\end{lstlisting}
+For dedicated pins without pin control files, a simpler form can be used for configuration.
+\begin{itemize}
+  \item $self$ - The GPIO device to configure.
+  \item $port$ - This is a path to a directory containing various GPIO control files.
+  \item $dir$ - The direction (input or output) for the GPIO pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_dir(self : in out Linux_GPIO_record;
+                  port : String; dir : direction);
+\end{lstlisting}
+Sets the direction of a pin.  This is used by the \function{configure} procedure, but can be used whenever a GPIO pin needs to change between input and output.
+\begin{itemize}
+  \item $self$ - The GPIO device to configure.
+  \item $dir$ - The direction (input or output) for the GPIO pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure close(self : in out Linux_GPIO_record);
+\end{lstlisting}
+Closes a GPIO device file.  This should be done when the software is finished with the device.
+\begin{itemize}
+  \item $self$ - The GPIO device to close.
+\end{itemize}
+
+\subsection{\package{BBS.embed.i2c.linux}}
+This package basically provides an Ada wrapper around a bunch of C \function{ioctl} calls.
+\begin{lstlisting}
+procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
+                    SCL : string; SDA : string);
+\end{lstlisting}
+Configure the I2C interface on a BeagleBone Black or other systems that have multiple functions on the I2C pins.  This configuration procedure sets the pins to the I2C function.
+\begin{itemize}
+  \item $self$ - The I2C device to configure.
+  \item $i2c\_file$ - The path to the I2C device file.  This is opened as a C file.
+  \item $SCL$ - The path to the pin control file for the SCL pin for the I2C bus.
+  \item $SDA$ - The path to the pin control file for the SDA pin for the I2C bus.
+\end{itemize}
+
+\begin{lstlisting}
+procedure configure(self : in out linux_i2c_interface_record; i2c_file : string);
+\end{lstlisting}
+Configure the I2C interface on a Raspberry PI or other systems that have dedicated pins for the I2C interface.  This would also work on a system with shared pins if the pins had already been set to the I2C function.
+\begin{itemize}
+  \item $self$ - The I2C device to configure.
+  \item $i2c\_file$ - The path to the I2C device file.  This is opened as a C file.
+\end{itemize}
+
+Note that a \function{close} operation should be added to the interface to close the underlying I2C device file (see issue \#10 in GitHub).
+
+\subsection{\package{BBS.embed.log.linux}}
+The Linux log implementation just prints the log messages to the console using \function{Ada.Text\_IO.Put} and \function{Ada.Text\_IO.Put\_Line}.  No new functions are added to the class.
+
+\subsection{\package{BBS.embed.SPI.Linux}}
+This is mostly Ada wrappers around some C I/O calls.
+
+\begin{lstlisting}
+procedure configure(self : in out Linux_SPI_record; SPI_file : string;
+                    SCL : string; SDA : string);
+\end{lstlisting}
+Configure the SPI interface on a BeagleBone Black or other systems that have multiple functions on the SPI pins.  This configuration procedure sets the pins to the SPI function.
+
+\comment{This function is not yet implemented.  Do not attempt to use.}
+\begin{lstlisting}
+procedure configure(self : in out Linux_SPI_record; SPI_file : string);
+\end{lstlisting}
+Configure the SPI interface on a Raspberry PI or other systems that have dedicated pins for the SPI interface.  This would also work on a system with shared pins if the pins had already been set to the SPI function.
+\begin{itemize}
+  \item $self$ - The SPI device to configure.
+  \item $SPI\_file$ - The path to the SPI device file.  This is opened as a C file.
+\end{itemize}
 
 %--------------------------------------------------------------------------------------------------
 \section{Raspberry Pi}

@@ -25,7 +25,7 @@
 --  be defined.
 --
 
-package bbs.embed.log is
+package BBS.embed.log is
    --
    --  Define the log record.  It simply provides a flag indicating whether logging
    --  is enabled or disabled.  Subclasses may add more information as needed.
@@ -61,4 +61,4 @@ package bbs.embed.log is
    info  : log_ptr := dummy_log'Access;
    error : log_ptr := dummy_log'Access;
 
-end bbs.embed.log;
+end BBS.embed.log;

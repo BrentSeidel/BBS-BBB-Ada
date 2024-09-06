@@ -31,7 +31,7 @@ package BBS.embed.SPI.Linux is
    function SPI_new return SPI_ptr;
    --
    -- Configure the SPI interface on a BeagleBone Black or other systems that
-   -- have multiple functions on the SPI pins.  This configureation procedure
+   -- have multiple functions on the SPI pins.  This configuration procedure
    -- sets the pins to the SPI function.
    --
 --   overriding
