@@ -37,7 +37,7 @@ with BBS.embed.due.dev;
 --  I2C-0      PB13 PB12  TWI0
 --  I2C-1      PA18 PA17  TWI1
 --
-package bbs.embed.i2c.due is
+package BBS.embed.i2c.due is
    --
    --  Interface speed, 100kHz and 400kHz are supported.
    --
@@ -240,4 +240,4 @@ private
    i2c_1 : aliased due_i2c_interface_record;
    i2c_port : array (port_id'Range) of due_i2c_interface := (i2c_0'Access, i2c_1'Access);
 
-end bbs.embed.i2c.due;
+end BBS.embed.i2c.due;

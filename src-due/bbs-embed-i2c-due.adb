@@ -34,7 +34,7 @@ with BBS.embed.log;
 --  I2C-0      PB13 PB12  TWI0
 --  I2C-1      PA18 PA17  TWI1
 --
-package body bbs.embed.i2c.due is
+package body BBS.embed.i2c.due is
    --
    --  Function to return access to a device record.
    --
@@ -566,4 +566,4 @@ package body bbs.embed.i2c.due is
    end handler;
    --
 
-end bbs.embed.i2c.due;
+end BBS.embed.i2c.due;

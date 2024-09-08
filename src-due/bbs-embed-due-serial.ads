@@ -31,7 +31,7 @@ with Ada.Interrupts.Names;
 --  are numbered 0 through 3.  Port 0 is also wired to the programming USB
 --  connector and is used as the default port, if none is specified.
 --
---  Communications is available in both polled and interrupt driven varients.
+--  Communications is available in both polled and interrupt driven variants.
 --  Polled is unbuffered and has very little memory overhead, but puts more
 --  load on the CPU.  It is most useful when memory is tight or serial I/O
 --  needs are minimal.  It would also be useful as a method of last resort
