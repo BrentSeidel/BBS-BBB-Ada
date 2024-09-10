@@ -36,6 +36,13 @@
 %
 \usepackage{listings}
 %
+%  Setup indexes
+%
+\makeindex[name=type,title=List of Datatypes,columns=3]
+\newcommand{\indextype}[1]{\index[type]{#1}}
+\makeindex[name=func,title=List of Functions/Procedures,columns=3]
+\newcommand{\indexfunc}[1]{\index[func]{#1}}
+%
 % Macro definitions
 %
 \newcommand{\operation}[1]{\textbf{\texttt{#1}}}
@@ -222,12 +229,16 @@ type int12 is range -(2**11) .. 2**11 - 1
 type uint12 is mod 2**12
   with size => 12;
 \end{lstlisting}
+\indextype{addr7}
+\indextype{int12}
+\indextype{uint12}
 The \datatype{addr7} is used for addressing devices on an I2C bus.  the \datatype{int12} and \datatype{uint12} are used for the return values from typical analog to digital converters and anywhere else a 12 bit number is needed.
 
 \begin{lstlisting}
 function uint12_to_int12 is
 new Ada.Unchecked_Conversion(source => uint12, target => int12);
 \end{lstlisting}
+\indexfunc{uint12\_to\_int12}
 This is used to convert from unsigned to signed 12 bit integers.  Should the reverse conversion be needed, it would be easy enough to add it here.
 
 \begin{lstlisting}
@@ -236,6 +247,8 @@ function highByte(x : uint16) return uint8 is
 function lowByte(x : uint16) return uint8 is
       (uint8(x and 16#FF#));
 \end{lstlisting}
+\indexfunc{highByte}
+\indexfunc{lowByte}
 These are used to extract the MSB and LST from \datatype{uint16} values.
 
 \subsection{\package{BBS.embed.AIN}}
@@ -243,6 +256,7 @@ Analog inputs have one common routine to read the value.  Everything else is imp
 \begin{lstlisting}
 function get(self : AIN_record) return uint12 is abstract;
 \end{lstlisting}
+\indexfunc{get}
 Read the value of the specified analog to digital converter.
 \begin{itemize}
   \item $self$ - The object for the analog input device.
@@ -254,6 +268,7 @@ A GPIO is a device capable of reading or writing a single bit.  The physical cha
 \begin{lstlisting}
 procedure set(self : GPIO_record; value : bit) is abstract;
 \end{lstlisting}
+\indexfunc{set}
 Sets the output value of a GPIO device.  The effect if the device is set to input is device specific.
 \begin{itemize}
   \item $self$ - The object for the GPIO device.
@@ -261,6 +276,7 @@ Sets the output value of a GPIO device.  The effect if the device is set to inpu
 \end{itemize}
 \begin{lstlisting}
 function get(self : GPIO_record) return bit is abstract;
+\indexfunc{get}
 \end{lstlisting}
 Reads the value of a GPIO device.  The value returned if the device is set to output is device specific.
 \begin{itemize}
@@ -277,12 +293,16 @@ The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use a
   \item \datatype{buff\_index} is an \datatype{Integer} index into a buffer with a range of 0 .. 127.
   \item \datatype{buffer} is an array of \datatype{uint8} and bounds of \datatype{buff\_index}.  It is used for buffering data for I2C bus transfers.
 \end{itemize}
+\indextype{err\_code}
+\indextype{buff\_index}
+\indextype{buffer}
 
 The following routines are used for communicating with devices on the I2C bus.  Note that there is no standard about whether multibyte data should be transferred LSB first or MSB first (I've even seen devices that use both depending on which data you're getting).  Routines are provided for MSB first (m1 routines) or MSB second (m2 routines) for 16 bit transfers.  For longer transfers, use the block transfer routines and decode the data yourself.  The 8 and 16 bit routines cover most of the cases.
 \begin{lstlisting}
 function read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
               error : out err_code) return uint8 is (0);
 \end{lstlisting}
+\indexfunc{read}
 Read a single byte of data from the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -296,6 +316,7 @@ Read a single byte of data from the specified register in the specified device.
 function readm1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                 error : out err_code) return uint16 is (0);
 \end{lstlisting}
+\indexfunc{readm1}
 Read two bytes of data with MSB transferred first from the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -309,6 +330,7 @@ Read two bytes of data with MSB transferred first from the specified register in
 function readm2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                 error : out err_code) return uint16 is (0);
 \end{lstlisting}
+\indexfunc{readm2}
 Read two bytes of data with MSB transferred second from the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -322,6 +344,7 @@ Read two bytes of data with MSB transferred second from the specified register i
 procedure read(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                size : buff_index; error : out err_code) is null;
 \end{lstlisting}
+\indexfunc{read}
 Reads a block of data into the interface record's buffer.  The user's code will need to extract the data from that buffer and process it as needed.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -335,6 +358,7 @@ Reads a block of data into the interface record's buffer.  The user's code will 
 procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                 data : uint8; error : out err_code) is null;
 \end{lstlisting}
+\indexfunc{write}
 Write a single byte of data to the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -348,6 +372,7 @@ Write a single byte of data to the specified register in the specified device.
 procedure writem1(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                   data : uint16; error : out err_code) is null;
 \end{lstlisting}
+\indexfunc{writem1}
 Writes two bytes of data with the MSB transferred first to the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -361,6 +386,7 @@ Writes two bytes of data with the MSB transferred first to the specified registe
 procedure writem2(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                   data : uint16; error : out err_code) is null;
 \end{lstlisting}
+\indexfunc{writem2}
 Writes two bytes of data with the MSB transferred second to the specified register in the specified device.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -374,6 +400,7 @@ Writes two bytes of data with the MSB transferred second to the specified regist
 procedure write(self : in out i2c_interface_record; addr : addr7; reg : uint8;
                 size : buff_index; error : out err_code) is null;
 \end{lstlisting}
+\indexfunc{write}
 Send the specified number of bytes in the interface record's buffer to the specified device and register.
 \begin{itemize}
   \item $self$ - The I2C interface device to use for communication.
@@ -391,6 +418,7 @@ The following are the interface to logging:
 \begin{lstlisting}
 procedure enable(self : in out log_record);
 \end{lstlisting}
+\indexfunc{enable}
 Enables logging on a log stream.
 \begin{itemize}
   \item $self$ - The log stream to enable.
@@ -399,6 +427,7 @@ Enables logging on a log stream.
 \begin{lstlisting}
 procedure disable(self : in out log_record)
 \end{lstlisting}
+\indexfunc{disable}
 Disables logging on a log stream.
 \begin{itemize}
   \item $self$ - The log stream to disable.
@@ -407,6 +436,7 @@ Disables logging on a log stream.
 \begin{lstlisting}
 procedure put(self : log_record; text : String);
 \end{lstlisting}
+\indexfunc{put}
 Writes text to a log stream without adding a newline at the end.
 \begin{itemize}
   \item $self$ - The log stream to add text to.
@@ -416,6 +446,7 @@ Writes text to a log stream without adding a newline at the end.
 \begin{lstlisting}
 procedure put_line(self : log_record; text : String) is null;
 \end{lstlisting}
+\indexfunc{put\_line}
 Writes text to a log stream with a newline at the end.
 \begin{itemize}
   \item $self$ - The log stream to add text to.
@@ -434,6 +465,7 @@ The exposed interface for the SPI bus is much simpler than for the I2C bus.  If 
 \begin{lstlisting}
 procedure set(self : SPI_record; value : uint8) is abstract;
 \end{lstlisting}
+\indexfunc{set}
 Writes a byte to the SPI bus.
 \begin{itemize}
   \item $self$ - The SPI interface device to use for communication.
@@ -442,6 +474,7 @@ Writes a byte to the SPI bus.
 \begin{lstlisting}
 function get(self : SPI_record) return uint8 is abstract;
 \end{lstlisting}
+\indexfunc{get}
 Reads a byte from the SPI bus.
 \begin{itemize}
   \item $self$ - The SPI interface device to use for communication.
@@ -460,6 +493,7 @@ procedure init(self : in out TB6612_record; pin_a : BBS.embed.GPIO.GPIO;
                pin_b : BBS.embed.GPIO.GPIO; pin_c : BBS.embed.GPIO.GPIO;
                pin_d : BBS.embed.GPIO.GPIO);
 \end{lstlisting}
+\indexfunc{init}
 Initialize the TB6612 driver with the 4 GPIO devices.
 \begin{itemize}
   \item $self$ - The TB6612 device to initialize.
@@ -468,33 +502,42 @@ Initialize the TB6612 driver with the 4 GPIO devices.
   \item $pin\_c$ - The third GPIO pin.
   \item $pin\_d$ - The fourth GPIO pin.
 \end{itemize}
+
 \begin{lstlisting}
 procedure set_delay(self : in out TB6612_record; wait_time : Natural);
 \end{lstlisting}
+\indexfunc{set\_delay}
 Set a time delay between steps to use when stepping the motor a number of steps.  If not needed, it can be set to zero.
 \begin{itemize}
   \item $self$ - The TB6612 device to modify.
   \item $wait\_time$ - The time delay between steps in mS.
 \end{itemize}
+
 \begin{lstlisting}
 procedure step(self : in out TB6612_record; steps : Integer);
 \end{lstlisting}
+\indexfunc{step}
 Move the stepper motor a specified number of steps.  A negative number will move in the opposite direction as a positive number.  Zero steps will do nothing.  If no delay has been specified, a default of 5mS between steps will be used.
 \begin{itemize}
   \item $self$ - The TB6612 device to modify.
   \item $steps$ - The number of steps to move the motor.
 \end{itemize}
+
 \begin{lstlisting}
 procedure stepper_off(self : in out TB6612_record);
 \end{lstlisting}
+\indexfunc{stepper\_off}
 De-energize the coils for a stepper motor (or both DC motors).
 \begin{itemize}
   \item $self$ - The TB6612 device to modify.
 \end{itemize}
+
 \begin{lstlisting}
 procedure set_bridge_a(self : in out TB6612_record; value : Integer);
 procedure set_bridge_b(self : in out TB6612_record; value : Integer);
 \end{lstlisting}
+\indexfunc{set\_bridge\_a}
+\indexfunc{set\_bridge\_b}
 Each of the two H-bridges can be controlled separately.  This would allow two DC motors to be driven.
 \begin{itemize}
   \item $self$ - The TB6612 device to modify.
@@ -613,12 +656,14 @@ The datatype \datatype{ADS1015\_config} is defined as a record containing the co
     \item \datatype{comp\_lat} - The comparator latching (see Table \ref{tbl:ADS1015Misc}).
     \item \datatype{comp\_que} - The comparator queue configuration  (see Table \ref{tbl:ADS1015CompQ}).
 \end{itemize}
+\indextype{ADS1015\_config}
 
 \begin{lstlisting}
 procedure configure(self : in out ADS1015_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
 Initializes the device to the default configuration.
+\indexfunc{configure}
 \begin{itemize}
   \item $self$ - The device to initialize.
   \item $port$ - The I2C interface that the device is connected to.
@@ -630,6 +675,7 @@ Initializes the device to the default configuration.
 procedure configure(self : in out ADS1015_record; port : i2c_interface;
                     addr : addr7; config : ADS1015_config; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Initialize the device using the specified configuration.
 \begin{itemize}
   \item $self$ - The device to initialize.
@@ -643,6 +689,7 @@ Initialize the device using the specified configuration.
 procedure change_config(self : in out ADS1015_record;
                         config : ADS1015_config; error : out err_code);
 \end{lstlisting}
+\indexfunc{change\_config}
 Changes the device configuration to new values
 \begin{itemize}
   \item $self$ - The device to modify.
@@ -654,6 +701,7 @@ Changes the device configuration to new values
 procedure set_mux(self : in out ADS1015_record;
                   mux : mux_mode_type; error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_mux}
 Changes only the mux mode configuration.
 \begin{itemize}
   \item $self$ - The device to modify.
@@ -665,6 +713,7 @@ Changes only the mux mode configuration.
 procedure set_gain(self : in out ADS1015_record;
                   gain : pga_type; error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_gain}
 Changes only the converter gain value.
 \begin{itemize}
   \item $self$ - The device to modify.
@@ -675,14 +724,17 @@ Changes only the converter gain value.
 \begin{lstlisting}
 procedure set_continuous(self : in out ADS1015_record; error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_continuous}
 Sets the converter to operate in continuous mode.
 \begin{itemize}
   \item $self$ - The device to modify.
   \item $error$ - The I2C error code.
 \end{itemize}
+
 \begin{lstlisting}
 procedure set_1shot(self : in out ADS1015_record; error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_1shot}
 Sets the converter to operate in single shot mode.
 \begin{itemize}
   \item $self$ - The device to modify.
@@ -692,6 +744,7 @@ Sets the converter to operate in single shot mode.
 \begin{lstlisting}
 procedure start_conversion(self : in out ADS1015_record; error : out err_code);
 \end{lstlisting}
+\indexfunc{start\_conversion}
 Start a conversion when in single shot mode.  No effect in continuous mode.
 \begin{itemize}
   \item $self$ - The device to modify.
@@ -702,6 +755,7 @@ Start a conversion when in single shot mode.  No effect in continuous mode.
 function conversion_done(self : in out ADS1015_record; error : out err_code)
     return Boolean;
 \end{lstlisting}
+\indexfunc{conversion\_done}
 Checks if conversion is in progress.  Will always return \constant{False} (conversion in progress) while in continuous mode.  Returns \constant{True} when no conversion is in progress.
 \begin{itemize}
   \item $self$ - The device to initialize.
@@ -713,6 +767,7 @@ Checks if conversion is in progress.  Will always return \constant{False} (conve
 function get_result(self : in out ADS1015_record; error : out err_code)
     return uint12;
 \end{lstlisting}
+\indexfunc{get\_result}
 Returns the conversion value.
 \begin{itemize}
   \item $self$ - The device to initialize.
@@ -727,6 +782,7 @@ This is a driver for the Bosch BME280 temperature, pressure, and humidity sensor
 procedure configure(self : in out BME280_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure a BME280 device.  This needs to be called before the device can be used.
 \begin{itemize}
   \item $self$ - The BME280 device to configure.
@@ -738,6 +794,7 @@ Called to configure a BME280 device.  This needs to be called before the device 
 \begin{lstlisting}
 procedure start_conversion(self : BME280_record; error : out err_code);
 \end{lstlisting}
+\indexfunc{start\_conversion}
 Instruct the BME280 to start converting temperature, pressure, and humidity readings.  These are converted at the same time.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -747,6 +804,7 @@ Instruct the BME280 to start converting temperature, pressure, and humidity read
 \begin{lstlisting}
 function data_ready(self : BME280_record; error : out err_code) return boolean;
 \end{lstlisting}
+\indexfunc{data\_ready}
 Checks to see if conversion is complete.  The user software should wait until conversion is complete before attempting to read otherwise the results will be undefined.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -757,6 +815,7 @@ Checks to see if conversion is complete.  The user software should wait until co
 \begin{lstlisting}
 procedure read_data(self : in out BME280_record; error : out err_code);
 \end{lstlisting}
+\indexfunc{read\_data}
 Instructs the BME280 to read the converted temperature, pressure, and humidity values into BME280 object and compute calibrated values.  There is less overhead to read all three at once.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -767,6 +826,7 @@ Instructs the BME280 to read the converted temperature, pressure, and humidity v
 procedure get_raw(self : BME280_record; raw_temp : out uint32;
                   raw_press : out uint32; raw_hum : out uint32);
 \end{lstlisting}
+\indexfunc{get\_raw}
 Return the raw, uncompensated values after \function{read\_data()} has been called.  This is primarily for debugging purposes.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -778,6 +838,7 @@ Return the raw, uncompensated values after \function{read\_data()} has been call
 \begin{lstlisting}
 function get_t_fine(self : BME280_record) return int32;
 \end{lstlisting}
+\indexfunc{get\_t\_fine}
 Returns the \package{t\_fine} value after \function{read\_data()} has been called.  This is primarily for debugging purposes.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -787,6 +848,7 @@ Returns the \package{t\_fine} value after \function{read\_data()} has been calle
 \begin{lstlisting}
 function get_temp(self : BME280_record) return integer;
 \end{lstlisting}
+\indexfunc{get\_temp}
 Returns the calibrated temperature value as an \datatype{Integer}.  The LSB unit is 0.01\degree{}C.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -798,6 +860,7 @@ function get_temp(self : BME280_record) return BBS.units.temp_c;
 function get_temp(self : BME280_record) return BBS.units.temp_f;
 function get_temp(self : BME280_record) return BBS.units.temp_k;
 \end{lstlisting}
+\indexfunc{get\_temp}
 Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on datatype of the destination.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -807,6 +870,7 @@ Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on d
 \begin{lstlisting}
 function get_press(self : BME280_record) return integer;
 \end{lstlisting}
+\indexfunc{get\_press}
 Returns the calibrated pressure value as an \datatype{Integer}.  The LSB unit is $\frac{1}{256}$Pa.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -819,6 +883,7 @@ function get_press(self : BME280_record) return BBS.units.press_mb;
 function get_press(self : BME280_record) return BBS.units.press_atm;
 function get_press(self : BME280_record) return BBS.units.press_inHg;
 \end{lstlisting}
+\indexfunc{get\_press}
 Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatype of the destination.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -828,6 +893,7 @@ Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatyp
 \begin{lstlisting}
 function get_hum(self : BME280_record) return integer;
 \end{lstlisting}
+\indexfunc{get\_hum}
 Returns the calibrated relative humidity as an \datatype{Integer}.  The LSB unit is $\frac{1}{1024}$\% humidity.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -837,6 +903,7 @@ Returns the calibrated relative humidity as an \datatype{Integer}.  The LSB unit
 \begin{lstlisting}
 function get_hum(self : BME280_record) return float;
 \end{lstlisting}
+\indexfunc{get\_hum}
 Returns the relative humidity as a percentage relative humidity.
 \begin{itemize}
   \item $self$ - The BME280 device to instruct.
@@ -866,6 +933,7 @@ This is a driver for the Bosch BMP180 temperature and pressure sensor that attac
 procedure configure(self : in out BMP180_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure a BMP180 device.  This needs to be called before the device can be used.
 \begin{itemize}
   \item $self$ - The BMP180 device to configure.
@@ -878,6 +946,7 @@ Called to configure a BMP180 device.  This needs to be called before the device 
 procedure start_conversion(self : in out BMP180_record;
                            kind : uint8; error : out err_code);
 \end{lstlisting}
+\indexfunc{start\_conversion}
 Instruct the BMP180 to start converting temperature or pressure.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -889,6 +958,7 @@ Instruct the BMP180 to start converting temperature or pressure.
 function data_ready(self : BMP180_record; error : out err_code)
    return boolean;
 \end{lstlisting}
+\indexfunc{data\_ready}
 Checks to see if conversion is complete.  The user software should wait until conversion is complete before attempting to read otherwise the results will be undefined.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -900,6 +970,7 @@ Checks to see if conversion is complete.  The user software should wait until co
 function get_temp(self : in out BMP180_record; error : out err_code)
    return float;
 \end{lstlisting}
+\indexfunc{get\_temp}
 Returns the calibrated temperature value as a \datatype{Float} in \degree{}C.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -911,6 +982,7 @@ Returns the calibrated temperature value as a \datatype{Float} in \degree{}C.
 function get_temp(self : in out BMP180_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_temp}
 Returns the calibrated temperature value as an \datatype{Integer}.  The LSB unit is 0.1\degree{}C.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -926,6 +998,7 @@ function get_temp(self : in out BMP180_record; error : out err_code)
 function get_temp(self : in out BMP180_record; error : out err_code)
    return BBS.units.temp_k;
 \end{lstlisting}
+\indexfunc{get\_temp}
 Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on datatype of the destination.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.  \item $error$ - The error code from any I2C transactions.
@@ -937,6 +1010,7 @@ Returns the temperature in units of \degree{}C, \degree{}F, or K, depending on d
 function get_press(self : BMP180_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_press}
 Returns the calibrated pressure value as an \datatype{Integer}.  The LSB unit is 1Pa.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -954,6 +1028,7 @@ function get_press(self : BMP180_record; error : out err_code)
 function get_press(self : BMP180_record; error : out err_code)
    return BBS.units.press_inHg;
 \end{lstlisting}
+\indexfunc{get\_press}
 Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatype of the destination.
 \begin{itemize}
   \item $self$ - The BMP180 device to instruct.
@@ -998,11 +1073,14 @@ This is a driver for the STMicrosystems L3GD20H three-axis digital output gyrosc
 \end{table}
 
 Two utility datatypes are defined for holding rotations.  The first,  \datatype{rotations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw rotation values from the sensor.  The second, \datatype{rotations\_dps} is similar, but the components are all of type \datatype{BBS.units.rot\_d\_s} for rotation in degrees per second.
+\indextype{rotations}
+\indextype{rotations\_dps}
 
 \begin{lstlisting}
 procedure configure(self : in out L3GD20H_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the L3GD20H device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The L3GD20H device to configure.
@@ -1015,6 +1093,7 @@ Called to configure the L3GD20H device.  This must be done before using the devi
 procedure configure(self : in out L3GD20H_record; port : i2c_interface;
                     addr : addr7; deflection : uint8; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the L3GD20H device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The L3GD20H device to configure.
@@ -1028,6 +1107,7 @@ Called to configure the L3GD20H device.  This must be done before using the devi
 function get_temperature(self : L3GD20H_record; error : out err_code)
     return integer;
 \end{lstlisting}
+\indexfunc{get\_temperature}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1043,6 +1123,9 @@ function get_rotation_y(self : L3GD20H_record; error : out err_code)
 function get_rotation_z(self : L3GD20H_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_rotation\_x}
+\indexfunc{get\_rotation\_y}
+\indexfunc{get\_rotation\_z}
 Return the rotation around the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1054,6 +1137,7 @@ Return the rotation around the specified axis, $x$, $y$, or $z$ as an \datatype{
 function get_rotations(self : L3GD20H_record; error : out err_code)
    return rotations;
 \end{lstlisting}
+\indexfunc{get\_rotations}
 Return a \datatype{rotations} record containing the raw sensor values for the rotations around each of the axis.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1065,6 +1149,7 @@ Return a \datatype{rotations} record containing the raw sensor values for the ro
 function get_temperature(self : L3GD20H_record; error : out err_code)
    return BBS.units.temp_c;
 \end{lstlisting}
+\indexfunc{get\_temperature}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1080,6 +1165,9 @@ function get_rotation_y(self : L3GD20H_record; error : out err_code)
 function get_rotation_z(self : L3GD20H_record; error : out err_code)
    return BBS.units.rot_d_s;
 \end{lstlisting}
+\indexfunc{get\_rotation\_x}
+\indexfunc{get\_rotation\_y}
+\indexfunc{get\_rotation\_z}
 Return the rotation around the specified axis, $x$, $y$, or $z$ as a \datatype{rotations\_dps} containing the rotation in \degree{}/S.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1091,6 +1179,7 @@ Return the rotation around the specified axis, $x$, $y$, or $z$ as a \datatype{r
 function get_rotations(self : L3GD20H_record; error : out err_code)
    return rotations_dps;
 \end{lstlisting}
+\indexfunc{get\_rotations}
 Return a \datatype{otations\_dps} record containing the rotation in \degree{}/S around each of the axis.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1102,6 +1191,7 @@ Return a \datatype{otations\_dps} record containing the rotation in \degree{}/S 
 function get_status(self : L3GD20H_record; error : out err_code)
    return uint8;
 \end{lstlisting}
+\indexfunc{get\_status}
 Return the device status.  The constants in Table \ref{tbl:L3GD20HStat} can be used to decode the status.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1113,6 +1203,7 @@ Return the device status.  The constants in Table \ref{tbl:L3GD20HStat} can be u
 function data_ready(self : L3GD20H_record; error : out err_code)
    return boolean;
 \end{lstlisting}
+\indexfunc{data\_ready}
 Checks if the sensor has data ready.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1123,6 +1214,7 @@ Checks if the sensor has data ready.
 \begin{lstlisting}
  function measure_offsets(self : in out L3GD20H_record) return boolean;
 \end{lstlisting}
+\indexfunc{measure\_offsets}
 When stationary, the sensors may not report 0.  This function should be called when the sensor is stationary.  It reads the rotations several times and averages the results.  This is used to calculate offset values.  The offset values are used when returning the rotations in \datatype{rotations\_dps}.
 
 This function returns \constant{True} if the measurement was successful - that is all of the values measured are reasonably close to the mean.  If it returns false, the sensor may be moving.
@@ -1201,13 +1293,18 @@ This is a driver for the STMicrosystems LSM303DLHC three-axis digital output gyr
 \end{table}
 
 Two utility datatypes are defined for holding accelerations.  The first,  \datatype{accelerations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw acceleration values from the sensor.  The second, \datatype{accelerations\_g} is similar, but the components are all of type \datatype{BBS.units.accel\_g} for acceleration in units on 1 earth gravity.
+\indextype{accelerations}
+\indextype{accelerations\_g}
 
 Two utility datatypes are defined for holding magnetic fields.  The first,  \datatype{magnetism} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw magnetometer values from the sensor.  The second, \datatype{magnetism\_gauss} is similar, but the components are all of type \datatype{BBS.units.mag\_g} for magnetism in units on 1 gauss.
+\indextype{magnetism}
+\indextype{magnetism\_gauss}
 
 \begin{lstlisting}
 procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
                     accel : addr7; mag : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the LSM303DLHC device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to configure.
@@ -1222,6 +1319,7 @@ procedure configure(self : in out LSM303DLHC_record;
                     port : i2c_interface; addr_accel : addr7; addr_mag : addr7;
                     accel_fs : uint8; mag_fs : uint8; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the LSM303DLHC device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to configure.
@@ -1236,7 +1334,8 @@ Called to configure the LSM303DLHC device.  This must be done before using the d
 \begin{lstlisting}
 procedure calibrate_accel(self : in out LSM303DLHC_record);
 \end{lstlisting}
-The calibrate accel procedure can be called when the sensor is stationary in a 1G acceleration or gravitational field.  It takes multiple measurements of the X, Y, and Z acceleration and computes the average of $X^2 + Y^2 + Z^2$.  This value should be 1.0.  A more sophisticated approach would be to compute a calibration value for each of the axis separately, but that would require the sensor to be precisely positioned three time.
+\indexfunc{calibrate\_accel}
+The \function{calibrate\_accel} procedure can be called when the sensor is stationary in a 1G acceleration or gravitational field.  It takes multiple measurements of the X, Y, and Z acceleration and computes the average of $X^2 + Y^2 + Z^2$.  This value should be 1.0.  A more sophisticated approach would be to compute a calibration value for each of the axis separately, but that would require the sensor to be precisely positioned three time.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to calibrate.
 \end{itemize}
@@ -1249,6 +1348,9 @@ function get_acceleration_y(self : LSM303DLHC_record; error : out err_code)
 function get_acceleration_z(self : LSM303DLHC_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_acceleration\_x}
+\indexfunc{get\_acceleration\_y}
+\indexfunc{get\_acceleration\_z}
 Return the acceleration along the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1260,6 +1362,7 @@ Return the acceleration along the specified axis, $x$, $y$, or $z$ as an \dataty
 function get_accelerations(self : LSM303DLHC_record; error : out err_code)
    return accelerations;
 \end{lstlisting}
+\indexfunc{get\_accelerations}
 Return the acceleration along all axis, $x$, $y$, or $z$ as an \datatype{accelerations} containing the raw sensor value.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1275,6 +1378,9 @@ function get_acceleration_y(self : LSM303DLHC_record; error : out err_code)
 function get_acceleration_z(self : LSM303DLHC_record; error : out err_code)
    return BBS.units.accel_g;
 \end{lstlisting}
+\indexfunc{get\_acceleration\_x}
+\indexfunc{get\_acceleration\_y}
+\indexfunc{get\_acceleration\_z}
 Return the acceleration along the specified axis, $x$, $y$, or $z$ as a \datatype{BBS.units.accel\_g} containing the acceleration in units of 1 gravity.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1286,6 +1392,7 @@ Return the acceleration along the specified axis, $x$, $y$, or $z$ as a \datatyp
 function get_accelerations(self : LSM303DLHC_record; error : out err_code)
    return accelerations_g;
 \end{lstlisting}
+\indexfunc{get\_accelerations}
 Return the acceleration along all axis, $x$, $y$, or $z$ as an \datatype{accelerations\_g} containing the acceleration in units of 1 gravity.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1297,6 +1404,7 @@ Return the acceleration along all axis, $x$, $y$, or $z$ as an \datatype{acceler
 function get_accel_status(self : LSM303DLHC_record; error : out err_code)
    return uint8;
 \end{lstlisting}
+\indexfunc{get\_accel\_status}
 Return the accelerometer status.  The constants in Table \ref{tbl:LSM303DLHCaStat} can be used to decode the status.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1308,6 +1416,7 @@ Return the accelerometer status.  The constants in Table \ref{tbl:LSM303DLHCaSta
 function accel_data_ready(self : LSM303DLHC_record; error : out err_code)
    return boolean;
 \end{lstlisting}
+\indexfunc{accel\_data\_ready}
 Checks if the sensor has data ready.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1319,6 +1428,7 @@ Checks if the sensor has data ready.
 function get_temperature(self : LSM303DLHC_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_temperature}
 Return the device temperature as an \datatype{Integer} in units of $\frac{1}{8}$\degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1330,6 +1440,7 @@ Return the device temperature as an \datatype{Integer} in units of $\frac{1}{8}$
 function get_temperature(self : LSM303DLHC_record; error : out err_code)
    return float;
 \end{lstlisting}
+\indexfunc{get\_temperature}
 Return the device temperature as a \datatype{Float} in units of 1\degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1341,6 +1452,7 @@ Return the device temperature as a \datatype{Float} in units of 1\degree{}C.
 function get_temperature(self : LSM303DLHC_record; error : out err_code)
    return BBS.units.temp_c;
 \end{lstlisting}
+\indexfunc{get\_temperature}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1356,6 +1468,9 @@ function get_magnet_y(self : LSM303DLHC_record; error : out err_code)
 function get_magnet_z(self : LSM303DLHC_record; error : out err_code)
    return integer;
 \end{lstlisting}
+\indexfunc{get\_magnet\_x}
+\indexfunc{get\_magnet\_y}
+\indexfunc{get\_magnet\_z}
 Return the magnetic field along the specified axis, $x$, $y$, or $z$ as an \datatype{Integer} containing the raw sensor value.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1367,6 +1482,7 @@ Return the magnetic field along the specified axis, $x$, $y$, or $z$ as an \data
 function get_magnetism(self : LSM303DLHC_record; error : out err_code)
    return magnetism;
 \end{lstlisting}
+\indexfunc{get\_magnetism}
 Return the magnetic field along all axis, $x$, $y$, or $z$ as an \datatype{magnetism} containing the raw sensor value.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1382,6 +1498,9 @@ function get_magnet_y(self : LSM303DLHC_record; error : out err_code)
 function get_magnet_z(self : LSM303DLHC_record; error : out err_code)
    return BBS.units.mag_g;
 \end{lstlisting}
+\indexfunc{get\_magnet\_x}
+\indexfunc{get\_magnet\_y}
+\indexfunc{get\_magnet\_z}
 Return the magnetic field along the specified axis, $x$, $y$, or $z$ as a \datatype{BBS.units.mag\_g} in units of gauss.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1393,6 +1512,7 @@ Return the magnetic field along the specified axis, $x$, $y$, or $z$ as a \datat
 function get_magnetism(self : LSM303DLHC_record; error : out err_code)
    return magnetism_gauss;
 \end{lstlisting}
+\indexfunc{get\_magnetism}
 Return the magnetic field along all axis, $x$, $y$, or $z$ as an \datatype{magnetism\_gauss} in units of gauss.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1404,6 +1524,7 @@ Return the magnetic field along all axis, $x$, $y$, or $z$ as an \datatype{magne
 function get_mag_status(self : LSM303DLHC_record; error : out err_code)
    return uint8;
 \end{lstlisting}
+\indexfunc{get\_mag\_status}
 Return the magnetometer status.  The constants in Table \ref{tbl:LSM303DLHCmStat} can be used to decode the status.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1415,6 +1536,7 @@ Return the magnetometer status.  The constants in Table \ref{tbl:LSM303DLHCmStat
 function mag_data_ready(self : LSM303DLHC_record; error : out err_code)
    return boolean;
 \end{lstlisting}
+\indexfunc{mag\_data\_ready}
 Checks if the sensor has data ready.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1458,6 +1580,7 @@ This is a driver for the Microchip MCP4725 digital to analog convertor that atta
 procedure configure(self : in out MCP4725_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the MCP4725 device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The MCP4725 device to configure.
@@ -1470,6 +1593,7 @@ Called to configure the MCP4725 device.  This must be done before using the devi
 procedure set(self : in out MCP4725_record; value : uint12;
               err : out err_code);
 \end{lstlisting}
+\indexfunc{set}
 The DAC is only single channel, so this just sets the value using fast write and PD normal mode.
 \begin{itemize}
   \item $self$ - The MCP4725 device to set.
@@ -1481,6 +1605,7 @@ The DAC is only single channel, so this just sets the value using fast write and
 procedure set(self : in out MCP4725_record; cmd : CMD_type; mode : Mode_type;
               value : uint12; err : out err_code);
 \end{lstlisting}
+\indexfunc{set}
 General set command.  Use the defined constants for the command and mode.  Other values may cause unexpected behavior.
 \begin{itemize}
   \item $self$ - The MCP4725 device to set.
@@ -1497,6 +1622,7 @@ This is a driver for the Microchip MCP23008 8-bit I/O port extender\cite{MCP2300
 procedure configure(self : in out MCB23008_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the MCP23008 device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The MCP23008 device to configure.
@@ -1509,6 +1635,7 @@ Called to configure the MCP23008 device.  This must be done before using the dev
 procedure set_dir(self : MCB23008_record; dir : uint8;
                   error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_dir}
 Set the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint8}.
 \begin{itemize}
   \item $self$ - The MCP23008 device to configure.
@@ -1520,6 +1647,7 @@ Set the direction (read(0)/write(1)) for each of the output bits.  The direction
 procedure set_data(self : MCB23008_record; data : uint8;
                    error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_data}
 Sets the output bits.  Bits are packed into a \datatype{uint8}.
 \begin{itemize}
   \item $self$ - The MCP23008 device to set.
@@ -1531,6 +1659,7 @@ Sets the output bits.  Bits are packed into a \datatype{uint8}.
 function read_data(self : MCB23008_record; error : out err_code)
    return uint8;
 \end{lstlisting}
+\indexfunc{read\_data}
 Read the port.  Bits are packed into a \datatype{uint8}.
 \begin{itemize}
   \item $self$ - The MCP23008 device to set.
@@ -1545,6 +1674,7 @@ This is a driver for the Microchip MCP23017 8-bit I/O port extender\cite{MCP2301
 procedure configure(self : in out MCP23017_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the MCP23017 device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The MCP23017 device to configure.
@@ -1557,6 +1687,7 @@ Called to configure the MCP23017 device.  This must be done before using the dev
 procedure set_dir(self : MCP23017_record; dir : uint16;
                   error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_dir}
 Set the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to configure.
@@ -1568,6 +1699,7 @@ Set the direction (read(0)/write(1)) for each of the output bits.  The direction
 function get_dir(self : MCP23017_record;
                   error : out err_code) return uint16;
 \end{lstlisting}
+\indexfunc{get\_dir}
 Read the direction (read(0)/write(1)) for each of the output bits.  The direction bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to read.
@@ -1579,6 +1711,7 @@ Read the direction (read(0)/write(1)) for each of the output bits.  The directio
 procedure set_polarity(self : MCP23017_record; dir : uint16;
                   error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_polarity}
 Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The direction bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to configure.
@@ -1590,6 +1723,7 @@ Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The direct
 function get_polarity(self : MCP23017_record;
                   error : out err_code) return uint16;
 \end{lstlisting}
+\indexfunc{get\_polarity}
 Read the polarity (normal(0)/inverted(1)) for each of the input bits.  The direction bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to read.
@@ -1601,6 +1735,7 @@ Read the polarity (normal(0)/inverted(1)) for each of the input bits.  The direc
 procedure set_pullup(self : MCP23017_record; dir : uint16;
                   error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_pullup}
 Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each of the output bits.  The bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to configure.
@@ -1612,6 +1747,7 @@ Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each of the outp
 function get_pullup(self : MCP23017_record;
                   error : out err_code) return uint16;
 \end{lstlisting}
+\indexfunc{get\_pullup}
 Read weak pullup resistors (disable(0)/enable(1)) for each of the output bits.  The bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to read.
@@ -1623,6 +1759,7 @@ Read weak pullup resistors (disable(0)/enable(1)) for each of the output bits.  
 procedure set_data(self : MCP23017_record; data : uint16;
                    error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_data}
 Sets the output bits.  Bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to set.
@@ -1634,6 +1771,7 @@ Sets the output bits.  Bits are packed into a \datatype{uint16}.
 function get_data(self : MCP23017_record; error : out err_code)
                    return uint16;
 \end{lstlisting}
+\indexfunc{get\_data}
 Read the port.  Bits are packed into a \datatype{uint16}.
 \begin{itemize}
   \item $self$ - The MCP23017 device to read.
@@ -1670,11 +1808,13 @@ There are some things to keep in mind:
 PWM channels are 0 to 15.  Channel 16 is the all call channel.  For each channel there is a 12 bit counter and two thresholds: the on and the off threshold.  When the counter is equal to the on threshold, the output turns on.  When the counter is equal to the off threshold, the output turns off.  This allows the pulses to be staggered between the channels, if needed.
 
 For driving servo motors, the \datatype{servo\_range} datatype is defined as a \datatype{Float} with a range from -1.0 to 1.0.  Once the \function{set\_servo\_range} procedure has been called, the \function{set\_servo} procedure can be used to set the servo position using \datatype{servo\_range} rather than figuring out the settings for the duty cycle.  Thus, when changing between servos with different characteristics, all that needs to change is the \function{set\_servo\_range} call.
+\indextype{servo\_range}
 
 \begin{lstlisting}
 procedure configure(self : in out PS9685_record; port : i2c_interface;
                     addr : addr7; error : out err_code);
 \end{lstlisting}
+\indexfunc{configure}
 Called to configure the PCA9685 device.  This must be done before using the device.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1687,6 +1827,7 @@ Called to configure the PCA9685 device.  This must be done before using the devi
 procedure set(self : PS9685_record; chan : channel;
               on : uint12; off : uint12; error : out err_code);
 \end{lstlisting}
+\indexfunc{set}
 Set on and off times for a specific channel.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1700,6 +1841,7 @@ Set on and off times for a specific channel.
 procedure set_full_on(self : PS9685_record; chan : channel;
                       error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_full\_on}
 Sets the specified channel to full on.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1711,6 +1853,7 @@ Sets the specified channel to full on.
 procedure set_full_off(self : PS9685_record; chan : channel;
                        error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_full\_off}
 Sets the specified channel to full off.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1722,6 +1865,7 @@ Sets the specified channel to full off.
 procedure sleep(self : PS9685_record; state : boolean;
                 error : out err_code);
 \end{lstlisting}
+\indexfunc{sleep}
 If state is \constant{True}, send the device to sleep, otherwise wake it up.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1733,6 +1877,7 @@ If state is \constant{True}, send the device to sleep, otherwise wake it up.
 procedure set_servo_range(self : in out PS9685_record; chan : channel;
                           min : uint12; max : uint12);
 \end{lstlisting}
+\indexfunc{set\_servo\_range}
 Sets the maximum and minimum duty cycles for a channel.  Once these are set, a servo motor can be controlled using the \function{set\_servo} procedure using a servo position in the range on -1.0 to 1.0.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1745,6 +1890,7 @@ Sets the maximum and minimum duty cycles for a channel.  Once these are set, a s
 procedure set_servo(self : PS9685_record; chan : channel;
                     position : servo_range; error : out err_code);
 \end{lstlisting}
+\indexfunc{set\_servo}
 Once the servo range has been set by the \function{set\_servo\_range} procedure, the servo can be controlled by this function using a servo position from -1.0 to 1.0 rather than the duty cycle.
 \begin{itemize}
   \item $self$ - The PCA9685 device to configure.
@@ -1763,36 +1909,43 @@ There are a number of constants defined.  I expect that most of these are used i
 \begin{lstlisting}
 type RA8875_sizes is (RA8875_480x272, RA8875_800x480);
 \end{lstlisting}
+\indextype{RA8875\_sizes}
 The datatype \datatype{RA8875\_sizes} is an enumeration defined for the screen sizes supported by the RA8875.  The sizes supported by the RA8875 are 320x240, 320x480, 480x272, 640x480, and 800x480.  Right now I only have an 800x480 panel for testing so nothing is tested for other sizes.
 
 \begin{lstlisting}
 type RA8875_LAYER is (LAYER1, LAYER2);
 \end{lstlisting}
+\indextype{RA8875\_LAYER}
 The datatype \datatype{RA8875\_LAYER} is used to select the currently active layer for the display.  In some configurations, only one layer is allowed and this option is ignored.
 
 \begin{lstlisting}
 type RA8875_MWCR0_MODE is (graphic, text);
 \end{lstlisting}
+\indextype{RA8875\_MWCR0\_MODE}
 The datatype \datatype{RA8875\_MWCR0\_MODE} is used to determine if the RA8875 is operating in text mode or graphics mode.
 
 \begin{lstlisting}
 type RA8875_MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
 \end{lstlisting}
+\indextype{RA8875\_MWCR0\_CURDIR}
 The datatype \datatype{RA8875\_MWCR0\_CURDIR} is used to determine the memory write direction for graphics mode.  The options are left to right top down (\constant{LRTD}), right to left top down (\constant{RLTD}), top down left to right (\constant{TDLR}), and down to top left to right (\constant {DTLR}).
 
 \begin{lstlisting}
 type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
 \end{lstlisting}
+\indextype{RA8875\_MWCR1\_GCURS\_ENABLE}
 The datatype \datatype{RA8875\_MWCR1\_GCURS\_ENABLE} is used to determine if the graphics cursor should be enabled or disabled.
 
 \begin{lstlisting}
 type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
 \end{lstlisting}
+\indextype{RA8875\_MWCR1\_GCURS\_SET}
 The datatype \datatype{RA8875\_MWCR1\_GCURS\_SET} is used to select which set of graphics cursors to use.
 
 \begin{lstlisting}
 type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
 \end{lstlisting}
+\indextype{RA8875\_MWCR1\_WRITE\_DEST}
 The datatype \datatype{RA8875\_MWCR1\_WRITE\_DEST} is used to select the destination for graphics writing.
 
 \begin{lstlisting}
@@ -1802,6 +1955,7 @@ type R5G6B5_color is record
    B : uint8 range 0 .. 31;
 end record;
 \end{lstlisting}
+\indextype{R5G6B5\_color}
 The datatype \datatype{R5G6B5\_color} is used to represent colors with five bits for the red, six bits for the green, and five bits for the blue channels.  This adds up to sixteen bits.
 
 \begin{lstlisting}
@@ -1818,6 +1972,7 @@ The datatype \datatype{R5G6B5\_color} is used to represent colors with five bits
          R at 0 range 5 .. 7;
       end record;
 \begin{lstlisting}
+\indextype{R3G3B2\_color}
 The datatype \datatype{R3G3B2\_color} is used to represent colors with three bits for red, three bits for green and two bits for blue.  This adds up to eight bits.
 
 \begin{lstlisting}
@@ -1825,30 +1980,35 @@ type RA8875_FNCR0_Code_Page is
      (RA8875_FNCR0_ISO8859_1, RA8875_FNCR0_ISO8859_2,
       RA8875_FNCR0_ISO8859_3, RA8875_FNCR0_ISO8859_4);
 \end{lstlisting}
+\indextype{RA8875\_FNCR0\_Code\_Page}
 The datatype \datatype{RA8875\_FNCR0\_Code\_Page} is used to select which code page to use when translating character codes to glyphs on the display.
 
 \begin{lstlisting}
 type RA8875_ELLIPSE_PART is (RA8875_ELLIPSE_LL, RA8875_ELLIPSE_UL,
                              RA8875_ELLIPSE_UR, RA8875_ELLIPSE_LR);
 \end{lstlisting}
+\indextype{RA8875\_ELLIPSE\_PART}
 The datatype \datatype{RA8875\_ELLIPSE\_PART} is used to select which part of an ellipse is drawn.  The options are lower-left (\constant{RA8875\_ELLIPSE\_LL}), upper-left (\constant{RA8875\_ELLIPSE\_UL}), upper-right (\constant{RA8875\_ELLIPSE\_UR}), and lower-right (\constant{RA8875\_ELLIPSE\_LR}).
 
 \begin{lstlisting}
 type RA8875_LTPR0_SCROLL_MODE is (LAYER12_SIMULTANEOUS, LAYER1_ONLY,
                                   LAYER2_ONLY, BUFFERED);
 \end{lstlisting}
+\indextype{RA8875\_LTPR0\_SCROLL\_MODE}
 The datatype \datatype{RA8875\_LTPR0\_SCROLL\_MODE} is used to identify the mode for scrolling.  Both layers can be scrolled simultaneously, either of the two layers can be selected to scroll independently, or layer 2 can be used as a scroll buffer.
 
 \begin{lstlisting}
 type RA8875_LTPR0_DISP_MODE is (ONLY_LAYER1, ONLY_LAYER2, LIGHTEN, TRANSPARENT,
                                   BOOL_OR, BOOL_AND, FLOATING, RESERVED);
 \end{lstlisting}
+\indextype{RA8875\_LTPR0\_DISP\_MODE}
 The datatype \datatype{RA8875\_LTPR0\_DISP\_MODE} is used to identify the way to display the two layers.  Each layer can be displayed by itself or in various combinations.
 
 \begin{lstlisting}
    type RA8875_GCursor is array (0 .. 31, 0 .. 31) of integer range 0 .. 3
      with Pack;
 \end{lstlisting}
+\indextype{RA8875\_GCursor}
 The datatype \datatype{RA8875\_GCursor} represents a bitmap for the graphics cursor.  The pixel values are:
 \begin{itemize}
   \item 0 - GCC0 color
@@ -1865,6 +2025,7 @@ These are primarily intended for supporting the other, higher level routines.
 \begin{lstlisting}
 procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; screen : SPI_ptr);
 \end{lstlisting}
+\indexfunc{setup}
 Initialize and configure the RA8875 device.  Use this is no hardware reset GPIO is connected
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -1876,6 +2037,7 @@ Initialize and configure the RA8875 device.  Use this is no hardware reset GPIO 
 procedure setup(self : in out RA8875_record; CS : GPIO.GPIO;
                 RST : GPIO.GPIO; screen : SPI_ptr);
 \end{lstlisting}
+\indexfunc{setup}
 Initialize and configure the RA8875 device.  Use this if a GPIO is connected to use as a hardware reset.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -1887,6 +2049,7 @@ Initialize and configure the RA8875 device.  Use this if a GPIO is connected to 
 \begin{lstlisting}
 procedure hwReset(self : in out RA8875_record);
 \end{lstlisting}
+\indexfunc{hwReset}
 Send a hardware reset command to the RA8875, if a GPIO has been assigned for hardware reset.  Otherwise, it does nothing.
 \begin{itemize}
   \item $self$ - The RA8875 device to reset.
@@ -1895,6 +2058,7 @@ Send a hardware reset command to the RA8875, if a GPIO has been assigned for har
 \begin{lstlisting}
 procedure swReset(self : in out RA8875_record);
 \end{lstlisting}
+\indexfunc{swReset}
 Send a software reset command to the RA8875.  This can be done even if no hardware reset GPIO has been configured.
 \begin{itemize}
   \item $self$ - The RA8875 device to reset.
@@ -1903,6 +2067,7 @@ Send a software reset command to the RA8875.  This can be done even if no hardwa
 \begin{lstlisting}
 procedure writeCmd(self : RA8875_record; value : uint8);
 \end{lstlisting}
+\indexfunc{writeCmd}
 Send a command to the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to send a command to.
@@ -1912,6 +2077,7 @@ Send a command to the RA8875.
 \begin{lstlisting}
 procedure writeData(self : RA8875_record; value : uint8);
 \end{lstlisting}
+\indexfunc{writeData}
 Send data to the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to send data to.
@@ -1921,6 +2087,7 @@ Send data to the RA8875.
 \begin{lstlisting}
 function readStatus(self : RA8875_record) return uint8;
 \end{lstlisting}
+\indexfunc{readStatus}
 Read a status value from the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to get status from.
@@ -1930,6 +2097,7 @@ Read a status value from the RA8875.
 \begin{lstlisting}
 function readData(self : RA8875_record) return uint8;
 \end{lstlisting}
+\indexfunc{readData}
 Read data from the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to get data from.
@@ -1939,6 +2107,7 @@ Read data from the RA8875.
 \begin{lstlisting}
 procedure writeReg(self : RA8875_record; reg : uint8; value : uint8);
 \end{lstlisting}
+\indexfunc{writeReg}
 Writes data to a RA8875 register.
 \begin{itemize}
   \item $self$ - The RA8875 device containing the register.
@@ -1949,6 +2118,7 @@ Writes data to a RA8875 register.
 \begin{lstlisting}
    function readReg(self : RA8875_record; reg : uint8) return uint8;
 \end{lstlisting}
+\indexfunc{readReg}
 Reads data from a RA8875 register.
 \begin{itemize}
   \item $self$ - The RA8875 device containing the register.
@@ -1960,6 +2130,7 @@ Reads data from a RA8875 register.
 \begin{lstlisting}
 procedure configure(self : in out RA8875_record; size : RA8875_sizes);
 \end{lstlisting}
+\indexfunc{configure}
 Configures the LCD size for use by the RA8875.  Currently only 480x272 and 800x480 are supported and only 800x480 has been tested.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -1969,6 +2140,7 @@ Configures the LCD size for use by the RA8875.  Currently only 480x272 and 800x4
 \begin{lstlisting}
 procedure setSleep(self : RA8875_record; state : boolean);
 \end{lstlisting}
+\indexfunc{setSleep}
 Sets the sleep state of the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -1978,6 +2150,7 @@ Sets the sleep state of the RA8875.
 \begin{lstlisting}
 procedure setDisplay(self : RA8875_record; state : boolean);
 \end{lstlisting}
+\indexfunc{setDisplay}
 Turns the display on or off.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -1987,6 +2160,7 @@ Turns the display on or off.
 \begin{lstlisting}
 procedure GPIOX(self : RA8875_record; state : boolean);
 \end{lstlisting}
+\indexfunc{GPIOX}
 Set the state of the GPIOX pin.  This is apparently used in the AdaFruit breakout board, though I'm not sure what it's used for.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -1996,6 +2170,7 @@ Set the state of the GPIOX pin.  This is apparently used in the AdaFruit breakou
 \begin{lstlisting}
 procedure PWM1config(self : RA8875_record; state : boolean; clock : uint8);
 \end{lstlisting}
+\indexfunc{PWM1config}
 Configures PWM channel 1.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2006,6 +2181,7 @@ Configures PWM channel 1.
 \begin{lstlisting}
 procedure PWM2config(self : RA8875_record; state : boolean; clock : uint8);
 \end{lstlisting}
+\indexfunc{PWM2config}
 Configures PWM channel 2.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2016,6 +2192,7 @@ Configures PWM channel 2.
 \begin{lstlisting}
 procedure PWM1out(self : RA8875_record; value : uint8);
 \end{lstlisting}
+\indexfunc{PWM1out}
 Sets PWM channel 1 duty cycle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2025,6 +2202,7 @@ Sets PWM channel 1 duty cycle.
 \begin{lstlisting}
 procedure PWM2out(self : RA8875_record; value : uint8);
 \end{lstlisting}
+\indexfunc{PWM2out}
 Sets PWM channel 1 duty cycle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2035,6 +2213,7 @@ Sets PWM channel 1 duty cycle.
 procedure setDisplayCtrl(self : RA8875_record; layer : uint8; hdir : uint8;
                          vdir : uint8);
 \end{lstlisting}
+\indexfunc{setDisplayCtrl}
 Sets some of the RA8875 display control parameters.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2049,6 +2228,7 @@ procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE;
                         writeDir : RA8875_MWCR0_CURDIR;
                         WriteCursorIncr : boolean; ReadCursorIncr : boolean);
 \end{lstlisting}
+\indexfunc{setWriteCtrl0}
 Configures the RA8875 memory write control register 0.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2067,6 +2247,7 @@ procedure setWriteCtrl1(self : RA8875_record;
                         writeDest : RA8875_MWCR1_WRITE_DEST;
                         layer : RA8875_LAYER);
 \end{lstlisting}
+\indexfunc{setWriteCtrl1}
 Configures the RA8875 memory write control register 1.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2081,6 +2262,7 @@ Configures the RA8875 memory write control register 1.
 \begin{lstlisting}
 procedure textMode(self : RA8875_record);
 \end{lstlisting}
+\indexfunc{textMode}
 Sets the RA8875 to text mode.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2089,6 +2271,7 @@ Sets the RA8875 to text mode.
 \begin{lstlisting}
 procedure textColor(self : RA8875_record; bg : R5G6B5_color; fg : R5G6B5_color);
 \end{lstlisting}
+\indexfunc{textColor}
 Sets the foreground and background color for text.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2099,6 +2282,7 @@ Sets the foreground and background color for text.
 \begin{lstlisting}
 procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
 \end{lstlisting}
+\indexfunc{textSetCodePage}
 Selects the code page to used when translating character codes to glyphs on the screen.  The options are: \constant{RA8875\_FNCR0\_ISO8859\_1}, \constant{RA8875\_FNCR0\_ISO8859\_2}, \constant{RA8875\_FNCR0\_ISO8859\_3}, and \constant{RA8875\_FNCR0\_ISO8859\_4}.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2110,6 +2294,7 @@ procedure textSetAttribute(self : RA8875_record; align : boolean;
                               transparent : boolean;
                               rotate : boolean; h_size : uint8; v_size : uint8);
 \end{lstlisting}
+\indexfunc{textSetAttribute}
 Sets the attributes in the font control register for drawing text.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2123,6 +2308,7 @@ Sets the attributes in the font control register for drawing text.
 \begin{lstlisting}
 procedure textSetLineHeight(self : RA8875_record; size : uint8);
 \end{lstlisting}
+\indexfunc{textSetLineHeight}
 Set the font line distance setting.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2132,6 +2318,7 @@ Set the font line distance setting.
 \begin{lstlisting}
 procedure textSetFontWidth(self : RA8875_record; size : uint8);
 \end{lstlisting}
+\indexfunc{textSetFontWidth}
 Set the spacing between characters in pixels.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2139,8 +2326,9 @@ Set the spacing between characters in pixels.
 \end{itemize}
 
 \begin{lstlisting}
-   procedure textWrite(self : RA8875_record; str : string);
+procedure textWrite(self : RA8875_record; str : string);
 \end{lstlisting}
+\indexfunc{textWrite}
 Writes a string of text to the display using the currently selected attributes.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2151,6 +2339,7 @@ Writes a string of text to the display using the currently selected attributes.
 \begin{lstlisting}
 procedure graphicsMode(self : RA8875_record);
 \end{lstlisting}
+\indexfunc{graphicsMode}
 Sets the RA8875 to graphics mode.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2159,6 +2348,7 @@ Sets the RA8875 to graphics mode.
 \begin{lstlisting}
 procedure drawColor(self : RA8875_record; color : R5G6B5_color);
 \end{lstlisting}
+\indexfunc{drawColor}
 Set the color for drawing graphics.  The graphics commands will use this color until it is changed.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2169,6 +2359,7 @@ Set the color for drawing graphics.  The graphics commands will use this color u
 procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                    y2 : uint16; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawRect}
 Draws a rectangle on the display.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2183,6 +2374,7 @@ Draws a rectangle on the display.
 procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                       y2 : uint16; rad : uint16; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawRndRect}
 Draws a rectangle on the display.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2198,6 +2390,7 @@ Draws a rectangle on the display.
 procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                    y2 : uint16);
 \end{lstlisting}
+\indexfunc{drawLine}
 Draw a line between two points.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2211,6 +2404,7 @@ Draw a line between two points.
 procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
                      fill : boolean);
 \end{lstlisting}
+\indexfunc{drawCircle}
 Draw a circle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2225,6 +2419,7 @@ procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
                        x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
                        fill : boolean);
 \end{lstlisting}
+\indexfunc{drawTriangle}
 Draw a triangle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2241,6 +2436,7 @@ Draw a triangle.
 procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16;
                      hRad : uint16; vRad : uint16; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawEllipse}
 Draw an ellipse oriented either horizontally or vertically.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2256,6 +2452,7 @@ procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
                              hRad : uint16;  vRad : uint16;
                              seg : RA8875_ELLIPSE_PART; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawEllipseSegment}
 Draw a segment of an ellipse oriented either horizontally or vertically.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2271,6 +2468,7 @@ Draw a segment of an ellipse oriented either horizontally or vertically.
 procedure drawRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                    y2 : uint16; color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawRect}
 Draws a rectangle on the display.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2286,6 +2484,7 @@ Draws a rectangle on the display.
 procedure drawRndRect(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                    y2 : uint16; rad : uint16; color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawRndRect}
 Draws a rectangle on the display.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2302,6 +2501,7 @@ Draws a rectangle on the display.
 procedure drawLine(self : RA8875_record; x1 : uint16; y1 : uint16; x2 : uint16;
                    y2 : uint16; color : R5G6B5_color);
 \end{lstlisting}
+\indexfunc{drawLine}
 Draw a line between two points.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2316,6 +2516,7 @@ Draw a line between two points.
 procedure drawCircle(self : RA8875_record; x : uint16; y : uint16; rad : uint16;
                      color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawCircle}
 Draw a circle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2331,6 +2532,7 @@ procedure drawTriangle(self : RA8875_record; x1 : uint16; y1 : uint16;
                        x2 : uint16; y2 : uint16; x3 : uint16; y3 : uint16;
                        color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawTriangle}
 Draw a triangle.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2348,6 +2550,7 @@ Draw a triangle.
 procedure drawEllipse(self : RA8875_record; x : uint16; y : uint16; hRad : uint16;
                      vRad : uint16; color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawEllipse}
 Draw an ellipse oriented either horizontally or vertically.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2364,6 +2567,7 @@ procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
                              hRad : uint16; vRad : uint16; seg : RA8875_ELLIPSE_PART;
                              color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
+\indexfunc{drawEllipseSegment}
 Draw a segment of an ellipse oriented either horizontally or vertically.
 \begin{itemize}
   \item $self$ - The RA8875 device to control.
@@ -2379,6 +2583,7 @@ Draw a segment of an ellipse oriented either horizontally or vertically.
 \begin{lstlisting}
 procedure waitPoll(self : RA8875_record; reg : uint8; flag : uint8);
 \end{lstlisting}
+\indexfunc{waitPoll}
 Repeatedly reads a register and checks for a bit to be cleared.  This is commonly used at the end of drawing routines to ensure that the drawing is complete before proceeding.  This is intended primarily for use by other of the RA8875 routines and not by user code.
 \begin{itemize}
   \item $self$ - The RA8875 device to check.
@@ -2390,6 +2595,7 @@ Repeatedly reads a register and checks for a bit to be cleared.  This is commonl
 \begin{lstlisting}
 procedure enableTouch(self : RA8875_record; state : boolean);
 \end{lstlisting}
+\indexfunc{enableTouch}
 Enable or disable touch processing.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2399,6 +2605,7 @@ Enable or disable touch processing.
 \begin{lstlisting}
 function checkTouched(self : RA8875_record) return boolean;
 \end{lstlisting}
+\indexfunc{checkTouched}
 Checks if the RA8875 has recorded a touch event.
 \begin{itemize}
   \item $self$ - The RA8875 device to check.
@@ -2408,6 +2615,7 @@ Checks if the RA8875 has recorded a touch event.
 \begin{lstlisting}
 procedure readTouchRaw(self : RA8875_record; x : out uint16; y : out uint16);
 \end{lstlisting}
+\indexfunc{readTouchRaw}
 Reads the raw touch location.
 \begin{itemize}
   \item $self$ - The RA8875 device to read.
@@ -2418,7 +2626,8 @@ Reads the raw touch location.
 \begin{lstlisting}
 procedure readTouchCal(self : RA8875_record; x : out uint16; y : out uint16);
 \end{lstlisting}
-Reads the calibrated touch location.
+\indexfunc{readTouchCal}
+Reads the calibrated touch location.  Note that the calibration assumes a linear response.
 \begin{itemize}
   \item $self$ - The RA8875 device to read.
   \item $x$ - The calibrated X-coordinate of the touch location
@@ -2428,6 +2637,7 @@ Reads the calibrated touch location.
 \begin{lstlisting}
 procedure touchCalibrate(self : in out RA8875_record);
 \end{lstlisting}
+\indexfunc{touchCalibrate}
 Run a touch calibration process.  This requires the user to touch the top, bottom, left, and right edges of the touch screen.  Based on this, the limits of the touch sensor are computed and added to the RA8875 object.
 \begin{itemize}
   \item $self$ - The RA8875 device to calibrate.
@@ -2437,6 +2647,7 @@ Run a touch calibration process.  This requires the user to touch the top, botto
 procedure setTouchCalibration(self : in out RA8875_record; top : uint16;
                               bottom : uint16; left : uint16; right : uint16);
 \end{lstlisting}
+\indexfunc{setTouchCalibration}
 Set the touch sensor limits for the RA8875.  This can be useful if the limits are already known and avoids running through the touch calibration process.
 \begin{itemize}
   \item $self$ - The RA8875 device to calibrate.
@@ -2451,6 +2662,7 @@ procedure getTouchCalibration(self : RA8875_record; top : out uint16;
                               bottom : out uint16; left : out uint16;
                               right : out uint16);
 \end{lstlisting}
+\indexfunc{getTouchCalibration}
 Read the touch sensor limits from the RA8875.  This can be useful to save the limits for use with \function{setTouchCalibration}.
 \begin{itemize}
   \item $self$ - The RA8875 device to read.
@@ -2465,6 +2677,7 @@ Read the touch sensor limits from the RA8875.  This can be useful to save the li
 procedure scroll(self : RA8875_record; hStart : uint16; vStart : uint16;
                  hEnd : uint16; vEnd : uint16; hOffset : uint16; vOffset : uint16);
 \end{lstlisting}
+\indexfunc{scroll}
 Scroll a region on the display
 \begin{itemize}
   \item $self$ - The RA8875 device to scroll.
@@ -2480,6 +2693,7 @@ Scroll a region on the display
 procedure setActiveWindow(self : RA8875_record; top : uint16; bottom : uint16;
                           left : uint16; right : uint16);
 \end{lstlisting}
+\indexfunc{setActiveWindow}
 Sets the current active window on the display.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2492,6 +2706,7 @@ Sets the current active window on the display.
 \begin{lstlisting}
 procedure screenActive(self : RA8875_record);
 \end{lstlisting}
+\indexfunc{screenActive}
 Sets the entire display area to be the active window.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2500,6 +2715,7 @@ Sets the entire display area to be the active window.
 \begin{lstlisting}
 procedure setLayers(self : RA8875_record; layer : RA8875_LAYER);
 \end{lstlisting}
+\indexfunc{setLayers}
 Sets the number of layers available for use.  May be one or two.  If two layers are selected, the graphics depths is reduced to allow two layers.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2509,6 +2725,7 @@ Sets the number of layers available for use.  May be one or two.  If two layers 
 \begin{lstlisting}
 procedure selectLayer(self : RA8875_record; layer : RA8875_LAYER);
 \end{lstlisting}
+\indexfunc{selectLayer}
 Selects which layer to use.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2520,6 +2737,7 @@ procedure setLayerSetting0(self : RA8875_record;
                            scroll : RA8875_LTPR0_SCROLL_MODE;
                            float : boolean; display : RA8875_LTPR0_DISP_MODE);
 \end{lstlisting}
+\indexfunc{setLayerSetting0}
 Sets layer transparency register 0 in the RA8875.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2532,6 +2750,7 @@ Sets layer transparency register 0 in the RA8875.
 \begin{lstlisting}
 procedure setTextCursorPos(self : RA8875_record; x : uint16; y : uint16);
 \end{lstlisting}
+\indexfunc{setTextCursorPos}
 Sets the text cursor position.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2543,6 +2762,7 @@ Sets the text cursor position.
 procedure setGraphCursorColors(self : RA8875_record; color0 : R3G3B2_color;
                                color1 : R3G3B2_color);
 \end{lstlisting}
+\indexfunc{setGraphCursorColors}
 Set the graphics cursor colors.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2553,6 +2773,7 @@ Set the graphics cursor colors.
 \begin{lstlisting}
 procedure setGraphCursorPos(self : RA8875_record; x : uint16; y : uint16);
 \end{lstlisting}
+\indexfunc{setGraphCursorPos}
 Sets the graphics cursor position.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2564,6 +2785,7 @@ Sets the graphics cursor position.
 procedure setGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
                          data : RA8875_GCursor);
 \end{lstlisting}
+\indexfunc{setGraphCursor}
 Sets the graphics cursor.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2575,6 +2797,7 @@ Sets the graphics cursor.
 procedure selectGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
                             enable : RA8875_MWCR1_GCURS_ENABLE);
 \end{lstlisting}
+\indexfunc{selectGraphCursor}
 Selects the graphics cursor.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2586,6 +2809,7 @@ Selects the graphics cursor.
 \begin{lstlisting}
 procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
 \end{lstlisting}
+\indexfunc{fillScreen}
 Fills the display with a solid color.
 \begin{itemize}
   \item $self$ - The RA8875 device to configure.
@@ -2607,6 +2831,7 @@ As the analog inputs are handled using device files, the name of the device file
 procedure configure(self : in out Linux_AIN_record;
                     port : string);
 \end{lstlisting}
+\indexfunc{configure}
 Configures a Linux analog input.  This needs to be done before the analog input can be used.
 \begin{itemize}
   \item $self$ - The analog input to configure.
@@ -2616,6 +2841,7 @@ Configures a Linux analog input.  This needs to be done before the analog input 
 \begin{lstlisting}
 procedure close(self : in out Linux_AIN_record);
 \end{lstlisting}
+\indexfunc{close}
 Closes a Linux analog input device file.  This should be done when the software is finished with the device.
 \begin{itemize}
   \item $self$ - The analog input to close.
@@ -2628,6 +2854,7 @@ As the general-purpose I/O pins are handled using device files (sometimes multip
 procedure configure(self : in out Linux_GPIO_record;
                     pin : string; port : string; dir : direction);
 \end{lstlisting}
+\indexfunc{configure}
 In some cases, pins may have multiple uses.  In these cases, a pin control file needs to be accessed to select the use for the pin.
 \begin{itemize}
   \item $self$ - The GPIO device to configure.
@@ -2640,6 +2867,7 @@ In some cases, pins may have multiple uses.  In these cases, a pin control file 
 procedure configure(self : in out Linux_GPIO_record;
                     port : string; dir : direction);
 \end{lstlisting}
+\indexfunc{configure}
 For dedicated pins without pin control files, a simpler form can be used for configuration.
 \begin{itemize}
   \item $self$ - The GPIO device to configure.
@@ -2651,6 +2879,7 @@ For dedicated pins without pin control files, a simpler form can be used for con
 procedure set_dir(self : in out Linux_GPIO_record;
                   port : String; dir : direction);
 \end{lstlisting}
+\indexfunc{set\_dir}
 Sets the direction of a pin.  This is used by the \function{configure} procedure, but can be used whenever a GPIO pin needs to change between input and output.
 \begin{itemize}
   \item $self$ - The GPIO device to configure.
@@ -2660,6 +2889,7 @@ Sets the direction of a pin.  This is used by the \function{configure} procedure
 \begin{lstlisting}
 procedure close(self : in out Linux_GPIO_record);
 \end{lstlisting}
+\indexfunc{close}
 Closes a GPIO device file.  This should be done when the software is finished with the device.
 \begin{itemize}
   \item $self$ - The GPIO device to close.
@@ -2671,6 +2901,7 @@ This package basically provides an Ada wrapper around a bunch of C \function{ioc
 procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
                     SCL : string; SDA : string);
 \end{lstlisting}
+\indexfunc{configure}
 Configure the I2C interface on a BeagleBone Black or other systems that have multiple functions on the I2C pins.  This configuration procedure sets the pins to the I2C function.
 \begin{itemize}
   \item $self$ - The I2C device to configure.
@@ -2681,6 +2912,7 @@ Configure the I2C interface on a BeagleBone Black or other systems that have mul
 
 \begin{lstlisting}
 procedure configure(self : in out linux_i2c_interface_record; i2c_file : string);
+\indexfunc{configure}
 \end{lstlisting}
 Configure the I2C interface on a Raspberry PI or other systems that have dedicated pins for the I2C interface.  This would also work on a system with shared pins if the pins had already been set to the I2C function.
 \begin{itemize}
@@ -2700,12 +2932,14 @@ This is mostly Ada wrappers around some C I/O calls.
 procedure configure(self : in out Linux_SPI_record; SPI_file : string;
                     SCL : string; SDA : string);
 \end{lstlisting}
+\indexfunc{configure}
 Configure the SPI interface on a BeagleBone Black or other systems that have multiple functions on the SPI pins.  This configuration procedure sets the pins to the SPI function.
 
 \comment{This function is not yet implemented.  Do not attempt to use.}
 \begin{lstlisting}
 procedure configure(self : in out Linux_SPI_record; SPI_file : string);
 \end{lstlisting}
+\indexfunc{configure}
 Configure the SPI interface on a Raspberry PI or other systems that have dedicated pins for the SPI interface.  This would also work on a system with shared pins if the pins had already been set to the SPI function.
 \begin{itemize}
   \item $self$ - The SPI device to configure.
@@ -2736,21 +2970,25 @@ This package is for controlling the BeagleBone Black's four on-board LEDs.  This
 \begin{lstlisting}
 subtype led_num is Integer range 0 .. 3;
 \end{lstlisting}
+\indextype{led\_num}
 Since there are four LEDs, the datatype \datatype{led\_num} is defined to identify them.
 
 \begin{lstlisting}
 type led_state is (off, on);
 \end{lstlisting}
+\indextype{led\_state}
 The datatype \datatype{led\_state} is used to turn LEDs on or off.
 
 \begin{lstlisting}
 type led_states is array (led_num) of led_state;
 \end{lstlisting}
+\indextype{led\_states}
 The datatype \datatype{led\_states} combines a state for all of the LEDs into a single array.
 
 \begin{lstlisting}
 procedure open(l : in led_num);
 \end{lstlisting}
+\indexfunc{open}
 Open a specific LED device file.  This needs to be done before the LED can be used.
 \begin{itemize}
   \item $l$ - The LED to open.
@@ -2759,11 +2997,13 @@ Open a specific LED device file.  This needs to be done before the LED can be us
 \begin{lstlisting}
 procedure open;
 \end{lstlisting}
+\indexfunc{open}
 Open all of the LED device files.  This makes all LEDs ready to be used.
 
 \begin{lstlisting}
 procedure set(l : in led_num; s : in led_state);
 \end{lstlisting}
+\indexfunc{set}
 Sets the state of a specific LED.
 \begin{itemize}
   \item $l$ - The LED to change.
@@ -2774,6 +3014,7 @@ Sets the state of a specific LED.
 procedure set(led0 : in led_state; led1 : in led_state;
               led2 : in led_state; led3 : in led_state);
 \end{lstlisting}
+\indexfunc{set}
 Sets the state of all LEDs by individually specifying the state.
 \begin{itemize}
   \item $led0$ - The state for LED 0.
@@ -2785,6 +3026,7 @@ Sets the state of all LEDs by individually specifying the state.
 \begin{lstlisting}
 procedure set(leds : in led_states);
 \end{lstlisting}
+\indexfunc{set}
 Set the state of all LEDs by providing a \datatype{led\_states} array.
 \begin{itemize}
   \item $leds$ - The array containing states for all LEDs.
@@ -2792,6 +3034,7 @@ Set the state of all LEDs by providing a \datatype{led\_states} array.
 
 \begin{lstlisting}
 procedure close(l : in led_num);
+\indexfunc{close}
 \end{lstlisting}
 Close a specific LED device file.
 \begin{itemize}
@@ -2800,6 +3043,7 @@ Close a specific LED device file.
 
 \begin{lstlisting}
 procedure close;
+\indexfunc{close}
 \end{lstlisting}
 Close all of the LED device files.
 
@@ -2809,12 +3053,14 @@ This package is for controlling the BeagleBone Black's PWM outputs.
 \begin{lstlisting}
 type nanoseconds is range 0 .. integer'Last;
 \end{lstlisting}
+\indextype{nanoseconds}
 The Linux PWM driver uses period and duty-cycle (actually time high) expressed  in nanoseconds.  By the time that this is translated to the device, the  actual resolution may be something different.  It is also not clear what  the maximum value of period may be.  The maximum value may also depend on  the specific PWM device being accessed.  Some experimentation would be in  order to determine what works for your application.
 
 \begin{lstlisting}
 procedure configure(self : not null access PWM_record'class;
                     pin : string; index : pwm_range);
 \end{lstlisting}
+\indexfunc{configure}
 Configure a PWM device.  The pin control file and the PWM number must correspond, otherwise things will not work correctly.  Pin should be one of the pin constants.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2825,6 +3071,7 @@ Configure a PWM device.  The pin control file and the PWM number must correspond
 \begin{lstlisting}
 procedure enable(self : not null access PWM_record'class; state : boolean);
 \end{lstlisting}
+\indexfunc{enable}
 Enables or disables a PWN device.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2834,6 +3081,7 @@ Enables or disables a PWN device.
 \begin{lstlisting}
 procedure set_period(self : not null access PWM_record'class; period : nanoseconds);
 \end{lstlisting}
+\indexfunc{set\_period}
 Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero or positive.  Some of the PWM devices may have additional restrictions on the range.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2843,6 +3091,7 @@ Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero
 \begin{lstlisting}
 procedure set_period(self : not null access PWM_record'class; period : Duration);
 \end{lstlisting}
+\indexfunc{set\_period}
 Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero or positive.  Some of the PWM devices may have additional restrictions on the range.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2852,6 +3101,7 @@ Set the period of the PWM.  This is the value used by Linux in nS.  Must be zero
 \begin{lstlisting}
 procedure set_high(self : not null access PWM_record'class; high : nanoseconds);
 \end{lstlisting}
+\indexfunc{set\_high}
 Set the time that the output is in the high state.  This must be between zero and the period.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2861,6 +3111,7 @@ Set the time that the output is in the high state.  This must be between zero an
 \begin{lstlisting}
 procedure set_high(self : not null access PWM_record'class; high : Duration);
 \end{lstlisting}
+\indexfunc{set\_high}
 Set the time that the output is in the high state.  This must be between zero and the period.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2870,6 +3121,7 @@ Set the time that the output is in the high state.  This must be between zero an
 \begin{lstlisting}
 procedure set_rate(self : not null access PWM_record'class; rate : BBS.units.freq_hz);
 \end{lstlisting}
+\indexfunc{set\_rate}
 Sets the rate in Hz.  This is essentially the inverse of \function{set\_period}.  The rate is given as a floating point number and is converted to an integer number of nanoseconds.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2877,10 +3129,10 @@ Sets the rate in Hz.  This is essentially the inverse of \function{set\_period}.
 \end{itemize}
 
 \begin{lstlisting}
-   procedure set_duty(self : not null access PWM_record'class; duty : float)
-     with
-     pre => (duty >= 0.0) and (duty <= 100.0);
+procedure set_duty(self : not null access PWM_record'class; duty : float)
+     with pre => (duty >= 0.0) and (duty <= 100.0);
 \end{lstlisting}
+\indexfunc{set\_duty}
 Sets the duty cycle.  The duty cycle is a percentage of the period that the output is high.  The input is a floating point number and is converted to the appropriate number of nanoseconds.
 \begin{itemize}
   \item $self$ - The PWM object to configure.
@@ -2889,7 +3141,7 @@ Sets the duty cycle.  The duty cycle is a percentage of the period that the outp
 
 %========================================================
 \chapter{Arduino Due API Description}
-The Arduino Due is based on the Atmel SAM3X8E ARM Cortex-M3 CPU\cite{SAM3X}.  This has not been worked on lately due to other projects (one day, I hope to get back to it) and should be considered to be experimental.  The packages listed here may depend on some \package{sam3x8e.*} packages.  The \package{sam3x8e.*} are autogenerated from the \filename{ATSAM3X8E.svd} file.  They provide many of the low-level constants and datatypes for access the SAM3X hardware.
+The Arduino Due is based on the Atmel SAM3X8E ARM Cortex-M3 CPU\cite{SAM3X}.  This has not been worked on lately due to other projects (one day, I hope to get back to it) and should be considered to be experimental, but may be of some use to others working with an Arduino Due.  The packages listed here may depend on some \package{sam3x8e.*} packages.  The \package{sam3x8e.*} are autogenerated from the \filename{ATSAM3X8E.svd} file and they provide many of the low-level constants and datatypes for access the SAM3X hardware.
 
 The following sections describe device specific additions or alterations to the common classes as well as unique device specific routines.
 
@@ -2930,41 +3182,54 @@ Do not use channels marked as unused.  It may cause problems.  Using AD15, the C
 \begin{lstlisting}
 subtype AIN_Num is Integer range 0 .. 11;
 \end{lstlisting}
+\indextype{AIN\_Num}
 Define a subtype for the Arduino analogs inputs.  These are mapped to the analog channels via an array defined in the private section of this package.  Using this prevents the unused channels from being accessed.
+
 \begin{lstlisting}
 procedure enable_ain(self : Due_AIN_record; b : Boolean);
 \end{lstlisting}
+\indexfunc{enable\_ain}
 Enable or disable a specified analog input object.
 \begin{itemize}
   \item $self$ - The analog input device to configure.
   \item $b$ - \constant{True} to enable, \constant{False} to disable.
 \end{itemize}
+
 \begin{lstlisting}
-   procedure setup_ain;
+procedure setup_ain;
 \end{lstlisting}
+\indexfunc{setup\_ain}
 Setup the analog to digital controller.  This needs to be done before using the analog input.
+
 \begin{lstlisting}
 procedure enable_ain(c : AIN_Num; b : Boolean);
 \end{lstlisting}
+\indexfunc{enable\_ain}
 Enable or disable a specified analog input channel.  Generally, the object oriented call should be used instead.
 \begin{itemize}
   \item $c$ - The Arduino analog input number to configure.
   \item $b$ - \constant{True} to enable, \constant{False} to disable.
 \end{itemize}
+
 \begin{lstlisting}
 procedure start;
 \end{lstlisting}
-Start an analog to digital conversion conversion.
+\indexfunc{start}
+Start an analog to digital conversion.
+
 \begin{lstlisting}
 procedure free_run(b : Boolean);
 \end{lstlisting}
+\indexfunc{free\_run}
 Set free running conversion.
 \begin{itemize}
   \item $b$ - \constant{True} to enable free running conversion, \constant{False} to disable it.
 \end{itemize}
+
 \begin{lstlisting}
 function get(c : AIN_Num) return UInt12;
 \end{lstlisting}
+\indexfunc{get}
 Read an ADC value from a channel.  Generally, the object oriented call should be used instead.
 \begin{itemize}
   \item $c$ - The Arduino analog input number
@@ -2980,7 +3245,7 @@ This package contains a collection of pin objects for the Arduino Pins.  If memo
 \section{\package{BBS.embed.due.serial}}
 This package is the root of the serial I/O functionality on the Arduino Due.  It has four of its serial ports wired to the headers.  These ports are numbered 0 through 3.  Port 0 is also wired to the programming USB connector and is used as the default port, if none is specified.
 
-Communications is available in both polled and interrupt driven variants.  Polled is unbuffered and has very little memory overhead, but puts more load on the CPU.  It is most useful when memory is tight or serial I/O needs are minimal.  It would also be useful as a method of last resort for printing messages from an exception handler.
+Communication is available in both polled and interrupt driven variants.  Polled is unbuffered and has very little memory overhead, but puts more load on the CPU.  It is most useful when memory is tight or serial I/O needs are minimal.  It would also be useful as a method of last resort for printing messages from an exception handler.
 
 Interrupt driven copies messages into a buffer and uses an interrupt handler to feed characters into the UART as needed.  The main thread of software can continue processing while this is happening.  This provides more processing for user software at the expense of requiring memory for the buffers.
 
@@ -2989,18 +3254,22 @@ This package contains definitions and code that is common to both methods. The i
 \begin{lstlisting}
 type port_id is new Integer range 0 .. 3;
 \end{lstlisting}
+\indextype{port\_id}
 This type is used to identify which of the four available serial ports is being used.
+
 \begin{lstlisting}
 procedure init(baud_rate : SAM3x8e.UInt32);
 \end{lstlisting}
+\indexfunc{init}
 Initialize the serial port attached to the programming USB port.  It looks like this is equivalent to channel zero.
 \begin{itemize}
   \item $baud\_rate$ - The desired baud rate for the USB programming port.
 \end{itemize}
 
 \begin{lstlisting}
-   procedure init(chan_num : port_id; baud_rate : SAM3x8e.UInt32);
+procedure init(chan_num : port_id; baud_rate : SAM3x8e.UInt32);
 \end{lstlisting}
+\indexfunc{init}
 Initialize the serial port attached to the specified channel.
 \begin{itemize}
   \item $chan\_num$ - The channel number of the port to initialize.
@@ -3010,6 +3279,7 @@ Initialize the serial port attached to the specified channel.
 \begin{lstlisting}
 function tx_ready return Boolean;
 \end{lstlisting}
+\indexfunc{tx\_ready}
 Check if the USB programming port transmitter is ready.
 \begin{itemize}
   \item Returns \constant{True} if the transmitter is ready.
@@ -3018,6 +3288,7 @@ Check if the USB programming port transmitter is ready.
 \begin{lstlisting}
 function tx_ready(chan : port_id) return Boolean;
 \end{lstlisting}
+\indexfunc{tx\_ready}
 Check if the specified serial port transmitter is ready.
 \begin{itemize}
   \item $chan$ - The channel number of the serial port to check.
@@ -3027,6 +3298,7 @@ Check if the specified serial port transmitter is ready.
 \begin{lstlisting}
 function rx_ready return Boolean;
 \end{lstlisting}
+\indexfunc{rx\_ready}
 Check if the USB programming port receiver is ready.
 \begin{itemize}
   \item Returns \constant{True} if the transmitter is ready.
@@ -3035,6 +3307,7 @@ Check if the USB programming port receiver is ready.
 \begin{lstlisting}
 function rx_ready(chan : port_id) return Boolean;
 \end{lstlisting}
+\indexfunc{rx\_ready}
 Check if the specified serial port receiver is ready.
 \begin{itemize}
   \item $chan$ - The channel number of the serial port to check.
@@ -3044,6 +3317,7 @@ Check if the specified serial port receiver is ready.
 \begin{lstlisting}
 function tx_empty return Boolean;
 \end{lstlisting}
+\indexfunc{tx\_empty}
 Check if the USB programming port transmitter is empty.
 \begin{itemize}
   \item Returns \constant{True} if the transmitter is empty.
@@ -3052,6 +3326,7 @@ Check if the USB programming port transmitter is empty.
 \begin{lstlisting}
 function tx_empty(chan : port_id) return Boolean;
 \end{lstlisting}
+\indexfunc{tx\_empty}
 Check if the specified serial port transmitter is empty.
 \begin{itemize}
   \item $chan$ - The channel number of the serial port to check.
@@ -3070,6 +3345,7 @@ Many of the routines can be called with a channel number, a serial port object, 
 \begin{lstlisting}
 function init(c : port_id; baud : SAM3x8e.UInt32) return serial_port;
 \end{lstlisting}
+\indexfunc{init}
 Initialize a channel and return the serial port object for that channel.
 \begin{itemize}
   \item $c$ - The channel number.
@@ -3080,6 +3356,7 @@ Initialize a channel and return the serial port object for that channel.
 \begin{lstlisting}
 function get_port(c : port_id) return serial_port;
 \end{lstlisting}
+\indexfunc{get\_port}
 Return the serial port object for a channel.
 \begin{itemize}
   \item $c$ - The channel number.
@@ -3091,6 +3368,7 @@ procedure put(c : Character);
 procedure put(chan : port_id; c : Character);
 procedure put(self : not null access serial_port_record'class; c : Character);
 \end{lstlisting}
+\indexfunc{put}
 Send a character to a serial port.  There are three options.  The default with no port or channel identifier sends the character to port 0 (the USB programming port).
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3103,6 +3381,7 @@ procedure put(s : string);
 procedure put(chan : port_id; s : string);
 procedure put(self : not null access serial_port_record'class; s : String);
 \end{lstlisting}
+\indexfunc{put}
 Send a string to a serial port.  There are three options.  The default with no port or channel identifier sends the character to port 0 (the USB programming port).
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3115,6 +3394,7 @@ procedure put_line(s : string);
 procedure put_line(chan : port_id; s : string);
 procedure put_line(self : not null access serial_port_record'class; s : String);
 \end{lstlisting}
+\indexfunc{put\_line}
 Send a string to a serial port, followed by a CR/LF combination.  There are three options.  The default with no port or channel identifier sends the character to port 0 (the USB programming port).
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3127,6 +3407,7 @@ procedure new_line;
 procedure new_line(chan : port_id);
 procedure new_line(self : not null access serial_port_record'class);
 \end{lstlisting}
+\indexfunc{new\_line}
 Send a CR/LF combination to a serial port for a new line.  There are three options.  The default with no port or channel identifier sends the character to port 0 (the USB programming port).
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3146,6 +3427,7 @@ procedure enable_rs485(self : not null access serial_port_record'class;
                    (d.ctrl = BBS.embed.GPIO.Due.PIOC'Access) or
                    (d.ctrl = BBS.embed.GPIO.Due.PIOD'Access));
 \end{lstlisting}
+\indexfunc{enable\_rs485}
 Enables RS-485 mode on an I/O channel.  It requires an initialized digital I/O pin record.  If d.ctrl isn't pointing to a PIO control record, bad things can happen, so make this a precondition.  This hasn't really been tested.  Use with caution
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3157,6 +3439,7 @@ Enables RS-485 mode on an I/O channel.  It requires an initialized digital I/O p
 procedure flush(chan : port_id);
 procedure flush(self : not null access serial_port_record'class);
 \end{lstlisting}
+\indexfunc{flush}
 Wait until transmit buffer is empty.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3167,6 +3450,7 @@ Wait until transmit buffer is empty.
 procedure rx_enable(chan : port_id; b : Boolean);
 procedure rx_enable(self : not null access serial_port_record'class; b : Boolean);
 \end{lstlisting}
+\indexfunc{rx\_enable}
 Enable or disable the RX interrupt.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3180,6 +3464,7 @@ function rx_ready(chan : port_id) return Boolean;
 function rx_ready(self : not null access serial_port_record'class)
    return Boolean;
 \end{lstlisting}
+\indexfunc{rx\_ready}
 Check to see if characters are available in the buffer
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3193,6 +3478,7 @@ function get(chan : port_id) return Character;
 function get(self : not null access serial_port_record'class)
    return Character;
 \end{lstlisting}
+\indexfunc{get}
 Read a character from the buffer.  If no character is available, wait until one is and then read it.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3206,6 +3492,7 @@ function peek(chan : port_id) return Character;
 function peek(self : not null access serial_port_record'class)
    return Character;
 \end{lstlisting}
+\indexfunc{peek}
 Return the next character in the receive buffer without removing it.  If no character is available, wait until one is and then read it.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3219,6 +3506,7 @@ procedure get_line(chan : port_id; s : in out String; l : out Natural);
 procedure get_line(self : not null access serial_port_record'class;
                       s : in out String; l : out Natural);
 \end{lstlisting}
+\indexfunc{get\_line}
 Return a line of text, waiting as needed until a line is complete.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3230,6 +3518,7 @@ Return a line of text, waiting as needed until a line is complete.
 procedure set_echo(chan : port_id; b : Boolean);
 procedure set_echo(self : not null access serial_port_record'class; b : Boolean);
 \end{lstlisting}
+\indexfunc{set\_echo}
 Enables or disables echo of received characters.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3241,6 +3530,7 @@ Enables or disables echo of received characters.
 procedure set_del(chan : port_id; b : Boolean);
 procedure set_del(self : not null access serial_port_record'class; b : Boolean);
 \end{lstlisting}
+\indexfunc{set\_del}
 Enables or disables deleting of received characters.
 \begin{itemize}
   \item $chan$ - The serial port's channel number.
@@ -3249,18 +3539,177 @@ Enables or disables deleting of received characters.
 \end{itemize}
 
 \section{\package{BBS.embed.due.serial.polled}}
-\section{\package{BBS.embed.due}}
-\section{\package{BBS.embed.GPIO.Due}}
-\section{\package{BBS.embed.i2c.due}}
-\section{\package{BBS.embed.log.due}}
-\section{\package{BBS.embed.SPI.Due}}
+This is a very simple serial package that can be used to print some debugging information.  It uses polling to wait for each character to be passed to the UART.  This makes it not particularly efficient. However, it will work even if the interrupts get all screwed up, which makes it useful in a last resort exception handler to get a message printed.
 
-%========================================================
-\chapter{Other Stuff}
-\comment{If there is anything else that should be added, additional chapters may be added as needed.}
+\begin{lstlisting}
+procedure put(c : Character);
+procedure put(chan : port_id; c : Character);
+\end{lstlisting}
+\indexfunc{put}
+Write a character to a serial port.  It does a busy wait on the \package{UART\_SR} \package{TXRDY} (transmit ready) bit.  It does a loop until the value of the bit is 1 and then write the character.  If no channel is specified in the call, channel 0 (the USB programming port) is used.
+\begin{itemize}
+  \item $chan$ - The serial port's channel number.
+  \item $c$ - The character to transmit.
+\end{itemize}
+
+\begin{lstlisting}
+procedure put(s : string);
+procedure put(chan : port_id; s : string);
+\end{lstlisting}
+\indexfunc{put}
+Write a string to a serial port.  If no channel is specified in the call, channel 0 (the USB programming port) is used.
+\begin{itemize}
+  \item $chan$ - The serial port's channel number.
+  \item $s$ - The string to transmit.
+\end{itemize}
+
+\begin{lstlisting}
+procedure put_line(s : string);
+procedure put_line(chan : port_id; s : string);
+\end{lstlisting}
+\indexfunc{put\_line}
+Write a string to a serial port, followed by a CR/LF combination.  If no channel is specified in the call, channel 0 (the USB programming port) is used.
+\begin{itemize}
+  \item $chan$ - The serial port's channel number.
+  \item $s$ - The string to transmit.
+\end{itemize}
+
+\begin{lstlisting}
+function get return Character;
+function get(chan : port_id) return Character;
+\end{lstlisting}
+\indexfunc{get}
+Read a character from serial port - wait for one to be present, if necessary.
+\begin{itemize}
+  \item $chan$ - The serial port's channel number.
+  \item Returns the character from the serial port.
+\end{itemize}
+
+\section{\package{BBS.embed.due}}
+This is the root package for the Arduino Due specific packages.  It currently has no other contents.
+
+\section{\package{BBS.embed.GPIO.Due}}
+This is a description of the Arduino Due specific GPIO functions.  For the Arduino Due, pin records in the package \package{BBS.embed.Due.GPIO} are used to define each pin, rather than using device files like Linux based systems.
+
+\begin{lstlisting}
+type direction is (gpio_input, gpio_output, funct_a, funct_b);
+\end{lstlisting}
+\indextype{direction}
+The datatype \datatype{direction} is used to identify the function of a pin.  As is typical, most pins have multiple possible functions.
+
+\begin{lstlisting}
+procedure config(self : in out Due_GPIO_record;
+                 pin : Due_GPIO_record; dir : direction);
+\end{lstlisting}
+\indexfunc{config}
+Configures a pin to be controlled by the PIO controller.  Output is enabled or disabled based on the value of dir.
+\begin{itemize}
+  \item $self$ - The GPIO record to configure.
+  \item $pin$ - This should be one of the pin records from the package \package{BBS.embed.Due.GPIO}.  The data from this record are used to populate $self$.
+  \item $dir$ - Indicates the function for the pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure config(self : in out Due_GPIO_record; dir : direction);
+\end{lstlisting}
+\indexfunc{config}
+Configures a pin to be controlled by the PIO controller.  Output is enabled or disabled based on the value of dir.  The values in $self$ are assumed to already be assigned.  Typically, this would be used to re-configure a pin.
+\begin{itemize}
+  \item $self$ - The GPIO record to configure.
+  \item $dir$ - Indicates the function for the pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure pullup(self : Due_GPIO_record; val : Bit);
+\end{lstlisting}
+\indexfunc{pullup}
+Enable or disable pullup on a pin.
+\begin{itemize}
+  \item $self$ - The GPIO record to configure.
+  \item $val$ - Set to 1 to enable pullup.  Set to 0 to disable pullup.
+\end{itemize}
+
+\section{\package{BBS.embed.i2c.due}}
+This is a description of the Arduino Due specific I2C bus functions.
+
+\begin{lstlisting}
+type speed_type is (low100, high400);
+\end{lstlisting}
+\indextype{speed\_type}
+The datatype \datatype{speed\_type} is used to select the speed of the I2C interface.
+
+\begin{lstlisting}
+type port_id is  new Integer range 0 .. 1;
+\end{lstlisting}
+\indextype{port\_id}
+The datatype \datatype{port\_id} is used to select one of the two I2C ports on the Arduino Due.
+
+\begin{lstlisting}
+function get_interface(d : port_id) return due_i2c_interface;
+\end{lstlisting}
+\indexfunc{get\_interface}
+The interface records are declared in the private section.  This returns an access to the record for the specified channel.
+\begin{itemize}
+  \item $d$ - The specified I2C channel.
+  \item Returns an access to the interface record for the specified channel.
+\end{itemize}
+
+\begin{lstlisting}
+procedure init(chan : port_id; speed : speed_type);
+\end{lstlisting}
+\indexfunc{init}
+Initializes the specified I2C channel and sets the speed.
+\begin{itemize}
+  \item $d$ - The specified I2C channel.
+  \item $speed$ - The selected speed for the channel.
+\end{itemize}
+
+\begin{lstlisting}
+function get_activity(self : in out due_i2c_interface_record) return uint32;
+\end{lstlisting}
+\indexfunc{get\_activity}
+Returns the I2C activity counter for the specified channel.  This is primarily useful for debugging to ensure that the device is actually processing transactions.
+\begin{itemize}
+  \item $d$ - The specified I2C channel.
+  \item Returns the activity counter for the specified channel.
+\end{itemize}
+
+\begin{lstlisting}
+function is_busy(self : in out due_i2c_interface_record) return Boolean;
+\end{lstlisting}
+\indexfunc{is\_busy}
+Returns the busy status for the specified channel.
+\begin{itemize}
+  \item $d$ - The specified I2C channel.
+  \item Returns the busy status for the specified channel.  \constant{True} for busy, \constant{False} for not busy.
+\end{itemize}
+
+\section{\package{BBS.embed.log.due}}
+The Arduino Due specific logging uses the interrupt driven serial driver to sent the log messages to serial channel 0.  No Arduino Due specific routines exist.
+
+\section{\package{BBS.embed.SPI.Due}}
+This is a description of the Arduino Due specific SPI bus functions.  I don't think that this has been tested, but it might work.
+
+\begin{lstlisting}
+procedure configure(self : in out Due_SPI_record);
+\end{lstlisting}
+\indexfunc{configure}
+Configure the SPI interface.  The SAM3X8E core actually has two SPI interfaces, but SPI1 does not seem to be present on the chip pinout.
+\begin{itemize}
+  \item $self$ - The SPI device record to configure.
+\end{itemize}
 
 %========================================================
 \clearpage
+%
+%  Add indices
+%
+\addcontentsline{toc}{chapter}{Indices}
+\printindex[type]
+\printindex[func]
+%
+%  Add bibleography
+%
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliographystyle{plain}
 \bibliography{devices.bib}

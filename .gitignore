@@ -19,6 +19,9 @@ doc/*.synctex.gz
 doc/*.toc
 doc/*.bbl
 doc/*.blg
+doc/*.idx
+doc/*.ilg
+doc/*.ind
 
 # Other files
 *.stdout
