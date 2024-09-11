@@ -33,6 +33,25 @@ package body BBS.embed.i2c.MCP23017 is
       self.address := addr;
    end;
    --
+   --  Check to see if the configured device is present.
+   --
+   function present(port : i2c_interface;
+                    addr : addr7) return boolean is
+      err  : err_code;
+      temp : uint8;
+      pragma unreferenced (temp);  --  Needed for the read, but value is ignored
+   begin
+      --
+      --  First check to see if address is in range, then check if a device
+      --  responds at that address.
+      --
+      if (addr < addr_0) or (addr > addr_7) then
+         return False;
+      end if;
+      temp := port.read(addr, IOCON, err);
+      return err = NONE;
+   end;
+   --
    -- Set the direction (read(0)/write(1)) for each of the output bits.  The
    -- direction bits are packed into a uint16.
    --

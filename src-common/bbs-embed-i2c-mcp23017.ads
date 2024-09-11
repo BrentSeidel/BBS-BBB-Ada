@@ -32,6 +32,66 @@ package BBS.embed.i2c.MCP23017 is
    addr_6 : constant addr7 := 16#26#;
    addr_7 : constant addr7 := 16#27#;
    --
+   all_write : constant uint8 := 16#00#;
+   all_read : constant uint8 := 16#FF#;
+   --
+   --  Stuff for object oriented interface.  A non-object oriented interface
+   --  is not provided for this device.  If you need one, it should be fairly
+   --  easy to write one.
+   --
+   type MCP23017_record is new i2c_device_record with private;
+   type MCP23017_ptr is access MCP23017_record;
+   --
+   --  The configure procedure needs to be called first to setup the object.
+   --
+   procedure configure(self : in out MCP23017_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
+   --
+   --  Check to see if the configured device is present.
+   --
+   function present(port : i2c_interface;
+                    addr : addr7) return boolean;
+   --
+   -- Set the direction (read(0)/write(1)) for each of the output bits.  The
+   -- direction bits are packed into a uint16.
+   --
+   procedure set_dir(self : MCP23017_record; dir : uint16;
+                     error : out err_code);
+   function get_dir(self : MCP23017_record;
+                     error : out err_code) return uint16;
+   --
+   -- Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The
+   -- direction bits are packed into a uint16.
+   --
+   procedure set_polarity(self : MCP23017_record; dir : uint16;
+                     error : out err_code);
+   function get_polarity(self : MCP23017_record;
+                     error : out err_code) return uint16;
+   --
+   --  Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each
+   --  of the output bits.  The bits are packed into a uint16.
+   --
+   procedure set_pullup(self : MCP23017_record; dir : uint16;
+                     error : out err_code);
+   function get_pullup(self : MCP23017_record;
+                     error : out err_code) return uint16;
+   --
+   --  Sets the output bits.  Bits are packed into a uint16.
+   --
+   procedure set_data(self : MCP23017_record; data : uint16;
+                      error : out err_code);
+   --
+   --  Read the port.  Bits are packed into a uint16.
+   --
+   function get_data(self : MCP23017_record; error : out err_code)
+                      return uint16;
+private
+   --
+   type MCP23017_record is new i2c_device_record with
+      record
+         null;
+   end record;
+   --
    --  Device registers.  The MCP23017 can be configured to work as two separate
    --  8 bit ports or one 16 bit port.  Depending on the setting of the BANK bit
    --  in the IOCON register, the _A and _B registers are used or the register
@@ -73,60 +133,5 @@ package BBS.embed.i2c.MCP23017 is
    OLAT   : constant uint8 := 16#14#; -- Output latch
    OLAT_A : constant uint8 := 16#0A#; -- Output latch
    OLAT_B : constant uint8 := 16#1A#; -- Output latch
-   --
-   all_write : constant uint8 := 16#00#;
-   all_read : constant uint8 := 16#FF#;
-   --
-   --  Stuff for object oriented interface.  A non-object oriented interface
-   --  is not provided for this device.  If you need one, it should be fairly
-   --  easy to write one.
-   --
-   type MCP23017_record is new i2c_device_record with private;
-   type MCP23017_ptr is access MCP23017_record;
-   --
-   --  The configure procedure needs to be called first to setup the object.
-   --
-   procedure configure(self : in out MCP23017_record; port : i2c_interface;
-                       addr : addr7; error : out err_code);
-   --
-   -- Set the direction (read(0)/write(1)) for each of the output bits.  The
-   -- direction bits are packed into a uint16.
-   --
-   procedure set_dir(self : MCP23017_record; dir : uint16;
-                     error : out err_code);
-   function get_dir(self : MCP23017_record;
-                     error : out err_code) return uint16;
-   --
-   -- Set the polarity (normal(0)/inverted(1)) for each of the input bits.  The
-   -- direction bits are packed into a uint16.
-   --
-   procedure set_polarity(self : MCP23017_record; dir : uint16;
-                     error : out err_code);
-   function get_polarity(self : MCP23017_record;
-                     error : out err_code) return uint16;
-   --
-   --  Enable/Disable weak pullup resistors (disable(0)/enable(1)) for each
-   --  of the output bits.  The bits are packed into a uint16.
-   --
-   procedure set_pullup(self : MCP23017_record; dir : uint16;
-                     error : out err_code);
-   function get_pullup(self : MCP23017_record;
-                     error : out err_code) return uint16;
-   --
-   --  Sets the output bits.  Bits are packed into a uint16.
-   --
-   procedure set_data(self : MCP23017_record; data : uint16;
-                      error : out err_code);
-   --
-   --  Read the port.  Bits are packed into a uint16.
-   --
-   function get_data(self : MCP23017_record; error : out err_code)
-                      return uint16;
-private
-   --
-   type MCP23017_record is new i2c_device_record with
-      record
-         null;
-   end record;
 
 end;
