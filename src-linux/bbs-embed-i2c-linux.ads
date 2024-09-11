@@ -144,6 +144,11 @@ package BBS.embed.i2c.linux is
    overriding
    procedure read(self : in out linux_i2c_interface_record; addr : addr7; reg : uint8;
                   size : buff_index; error : out err_code);
+   --
+   --  Close the I2C interface when done.  Once this is called, the
+   --  I2C object will need to be re-configured.
+   --
+   procedure close(self : in out linux_i2c_interface_record);
    -- -------------------------------------------------------
    --
 private

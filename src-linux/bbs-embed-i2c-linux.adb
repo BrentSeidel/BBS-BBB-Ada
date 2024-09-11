@@ -326,10 +326,6 @@ package body BBS.embed.i2c.linux is
       status : interfaces.C.int;
       err : integer;
    begin
---      self.msg(0).addr  := uint16(addr);
---      self.msg(0).flags := 0; -- write
---      self.msg(0).len   := uint16(size + 1);
---      self.msg(0).buff  := self.buff1'Unchecked_Access;
       --
       --  Build the data buffer including the register address in the
       --  first byte.
@@ -435,6 +431,16 @@ package body BBS.embed.i2c.linux is
       else
          error := none;
       end if;
+   end;
+   --
+   --  Close the I2C interface when done.  Once this is called, the
+   --  I2C object will need to be re-configured.
+   --
+   procedure close(self : in out linux_i2c_interface_record) is
+      temp : Integer;
+      pragma unreferenced(temp);
+   begin
+      temp := c_close(self.port);
    end;
    --
 end;

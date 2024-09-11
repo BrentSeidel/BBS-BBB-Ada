@@ -34,7 +34,6 @@ package BBS.embed.SPI.Linux is
    -- have multiple functions on the SPI pins.  This configuration procedure
    -- sets the pins to the SPI function.
    --
---   overriding
    procedure configure(self : in out Linux_SPI_record; SPI_file : string;
                        SCL : string; SDA : string);
    --
@@ -42,7 +41,6 @@ package BBS.embed.SPI.Linux is
    -- dedicated pins for the SPI interface.  This would also work on a system
    -- with shared pins if the pins had already been set to the SPI function.
    --
---   overriding
    procedure configure(self : in out Linux_SPI_record; SPI_file : string);
    --
    -- Write a value to the SPI
@@ -54,6 +52,11 @@ package BBS.embed.SPI.Linux is
    --
    overriding
    function get(self : Linux_SPI_record) return uint8;
+   --
+   --  Close the SPI interface when done.  Once this is called, the
+   --  SPI object will need to be re-configured.
+   --
+   procedure close(self : in out Linux_SPI_record);
 private
    --
    -- Some of the more advanced features of the SPI port require the use of

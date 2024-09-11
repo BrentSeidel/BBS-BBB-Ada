@@ -58,4 +58,14 @@ package body BBS.embed.SPI.Linux is
       return temp;
    end;
    --
+   --  Close the I2C interface when done.  Once this is called, the
+   --  I2C object will need to be re-configured.
+   --
+   procedure close(self : in out Linux_SPI_record) is
+      temp : Integer;
+      pragma unreferenced(temp);
+   begin
+      temp := c_close(self.port);
+   end;
+   --
 end;

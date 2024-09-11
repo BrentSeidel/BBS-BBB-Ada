@@ -1,6 +1,6 @@
 name = "bbs_embed_linux"
 description = "Physical device drivers for Raspberry Pi and BeagleBone Black"
-version = "0.1.0"
+version = "0.2.0"
 
 long-description = """
 This contains device drivers for unix-type systems.  The physical devices

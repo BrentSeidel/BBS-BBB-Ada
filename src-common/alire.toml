@@ -1,6 +1,6 @@
 name = "bbs_embed_common"
 description = "Abstract hardware drivers and drivers for some i2c bus devices."
-version = "0.1.0"
+version = "0.2.0"
 
 long-description="""
 This crate contains base classes for some hardware devices such as Analog
