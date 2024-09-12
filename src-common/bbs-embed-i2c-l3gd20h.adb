@@ -17,7 +17,13 @@
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
 with BBS.embed.log;
+with Ada.Unchecked_Conversion;
 package body BBS.embed.i2c.L3GD20H is
+   --
+   --  Unchecked conversions to uint8 datatypes
+   --
+   function fsd_to_uint8 is new Ada.Unchecked_Conversion(source => fsd,
+         target => uint8);
    --
    procedure configure(self : in out L3GD20H_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
@@ -35,7 +41,7 @@ package body BBS.embed.i2c.L3GD20H is
    end;
    --
    procedure configure(self : in out L3GD20H_record; port : i2c_interface;
-                       addr : addr7; deflection : uint8; error : out err_code) is
+                       addr : addr7; deflection : fsd; error : out err_code) is
 
    begin
       case deflection is
@@ -51,7 +57,7 @@ package body BBS.embed.i2c.L3GD20H is
       end case;
       self.hw := port;
       self.address := addr;
-      self.hw.write(addr, ctrl4, deflection, error);
+      self.hw.write(addr, ctrl4, fsd_to_uint8(deflection), error);
       self.hw.write(addr, ctrl1, uint8(16#ff#), error);
       --
       -- Data rate = 50Hz (or 800Hz if low_odr is 0)
@@ -61,8 +67,21 @@ package body BBS.embed.i2c.L3GD20H is
       --
    end;
    --
-   function get_temperature(self : L3GD20H_record;
-                            error : out err_code) return integer is
+   --  Check to see if the configured device is present.
+   --
+   function present(port : i2c_interface) return boolean is
+      err  : err_code;
+      temp : uint8;
+   begin
+      temp := port.read(addr, who_am_i, err);
+      if err /= NONE then
+         return False;
+      end if;
+      return temp = 16#D4#;
+   end;
+   --
+   function get_temp(self : L3GD20H_record;
+                     error : out err_code) return integer is
       byte : uint8 := self.hw.read(self.address, out_temp, error);
    begin
       return Integer(uint8_to_int8(byte));
@@ -101,9 +120,9 @@ package body BBS.embed.i2c.L3GD20H is
    end;
    --
    --
-   function get_temperature(self : L3GD20H_record;
-                            error : out err_code) return BBS.units.temp_c is
-      raw : integer := self.get_temperature(error);
+   function get_temp(self : L3GD20H_record;
+                     error : out err_code) return BBS.units.temp_c is
+      raw : integer := self.get_temp(error);
    begin
       return BBS.units.temp_c(self.temp_offset - raw);
    end;

@@ -42,9 +42,9 @@ package BBS.embed.i2c.L3GD20H is
    ctrl4 : constant uint8 := 16#23#;
    --
    -- Full scale selection
-   fs_245dps : constant uint8 := 16#00#; -- default value
-   fs_500dps : constant uint8 := 16#10#;
-   fs_2000dps : constant uint8 := 16#20#;
+   --
+   type fsd is (fs_245dps, fs_500dps, fs_2000dps);
+   for fsd use (fs_245dps => 16#00#, fs_500dps => 16#10#, fs_2000dps => 16#20#);
    --
    ctrl5 : constant uint8 := 16#24#;
    ref : constant uint8 := 16#25#;
@@ -105,19 +105,22 @@ package BBS.embed.i2c.L3GD20H is
    type L3GD20H_record is new i2c_device_record with private;
    type L3GD20H_ptr is access L3GD20H_record;
    --
---   function i2c_new return L3GD20H_ptr;
    procedure configure(self : in out L3GD20H_record; port : i2c_interface;
                        addr : addr7; error : out err_code);
    procedure configure(self : in out L3GD20H_record; port : i2c_interface;
-                       addr : addr7; deflection : uint8; error : out err_code);
+                       addr : addr7; deflection : fsd; error : out err_code);
    --
-   function get_temperature(self : L3GD20H_record; error : out err_code) return integer;
+   --  Check to see if the configured device is present.
+   --
+   function present(port : i2c_interface) return boolean;
+   --
+   function get_temp(self : L3GD20H_record; error : out err_code) return integer;
    function get_rotation_x(self : L3GD20H_record; error : out err_code) return integer;
    function get_rotation_y(self : L3GD20H_record; error : out err_code) return integer;
    function get_rotation_z(self : L3GD20H_record; error : out err_code) return integer;
    function get_rotations(self : L3GD20H_record; error : out err_code) return rotations;
    --
-   function get_temperature(self : L3GD20H_record; error : out err_code) return BBS.units.temp_c;
+   function get_temp(self : L3GD20H_record; error : out err_code) return BBS.units.temp_c;
    function get_rotation_x(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
    function get_rotation_y(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
    function get_rotation_z(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;

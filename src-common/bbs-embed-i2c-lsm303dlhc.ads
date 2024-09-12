@@ -181,9 +181,9 @@ package BBS.embed.i2c.LSM303DLHC is
    function get_accel_status(self : LSM303DLHC_record; error : out err_code) return uint8;
    function accel_data_ready(self : LSM303DLHC_record; error : out err_code) return boolean;
    --
-   function get_temperature(self : LSM303DLHC_record; error : out err_code) return integer;
-   function get_temperature(self : LSM303DLHC_record; error : out err_code) return float;
-   function get_temperature(self : LSM303DLHC_record; error : out err_code) return BBS.units.temp_c;
+   function get_temp(self : LSM303DLHC_record; error : out err_code) return integer;
+   function get_temp(self : LSM303DLHC_record; error : out err_code) return float;
+   function get_temp(self : LSM303DLHC_record; error : out err_code) return BBS.units.temp_c;
    --
    function get_magnet_x(self : LSM303DLHC_record; error : out err_code) return integer;
    function get_magnet_y(self : LSM303DLHC_record; error : out err_code) return integer;

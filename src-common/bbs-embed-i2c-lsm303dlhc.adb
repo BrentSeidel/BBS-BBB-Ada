@@ -202,23 +202,23 @@ package body BBS.embed.i2c.LSM303DLHC is
       end if;
    end;
    --
-   function get_temperature(self : LSM303DLHC_record;
-                            error : out err_code) return integer is
+   function get_temp(self : LSM303DLHC_record;
+                     error : out err_code) return integer is
       word : uint16 := self.hw.readm1(addr_mag, mag_temp_h, error);
    begin
       return integer(uint16_to_int16(word)/16);
    end;
    --
-   function get_temperature(self : LSM303DLHC_record;
-                            error : out err_code) return float is
-      temp : integer := self.get_temperature(error);
+   function get_temp(self : LSM303DLHC_record;
+                     error : out err_code) return float is
+      temp : integer := self.get_temp(error);
    begin
       return float(self.temp_offset + temp)/8.0;
    end;
    --
-   function get_temperature(self : LSM303DLHC_record;
-                            error : out err_code) return BBS.units.temp_c is
-      temp : integer := self.get_temperature(error);
+   function get_temp(self : LSM303DLHC_record;
+                     error : out err_code) return BBS.units.temp_c is
+      temp : integer := self.get_temp(error);
    begin
       return BBS.units.temp_c(float(self.temp_offset + temp)/8.0);
    end;

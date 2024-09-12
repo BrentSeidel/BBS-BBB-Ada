@@ -1044,20 +1044,6 @@ This is a driver for the STMicrosystems L3GD20H three-axis digital output gyrosc
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Full-Scale Deflection \\
-    \hline
-    \constant{fs\_245dps} & Full scale is 245\degree{}/S (default) \\
-    \constant{fs\_500dps} & Full scale is 500\degree{}/S \\
-    \constant{fs\_2000dps} & Full scale is 2000\degree{}/S \\
-  \end{tabular}
-  \caption{Constants for L3GD20H Full-Scale Deflection}
-  \label{tbl:L3GD20HDef}
-\end{center}
-\end{table}
-
-\begin{table}[!h]
-\begin{center}
-  \begin{tabular}{l|l}
     Constant & Status \\
     \hline
     \constant{zyx\_or} & X,Y,Z axis data overrun - New data has overwritten previous data before it was read \\
@@ -1074,9 +1060,33 @@ This is a driver for the STMicrosystems L3GD20H three-axis digital output gyrosc
 \end{center}
 \end{table}
 
-Two utility datatypes are defined for holding rotations.  The first,  \datatype{rotations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw rotation values from the sensor.  The second, \datatype{rotations\_dps} is similar, but the components are all of type \datatype{BBS.units.rot\_d\_s} for rotation in degrees per second.
+\begin{lstlisting}
+type rotations is
+   record
+      x : integer;
+      y : integer;
+      z : integer;
+   end record;
+\end{lstlisting}
 \indextype{rotations}
+The datatype \datatype{rotations} is a record that holds the raw rotation values from the X, Y, and Z sensors.
+
+\begin{lstlisting}
+type rotations_dps is
+   record
+      x : BBS.units.rot_d_s;
+      y : BBS.units.rot_d_s;
+      z : BBS.units.rot_d_s;
+   end record;
+\end{lstlisting}
+The datatype \datatype{rotations\_dps} is a record that holds the rotation values in degrees per second from the X, Y, and Z sensors.
 \indextype{rotations\_dps}
+
+\begin{lstlisting}
+type fsd is (fs_245dps, fs_500dps, fs_2000dps);
+\end{lstlisting}
+\indextype{fsd}
+The datatype \datatype{fsd} is used to select the maximum rotation. The possible values are 245\degree{}/S, 500\degree{}/S, and 2000\degree{}/S.
 
 \begin{lstlisting}
 procedure configure(self : in out L3GD20H_record; port : i2c_interface;
@@ -1106,10 +1116,10 @@ Called to configure the L3GD20H device.  This must be done before using the devi
 \end{itemize}
 
 \begin{lstlisting}
-function get_temperature(self : L3GD20H_record; error : out err_code)
+function get_temp(self : L3GD20H_record; error : out err_code)
     return integer;
 \end{lstlisting}
-\indexfunc{get\_temperature}
+\indexfunc{get\_temp}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1148,10 +1158,10 @@ Return a \datatype{rotations} record containing the raw sensor values for the ro
 \end{itemize}
 
 \begin{lstlisting}
-function get_temperature(self : L3GD20H_record; error : out err_code)
+function get_temp(self : L3GD20H_record; error : out err_code)
    return BBS.units.temp_c;
 \end{lstlisting}
-\indexfunc{get\_temperature}
+\indexfunc{get\_temp}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
@@ -1427,10 +1437,10 @@ Checks if the sensor has data ready.
 \end{itemize}
 
 \begin{lstlisting}
-function get_temperature(self : LSM303DLHC_record; error : out err_code)
+function get_temp(self : LSM303DLHC_record; error : out err_code)
    return integer;
 \end{lstlisting}
-\indexfunc{get\_temperature}
+\indexfunc{get\_temp}
 Return the device temperature as an \datatype{Integer} in units of $\frac{1}{8}$\degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1439,10 +1449,10 @@ Return the device temperature as an \datatype{Integer} in units of $\frac{1}{8}$
 \end{itemize}
 
 \begin{lstlisting}
-function get_temperature(self : LSM303DLHC_record; error : out err_code)
+function get_temp(self : LSM303DLHC_record; error : out err_code)
    return float;
 \end{lstlisting}
-\indexfunc{get\_temperature}
+\indexfunc{get\_temp}
 Return the device temperature as a \datatype{Float} in units of 1\degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
@@ -1451,10 +1461,10 @@ Return the device temperature as a \datatype{Float} in units of 1\degree{}C.
 \end{itemize}
 
 \begin{lstlisting}
-function get_temperature(self : LSM303DLHC_record; error : out err_code)
+function get_temp(self : LSM303DLHC_record; error : out err_code)
    return BBS.units.temp_c;
 \end{lstlisting}
-\indexfunc{get\_temperature}
+\indexfunc{get\_temp}
 Return the device temperature in \degree{}C.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
