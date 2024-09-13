@@ -45,6 +45,7 @@ package BBS.embed.i2c.L3GD20H is
    --
    type fsd is (fs_245dps, fs_500dps, fs_2000dps);
    for fsd use (fs_245dps => 16#00#, fs_500dps => 16#10#, fs_2000dps => 16#20#);
+   for fsd'Size use 8;
    --
    ctrl5 : constant uint8 := 16#24#;
    ref : constant uint8 := 16#25#;
