@@ -794,6 +794,15 @@ Called to configure a BME280 device.  This needs to be called before the device 
 \end{itemize}
 
 \begin{lstlisting}
+function present(self : BME280_record) return Boolean;
+\end{lstlisting}
+\indexfunc{present}
+Check to see if configured device is present.  Returns \constant{True} if device is present or \constant{False} otherwise.  It does this by attempting to read the ID register and comparing the result to 16\#60\#.
+\begin{itemize}
+  \item Returns \constant{True} if 16\#60\# was successfully read from the ID register, and \constant{False} otherwise.
+\end{itemize}
+
+\begin{lstlisting}
 procedure start_conversion(self : BME280_record; error : out err_code);
 \end{lstlisting}
 \indexfunc{start\_conversion}
