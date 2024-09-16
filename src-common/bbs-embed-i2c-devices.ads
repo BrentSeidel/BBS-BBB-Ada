@@ -54,7 +54,9 @@ package BBS.embed.i2c.devices is
    addr_MCP23017_7 : constant addr7 := 16#26#;
    addr_MCP23017_8 : constant addr7 := 16#27#;
    --
-   --  The ADS1015 is a four channel, 12 bit ADC
+   --  The ADS1015 is a four channel, 12 bit ADC.  It has four possible
+   --  addresses.  The address the device responds to is selected by
+   --  connecting the address pin to one of four other pins.
    --
    addr_ADS1015_1 : constant addr7 := 16#48#;  --  GND
    addr_ADS1015_2 : constant addr7 := 16#49#;  --  Vdd

@@ -68,6 +68,20 @@ package BBS.embed.i2c.BME280 is
    dig_H5 : constant uint8 := 16#e6#; -- int12
    dig_H6 : constant uint8 := 16#e7#; -- uint8
    --
+   --  Filter types
+   --
+   type filter_type is (filt_off, filt_2, filt_4, filt_8, filt_16);
+   for filter_type use (filt_off => 0, filt_2 => 1, filt_4 => 2, filt_8 => 3,
+                        filt_16 => 4);
+   for filter_type'Size use 3;
+   --
+   --  Standby time type
+   --
+   type t_stby_type is (s_0_5, s_62_5, s_125, s_250, s_500, s_1000, s_10, s_20);
+   for t_stby_type use (s_0_5 => 0, s_62_5 => 1, s_125 => 2, s_250 => 3,
+                        s_500 => 4, s_1000 => 5, s_10 => 6, s_20 => 7);
+   for t_stby_type'Size use 3;
+   --
    -- Mode constants
    --
    mode_sleep  : constant uint8 := 2#000_000_00#;
@@ -217,5 +231,20 @@ private
       p_cal : uint32; -- LSB = Pa/256
       h_cal : uint32; -- LSB = %/1024
    end record;
-
+   --
+   --  Types for device registers
+   --
+   type BME_config is record
+      spi3w_en : boolean;
+      dummy    : boolean;
+      filter   : filter_type;
+      t_stby   : t_stby_type
+   end record;
+   for BME_config use record
+      spi3e_en at 0 range 0 .. 0;
+      dummy    at 0 range 1 .. 1;
+      filter   at 0 range 2 .. 4;
+      t_stby   at 0 range 5 .. 7;
+   end record;
+   for BME_config'Size use 8;
 end;

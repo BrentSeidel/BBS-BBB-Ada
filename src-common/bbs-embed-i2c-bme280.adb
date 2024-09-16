@@ -16,10 +16,16 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with Ada.Unchecked_Conversion;
 with BBS.embed.log;
 package body BBS.embed.i2c.BME280 is
    --
-   -- Object oriented interface
+   --  Unchecked conversions
+   --
+   function config_to_uint8 is new Ada.Unchecked_Conversion(source => BME_config,
+         target => uint8);
+   --
+   --  Configure the BME280 device object.
    --
    procedure configure(self : in out BME280_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
