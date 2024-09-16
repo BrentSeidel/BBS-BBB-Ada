@@ -24,6 +24,12 @@ package body BBS.embed.i2c.BME280 is
    --
    function config_to_uint8 is new Ada.Unchecked_Conversion(source => BME_config,
          target => uint8);
+   function ctrl_meas_to_uint8 is new Ada.Unchecked_Conversion(source => BME_ctrl_meas,
+         target => uint8);
+   function ctrl_hum_to_uint8 is new Ada.Unchecked_Conversion(source => BME_ctrl_hum,
+         target => uint8);
+   function uint8_to_status is new Ada.Unchecked_Conversion(source => uint8,
+         target => BME_status);
    --
    --  Configure the BME280 device object.
    --
@@ -43,77 +49,77 @@ package body BBS.embed.i2c.BME280 is
       --
 --      BBS.embed.log.info.put_line("BME280: Getting parameter T1");
       self.T1 := self.hw.readm2(self.address, dig_T1, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter T2");
       self.T2 := uint16_to_int16(self.hw.readm2(self.address, dig_T2, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter T3");
       self.T3 := uint16_to_int16(self.hw.readm2(self.address, dig_T3, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P1");
       self.P1 := self.hw.readm2(self.address, dig_P1, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P2");
       self.P2 := uint16_to_int16(self.hw.readm2(self.address, dig_P2, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P3");
       self.P3 := uint16_to_int16(self.hw.readm2(self.address, dig_P3, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P4");
       self.P4 := uint16_to_int16(self.hw.readm2(self.address, dig_P4, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P5");
       self.P5 := uint16_to_int16(self.hw.readm2(self.address, dig_P5, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P6");
       self.P6 := uint16_to_int16(self.hw.readm2(self.address, dig_P6, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P7");
       self.P7 := uint16_to_int16(self.hw.readm2(self.address, dig_P7, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P8");
       self.P8 := uint16_to_int16(self.hw.readm2(self.address, dig_P8, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter P9");
       self.P9 := uint16_to_int16(self.hw.readm2(self.address, dig_P9, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter H1");
       self.H1 := self.hw.read(self.address, dig_H1, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter H2");
       self.H2 := uint16_to_int16(self.hw.readm2(self.address, dig_H2, error));
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
 --      BBS.embed.log.info.put_line("BME280: Getting parameter H3");
       self.H3 := self.hw.read(self.address, dig_H3, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
       --
@@ -123,17 +129,17 @@ package body BBS.embed.i2c.BME280 is
       --
       BBS.embed.log.info.put_line("BME280: Getting parameter H4");
       temp_1 := self.hw.read(self.address, dig_H4, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
       BBS.embed.log.info.put_line("BME280: Getting parameter H4/H5");
       temp_2 := self.hw.read(self.address, dig_H45, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
       BBS.embed.log.info.put_line("BME280: Getting parameter H5");
       temp_3 := self.hw.read(self.address, dig_H5, error);
-      if error /= BBS.embed.i2c.none then
+      if error /= NONE then
          return;
       end if;
       temp_a := uint12(temp_1)*16 + uint12(temp_2 mod 16);
@@ -172,33 +178,49 @@ package body BBS.embed.i2c.BME280 is
       -- First put into sleep more so configuration can be set.  Oversampling
       -- is set to 1 for each parameter.
       --
-      self.hw.write(self.address, ctrl_meas, mode_sleep, error);
+      self.hw.write(self.address, ctrl_meas, ctrl_meas_to_uint8((BME_mode => sleep,
+                    osrs_p => over_0, osrs_t => over_0)), error);
       --
       -- Set humidity oversampling
       --
-      self.hw.write(self.address, ctrl_hum, hum_over_1, error);
+      self.hw.write(self.address, ctrl_hum, ctrl_hum_to_uint8((osrs_h => over_1)),
+                    error);
       --
       -- Temperature, pressure, and mode are in the same register so set them
       -- all at once.
       --
-      self.hw.write(self.address, ctrl_meas, temp_over_1 + press_over_1 +
-                        mode_force, error);
+      self.hw.write(self.address, ctrl_meas, ctrl_meas_to_uint8((BME_mode => force,
+                    osrs_p => over_1, osrs_t => over_1)), error);
+   end;
+   --
+   --  Check to see if configured device is present
+   --
+   function present(self : BME280_record) return Boolean is
+      err  : err_code;
+      temp : uint8;
+   begin
+      temp := self.hw.read(self.address, id, err);
+      if err /= NONE then
+         return False;
+      else
+         return temp = 16#60#;
+      end if;
    end;
    --
    procedure start_conversion(self : BME280_record; error : out err_code) is
    begin
-      self.hw.write(self.address, ctrl_meas, temp_over_1 + press_over_1 +
-                        mode_force, error);
+      self.hw.write(self.address, ctrl_meas, ctrl_meas_to_uint8((BME_mode => force,
+                    osrs_p => over_1, osrs_t => over_1)), error);
    end;
    --
    function data_ready(self : BME280_record;
                        error : out err_code) return boolean is
-      byte : uint8;
-      err : err_code;
+      stat : BME_status;
+      err  : err_code;
    begin
-      byte := self.hw.read(self.address, status, err);
+      stat := uint8_to_status(self.hw.read(self.address, status, err));
       error := err;
-      if ((byte and stat_measuring) /= stat_measuring) and (err = none) then
+      if not stat.measuring and (err = NONE) then
          return true;
       else
          return false;
@@ -290,9 +312,9 @@ package body BBS.embed.i2c.BME280 is
    procedure get_raw(self : BME280_record; raw_temp : out uint32;
                      raw_press : out uint32; raw_hum : out uint32) is
    begin
-      raw_temp := self.raw_temp;
+      raw_temp  := self.raw_temp;
       raw_press := self.raw_press;
-      raw_hum := self.raw_hum;
+      raw_hum   := self.raw_hum;
    end;
    --
    function get_t_fine(self : BME280_record) return int32 is

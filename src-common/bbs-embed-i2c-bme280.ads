@@ -32,110 +32,18 @@ use type BBS.units.press_p;
 --
 package BBS.embed.i2c.BME280 is
    --
-   -- Addresses for the BME280 pressure and temperature sensor
-   --
-   addr : constant addr7 := 16#77#; -- Device address on I2C bus
-   data_start : constant uint8 := 16#f7#;
-   up : constant uint8 := 16#f7#; -- uncomponsated pressure (msb, lsb, xlsb)
-   ut : constant uint8 := 16#fa#; -- uncomponsated temperature (msb, lsb, xlsb)
-   uh : constant uint8 := 16#fd#; -- uncomponsated humidity (msb, lsb)
-   ctrl_hum : constant uint8 := 16#f2#;
-   status : constant uint8 := 16#f3#;
-   ctrl_meas : constant uint8 := 16#f4#;
-   config : constant uint8 := 16#f5#;
-   reset : constant uint8 := 16#e0#;
-   id : constant uint8 := 16#d0#;
-   dig_T1 : constant uint8 := 16#88#; -- uint16
-   dig_T2 : constant uint8 := 16#8a#; -- int16
-   dig_T3 : constant uint8 := 16#8d#; -- int16
-   dig_P1 : constant uint8 := 16#8e#; -- uint16
-   dig_P2 : constant uint8 := 16#90#; -- int16
-   dig_P3 : constant uint8 := 16#92#; -- int16
-   dig_P4 : constant uint8 := 16#94#; -- int16
-   dig_P5 : constant uint8 := 16#96#; -- int16
-   dig_P6 : constant uint8 := 16#98#; -- int16
-   dig_P7 : constant uint8 := 16#9c#; -- int16
-   dig_P8 : constant uint8 := 16#9e#; -- int16
-   dig_P9 : constant uint8 := 16#9f#; -- int16
-   dig_H1 : constant uint8 := 16#a1#; -- uint8
-   dig_H2 : constant uint8 := 16#e1#; -- int16
-   dig_H3 : constant uint8 := 16#e3#; -- uint8
---
--- Note that H4 and H5 are actually 12 bit integers packed into 3 bytes.
---
-   dig_H4 : constant uint8 := 16#e4#; -- int12
-   dig_H45 : constant uint8 := 16#e5#; -- uint8
-   dig_H5 : constant uint8 := 16#e6#; -- int12
-   dig_H6 : constant uint8 := 16#e7#; -- uint8
-   --
-   --  Filter types
-   --
-   type filter_type is (filt_off, filt_2, filt_4, filt_8, filt_16);
-   for filter_type use (filt_off => 0, filt_2 => 1, filt_4 => 2, filt_8 => 3,
-                        filt_16 => 4);
-   for filter_type'Size use 3;
-   --
-   --  Standby time type
-   --
-   type t_stby_type is (s_0_5, s_62_5, s_125, s_250, s_500, s_1000, s_10, s_20);
-   for t_stby_type use (s_0_5 => 0, s_62_5 => 1, s_125 => 2, s_250 => 3,
-                        s_500 => 4, s_1000 => 5, s_10 => 6, s_20 => 7);
-   for t_stby_type'Size use 3;
-   --
-   -- Mode constants
-   --
-   mode_sleep  : constant uint8 := 2#000_000_00#;
-   mode_force  : constant uint8 := 2#000_000_10#; -- 2#01# also works
-   mode_normal : constant uint8 := 2#000_000_11#;
-   --
-   -- Oversampling constants
-   -- Humidity
-   --
-   hum_over_0  : constant uint8 := 2#000#; -- datasheet says skipped
-   hum_over_1  : constant uint8 := 2#001#;
-   hum_over_2  : constant uint8 := 2#010#;
-   hum_over_4  : constant uint8 := 2#011#;
-   hum_over_8  : constant uint8 := 2#100#;
-   hum_over_16 : constant uint8 := 2#101#; -- apparently the other values work as well
-   --
-   -- Pressure
-   --
-   press_over_0  : constant uint8 := 2#000_000_00#; -- skipped
-   press_over_1  : constant uint8 := 2#001_000_00#;
-   press_over_2  : constant uint8 := 2#010_000_00#;
-   press_over_4  : constant uint8 := 2#011_000_00#;
-   press_over_8  : constant uint8 := 2#100_000_00#;
-   press_over_16 : constant uint8 := 2#101_000_00#;
-   --
-   -- Temperature
-   --
-   temp_over_0  : constant uint8 := 2#000_000_00#; -- skipped
-   temp_over_1  : constant uint8 := 2#000_001_00#;
-   temp_over_2  : constant uint8 := 2#000_010_00#;
-   temp_over_4  : constant uint8 := 2#000_011_00#;
-   temp_over_8  : constant uint8 := 2#000_100_00#;
-   temp_over_16 : constant uint8 := 2#000_101_00#;
-   --
-   -- Status bits
-   --
-   stat_measuring : constant uint8 := 2#0000_1000#;
-   stat_im_update : constant uint8 := 2#0000_0001#;
-   --
-   --
-   -- Stuff for object oriented interface.  A non-object oriented interface
-   -- is not provided for this device.  If you need one, it should be fairly
-   -- easy to write one.
-   --
    type BME280_record is new i2c_device_record with private;
    type BME280_ptr is access BME280_record;
-   --
---   function i2c_new return BME280_ptr;
    --
    -- The configure procedure needs to be called first to initialize the
    -- calibration constants from the device.
    --
    procedure configure(self : in out BME280_record; port : i2c_interface;
                        addr : addr7; error : out err_code);
+   --
+   --  Check to see if configured device is present
+   --
+   function present(self : BME280_record) return Boolean;
    --
    -- Starts the BME280 converting data.  Temperature, pressure, and humidity
    -- are converted at the same time.
@@ -197,6 +105,72 @@ package BBS.embed.i2c.BME280 is
    function get_hum(self : BME280_record) return float;
    --
 private
+   --
+   -- Addresses for the BME280 pressure and temperature sensor
+   --
+   addr : constant addr7 := 16#77#; -- Device address on I2C bus
+   data_start : constant uint8 := 16#f7#;
+   up : constant uint8 := 16#f7#; -- uncomponsated pressure (msb, lsb, xlsb)
+   ut : constant uint8 := 16#fa#; -- uncomponsated temperature (msb, lsb, xlsb)
+   uh : constant uint8 := 16#fd#; -- uncomponsated humidity (msb, lsb)
+   ctrl_hum : constant uint8 := 16#f2#;
+   status : constant uint8 := 16#f3#;
+   ctrl_meas : constant uint8 := 16#f4#;
+   config : constant uint8 := 16#f5#;
+   reset : constant uint8 := 16#e0#;
+   id : constant uint8 := 16#d0#;
+   dig_T1 : constant uint8 := 16#88#; -- uint16
+   dig_T2 : constant uint8 := 16#8a#; -- int16
+   dig_T3 : constant uint8 := 16#8d#; -- int16
+   dig_P1 : constant uint8 := 16#8e#; -- uint16
+   dig_P2 : constant uint8 := 16#90#; -- int16
+   dig_P3 : constant uint8 := 16#92#; -- int16
+   dig_P4 : constant uint8 := 16#94#; -- int16
+   dig_P5 : constant uint8 := 16#96#; -- int16
+   dig_P6 : constant uint8 := 16#98#; -- int16
+   dig_P7 : constant uint8 := 16#9c#; -- int16
+   dig_P8 : constant uint8 := 16#9e#; -- int16
+   dig_P9 : constant uint8 := 16#9f#; -- int16
+   dig_H1 : constant uint8 := 16#a1#; -- uint8
+   dig_H2 : constant uint8 := 16#e1#; -- int16
+   dig_H3 : constant uint8 := 16#e3#; -- uint8
+   --
+   -- Note that H4 and H5 are actually 12 bit integers packed into 3 bytes.
+   --
+   dig_H4 : constant uint8 := 16#e4#; -- int12
+   dig_H45 : constant uint8 := 16#e5#; -- uint8
+   dig_H5 : constant uint8 := 16#e6#; -- int12
+   dig_H6 : constant uint8 := 16#e7#; -- uint8
+   --
+   --  Filter types
+   --
+   type filter_type is (filt_off, filt_2, filt_4, filt_8, filt_16);
+   for filter_type use (filt_off => 0, filt_2 => 1, filt_4 => 2, filt_8 => 3,
+                        filt_16 => 4);
+   for filter_type'Size use 3;
+   --
+   --  Standby time type
+   --
+   type t_stby_type is (s_0_5, s_62_5, s_125, s_250, s_500, s_1000, s_10, s_20);
+   for t_stby_type use (s_0_5 => 0, s_62_5 => 1, s_125 => 2, s_250 => 3,
+                        s_500 => 4, s_1000 => 5, s_10 => 6, s_20 => 7);
+   for t_stby_type'Size use 3;
+   --
+   -- Mode constants
+   --
+   type mode is (sleep, force, normal);
+   for mode use (sleep => 0, force => 2, normal => 3);
+   for mode'Size use 2;
+   --
+   -- Oversampling constants
+   --
+   type over_sample is (over_0, over_1, over_2, over_4, over_8, over_16);
+   for over_sample use (over_0 => 0, over_1 => 1, over_2 => 2, over_4 => 3,
+                        over_8 => 4, over_16 => 5);
+   for over_sample'Size use 3;
+   --
+   --  Set to True to print debugging data.
+   --
    debug : Boolean := False;
    --
    type BME280_record is new i2c_device_record with record
@@ -235,10 +209,10 @@ private
    --  Types for device registers
    --
    type BME_config is record
-      spi3w_en : boolean;
+      spi3e_en : boolean;
       dummy    : boolean;
       filter   : filter_type;
-      t_stby   : t_stby_type
+      t_stby   : t_stby_type;
    end record;
    for BME_config use record
       spi3e_en at 0 range 0 .. 0;
@@ -247,4 +221,46 @@ private
       t_stby   at 0 range 5 .. 7;
    end record;
    for BME_config'Size use 8;
+   --
+   type BME_ctrl_meas is record
+      BME_mode : mode;
+      osrs_p   : over_sample;
+      osrs_t   : over_sample;
+   end record;
+   for BME_ctrl_meas use record
+      BME_mode at 0 range 0 .. 1;
+      osrs_p   at 0 range 2 .. 4;
+      osrs_t   at 0 range 5 .. 7;
+   end record;
+   for BME_ctrl_meas'Size use 8;
+   --
+   type BME_ctrl_hum is record
+      osrs_h : over_sample;
+   end record;
+   for BME_ctrl_hum use record
+      osrs_h at 0 range 0 .. 2;
+   end record;
+   for BME_ctrl_hum'Size use 8;
+   --
+   type BME_status is record
+      measuring : Boolean;
+      dummy0    : Boolean;
+      dummy1    : Boolean;
+      im_update : Boolean;
+      dummy2    : Boolean;
+      dummy3    : Boolean;
+      dummy4    : Boolean;
+      dummy5    : Boolean;
+   end record;
+   for BME_status use record
+      measuring at 0 range 0 .. 0;
+      dummy0    at 0 range 1 .. 1;
+      dummy1    at 0 range 2 .. 2;
+      im_update at 0 range 3 .. 3;
+      dummy2    at 0 range 4 .. 4;
+      dummy3    at 0 range 5 .. 5;
+      dummy4    at 0 range 6 .. 6;
+      dummy5    at 0 range 7 .. 7;
+   end record;
+   for BME_status'Size use 8;
 end;
