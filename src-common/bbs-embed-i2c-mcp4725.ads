@@ -23,38 +23,62 @@
 --  at a little over 800Hz.
 --
 package BBS.embed.i2c.MCP4725 is
---
---  MCP4725 data
---
---  Commands (3 bits)
---  0 - Fast write
---  1 - Fast write
---  2 - Write Command for DAC Input
---  3 - Write Command for DAC Input and EEPROM Write
---  4 - <Reserved>
---  5 - <Reserved>
---  6 - <Reserved>
---  7 - <Reserved>
---
---  Note that the Fast Write command only requires two bytes to be sent
---  to the DAC.  The other commands require three bytes.
---
-   type CMD_type is new Integer range 0 .. 7;
-   Fast_Write   : constant CMD_type := 0;
-   Write_CMD    : constant CMD_type := 2;
-   Write_EEPROM : constant CMD_type := 3;
---
---  Power-Down select
---  0 - Normal Mode
---  1 - 1k resistance to ground
---  2 - 100k resistance to ground
---  3 - 500k resistance to ground
---
-   type Mode_type is new Integer range 0 .. 3;
-   PD_Normal : constant Mode_type := 0;
-   PD_1k     : constant Mode_type := 1;
-   PD_100k   : constant Mode_type := 2;
-   PD_500k   : constant Mode_type := 3;
+   --
+   --  MCP4725 data
+   --
+   --  Commands (3 bits)
+   --  0 - Fast write
+   --  1 - Fast write
+   --  2 - Write Command for DAC Input
+   --  3 - Write Command for DAC Input and EEPROM Write
+   --  4 - <Reserved>
+   --  5 - <Reserved>
+   --  6 - <Reserved>
+   --  7 - <Reserved>
+   --
+   --  Note that the Fast Write command only requires two bytes to be sent
+   --  to the DAC.  The other commands require three bytes.
+   --
+   type CMD_type is (Fast_Write, Write_CMD, Write_EEPROM);
+   for CMD_type use (Fast_Write => 0, Write_CMD => 2, Write_EEPROM => 3);
+   for CMD_type'Size use 3;
+--   type CMD_type is new Integer range 0 .. 7;
+--   Fast_Write   : constant CMD_type := 0;
+--   Write_CMD    : constant CMD_type := 2;
+--   Write_EEPROM : constant CMD_type := 3;
+   --
+   --  Power-Down select
+   --  0 - Normal Mode
+   --  1 - 1k resistance to ground
+   --  2 - 100k resistance to ground
+   --  3 - 500k resistance to ground
+   --
+   type Mode_type is (PD_Normal, PD_1k, PD_100k, PD_500k);
+   for Mode_type use (PD_Normal => 0, PD_1k => 1, PD_100k => 2, PD_500k => 3);
+   for Mode_type'Size use 2;
+--   type Mode_type is new Integer range 0 .. 3;
+--   PD_Normal : constant Mode_type := 0;
+--   PD_1k     : constant Mode_type := 1;
+--   PD_100k   : constant Mode_type := 2;
+--   PD_500k   : constant Mode_type := 3;
+   --
+   --  Command byte
+   --
+   type cmd_byte is record
+      unused0 : Boolean := False;
+      mode    : Mode_type;
+      unused3 : Boolean := False;
+      unused4 : Boolean := False;
+      cmd     : CMD_type;
+   end record;
+   for cmd_byte use record
+      unused0 at 0 range 0 .. 0;
+      mode    at 0 range 1 .. 2;
+      unused3 at 0 range 3 .. 3;
+      unused4 at 0 range 4 .. 4;
+      cmd     at 0 range 5 .. 7;
+   end record;
+   for cmd_byte'Size use 8;
    --
    -- Define object.
    --
