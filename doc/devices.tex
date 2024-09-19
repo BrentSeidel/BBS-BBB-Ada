@@ -970,7 +970,7 @@ This is a driver for the Bosch BMP180 temperature and pressure sensor that attac
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Conversion Kind \\
+    Enumeration & Conversion Kind \\
     \hline
     \constant{cvt\_temp} & Convert Temperature \\
     \constant{cvt\_press0} & Convert pressure with no oversampling \\
@@ -978,8 +978,9 @@ This is a driver for the Bosch BMP180 temperature and pressure sensor that attac
     \constant{cvt\_press2} & Convert pressure with oversampling of four  \\
     \constant{cvt\_press3} & Convert pressure with oversampling of eight  \\
   \end{tabular}
-  \caption{Constants for BMP180 Conversion Kinds}
+  \caption{Enumerations for BMP180 Conversion Kinds, Datatype \datatype{cvt\_type}}
   \label{tbl:BMP180Conv}
+  \indextype{cvt\_type}
 \end{center}
 \end{table}
 
@@ -1112,6 +1113,21 @@ This is a driver for the STMicrosystems L3GD20H three-axis digital output gyrosc
 \end{center}
 \end{table}
 
+\begin{table}[!h]
+\begin{center}
+  \begin{tabular}{l|l}
+    Enumeration & Status \\
+    \hline
+    \constant{fs\_245dpsr} & Full-Scale deflection is  245\degree{}/S\\
+    \constant{fs\_500dps} & Full-Scale deflection is  500\degree{}/S \\
+    \constant{fs\_2000dpsr} & Full-Scale deflection is  2000\degree{}/S \\
+  \end{tabular}
+  \caption{Enumerations for L3GD20H Full-Scale Deflection}
+  \label{tbl:L3GD20HDef}
+  \indextype{fsd}
+\end{center}
+\end{table}
+
 \begin{lstlisting}
 type rotations is
    record
@@ -1131,14 +1147,8 @@ type rotations_dps is
       z : BBS.units.rot_d_s;
    end record;
 \end{lstlisting}
-The datatype \datatype{rotations\_dps} is a record that holds the rotation values in degrees per second from the X, Y, and Z sensors.
 \indextype{rotations\_dps}
-
-\begin{lstlisting}
-type fsd is (fs_245dps, fs_500dps, fs_2000dps);
-\end{lstlisting}
-\indextype{fsd}
-The datatype \datatype{fsd} is used to select the maximum rotation. The possible values are 245\degree{}/S, 500\degree{}/S, and 2000\degree{}/S.
+The datatype \datatype{rotations\_dps} is a record that holds the rotation values in degrees per second from the X, Y, and Z sensors.
 
 \begin{lstlisting}
 procedure configure(self : in out L3GD20H_record; port : i2c_interface;
@@ -1614,29 +1624,31 @@ This is a driver for the Microchip MCP4725 digital to analog convertor that atta
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Command \\
+    Enumeration & Command \\
     \hline
     \constant{Fast\_Write} & Fast write. \\
     \constant{Write\_CMD} & Write CMD. \\
     \constant{Write\_EEPROM} & Write EEPROM. \\
   \end{tabular}
-  \caption{Constants for MCP4725 Commands}
+  \caption{Enumerations for MCP4725 Commands, Datatype \datatype{CMD\_type}}
   \label{tbl:MCP4725cmd}
+  \indextype{CMD\_type}
 \end{center}
 \end{table}
 
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Power-Down Mode \\
+    Enumeration & Power-Down Mode \\
     \hline
     \constant{PD\_Normal} & Normal mode. \\
     \constant{PD\_1k} & 1k$\Omega$ to ground. \\
     \constant{PD\_100k} & 100k$\Omega$ to ground. \\
     \constant{PD\_500k} & 500k$\Omega$ to ground. \\
   \end{tabular}
-  \caption{Constants for MCP4725 Power-Down Modes}
+  \caption{Enumerations for MCP4725 Power-Down Modes, Datatype \datatype{Mode\_type}}
   \label{tbl:MCP4725pdm}
+  \indextype{Mode\_type}
 \end{center}
 \end{table}
 

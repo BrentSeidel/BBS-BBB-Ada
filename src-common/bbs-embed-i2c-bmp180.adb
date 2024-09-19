@@ -16,8 +16,16 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with Ada.Unchecked_Conversion;
 with BBS.embed.log;
 package body BBS.embed.i2c.BMP180 is
+   --
+   --  Unchecked conversions for configuration
+   --
+   function cvt_to_uint8 is new Ada.Unchecked_Conversion
+      (source => cvt_type, Target => uint8);
+   function uint8_to_ctrl is new Ada.Unchecked_Conversion
+      (source => uint8, Target => ctrl_meas_type);
    --
    procedure configure(self : in out BMP180_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
@@ -44,22 +52,22 @@ package body BBS.embed.i2c.BMP180 is
    end;
    --
    procedure start_conversion(self : in out BMP180_record;
-                              kind : uint8; error : out err_code) is
+                              kind : cvt_type; error : out err_code) is
    begin
 --      BBS.embed.log.info.put_line("BMP180 Info: Starting Conversion.");
-      self.hw.write(self.address, ctrl, kind, error);
+      self.hw.write(self.address, ctrl, cvt_to_uint8(kind), error);
       self.last_cvt := kind;
    end;
    --
    function data_ready(self : BMP180_record;
                        error : out err_code) return boolean is
-      byte : uint8;
+      byte : ctrl_meas_type;
       err : err_code;
    begin
 --      BBS.embed.log.info.put_line("BMP180 Info: Checking for data ready.");
-      byte := self.hw.read(self.address, ctrl, err);
+      byte := uint8_to_ctrl(self.hw.read(self.address, ctrl, err));
       error := err;
-      if ((byte and start_cvt) /= start_cvt) and (err = none) then
+      if (not byte.sco) and (err = none) then
          return true;
       else
          return false;
@@ -118,7 +126,7 @@ package body BBS.embed.i2c.BMP180 is
       msb_value : uint8;
       lsb_value : uint8;
       xlsb_value : uint8;
-      oss : uint8;
+      oss : uint2;
       oss_2 : integer;
       press : integer;
       b6a : integer;
@@ -138,7 +146,12 @@ package body BBS.embed.i2c.BMP180 is
       lsb_value := self.hw.read(self.address, lsb, error);
       xlsb_value := self.hw.read(self.address, xlsb, error);
       press := uint32_to_int(uint32(msb_value) * 65536 + uint32(lsb_value) * 256 + uint32(xlsb_value));
-      oss := (self.last_cvt / 64) and 3;
+      --
+      --  This gets the upper two bits of the command which represent
+      --  the oversampling count.  This is used in the pressure calibration
+      --  calculations.
+      --
+      oss := uint8_to_ctrl(cvt_to_uint8(self.last_cvt)).oss;
       case oss is
       when 0 =>
          press := press / 2 ** 8;

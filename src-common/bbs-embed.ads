@@ -28,9 +28,13 @@ package BBS.embed is
 
    --
    --  Define some types for use here. (types for 8, 16, 32, and 64 bits
-   --  are defined in the root package (BBS)).
+   --  are defined in the root package (BBS)).  Add more here as needed.
    --
-   type addr7 is mod 2**7
+   type uint2 is mod 2**2
+      with size => 2;
+   type uint5 is mod 2**5
+      with size => 5;
+   type addr7 is mod 2**7  --  7 bit I2C address
      with size => 7;
    type int12 is range -(2**11) .. 2**11 - 1
      with size => 12;
