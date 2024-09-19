@@ -32,14 +32,7 @@ with BBS.units;
 --
 package BBS.embed.i2c.L3GD20H is
    --
-   -- Addresses for L3GD20H - gyroscope
-   --
-   addr : constant addr7 := 16#6b#;
-   who_am_i : constant uint8 := 16#0f#;
-   ctrl1 : constant uint8 := 16#20#;
-   ctrl2 : constant uint8 := 16#21#;
-   ctrl3 : constant uint8 := 16#22#;
-   ctrl4 : constant uint8 := 16#23#;
+   -- Define some datatypes
    --
    -- Full scale selection
    --
@@ -47,41 +40,29 @@ package BBS.embed.i2c.L3GD20H is
    for fsd use (fs_245dps => 16#00#, fs_500dps => 16#10#, fs_2000dps => 16#20#);
    for fsd'Size use 8;
    --
-   ctrl5 : constant uint8 := 16#24#;
-   ref : constant uint8 := 16#25#;
-   out_temp : constant uint8 := 16#26#;
-   status : constant uint8 := 16#27#;
-   --
    -- Status bits
-   zyx_or : constant uint8 := 16#80#; -- Underscore inserted because xor is a
-   z_or : constant uint8 := 16#40#;   -- reserved word.
-   y_or : constant uint8 := 16#20#;
-   x_or : constant uint8 := 16#10#;
-   zyxda : constant uint8 := 16#08#;
-   zda : constant uint8 := 16#04#;
-   yda : constant uint8 := 16#02#;
-   xda : constant uint8 := 16#01#;
    --
-   out_x_l : constant uint8 := 16#28#;
-   out_x_h : constant uint8 := 16#29#;
-   out_y_l : constant uint8 := 16#2a#;
-   out_y_h : constant uint8 := 16#2b#;
-   out_z_l : constant uint8 := 16#2c#;
-   out_z_h : constant uint8 := 16#2d#;
-   fifo_ctrl : constant uint8 := 16#2e#;
-   fifo_src : constant uint8 := 16#2f#;
-   ig_cfg : constant uint8 := 16#30#;
-   ig_src : constant uint8 := 16#31#;
-   ig_ths_xh : constant uint8 := 16#32#;
-   ig_ths_xl : constant uint8 := 16#33#;
-   ig_ths_yh : constant uint8 := 16#34#;
-   ig_ths_yl : constant uint8 := 16#35#;
-   ig_ths_zh : constant uint8 := 16#36#;
-   ig_ths_zl : constant uint8 := 16#37#;
-   ig_duration : constant uint8 := 16#38#;
-   low_odr : constant uint8 := 16#39#;
-   --
-   -- Define some datatypes
+   type status_type is record
+      xda   : Boolean;
+      yda   : Boolean;
+      zda   : Boolean;
+      zyxda : Boolean;
+      x_or  : Boolean;
+      y_or  : Boolean;
+      z_or  : Boolean;
+      zyxor : Boolean;
+   end record;
+   for status_type use record
+      xda   at 0 range 0 .. 0;
+      yda   at 0 range 1 .. 1;
+      zda   at 0 range 2 .. 2;
+      zyxda at 0 range 3 .. 3;
+      x_or  at 0 range 4 .. 4;
+      y_or  at 0 range 5 .. 5;
+      z_or  at 0 range 6 .. 6;
+      zyxor at 0 range 7 .. 7;
+   end record;
+   for status_type'Size use 8;
    --
    -- Record to hold all three rotation values in sensor values
    --
@@ -113,7 +94,7 @@ package BBS.embed.i2c.L3GD20H is
    --
    --  Check to see if the configured device is present.
    --
-   function present(port : i2c_interface) return boolean;
+   function present(self : in out L3GD20H_record) return boolean;
    --
    function get_temp(self : L3GD20H_record; error : out err_code) return integer;
    function get_rotation_x(self : L3GD20H_record; error : out err_code) return integer;
@@ -127,7 +108,7 @@ package BBS.embed.i2c.L3GD20H is
    function get_rotation_z(self : L3GD20H_record; error : out err_code) return BBS.units.rot_d_s;
    function get_rotations(self : L3GD20H_record; error : out err_code) return rotations_dps;
    --
-   function get_status(self : L3GD20H_record; error : out err_code) return uint8;
+   function get_status(self : L3GD20H_record; error : out err_code) return status_type;
    function data_ready(self : L3GD20H_record; error : out err_code) return boolean;
    --
    -- When stationary, the sensors may not report 0.  This function should be
@@ -141,6 +122,36 @@ package BBS.embed.i2c.L3GD20H is
    function measure_offsets(self : in out L3GD20H_record) return boolean;
    --
 private
+   --
+   -- Addresses for L3GD20H - gyroscope
+   --
+   who_am_i    : constant uint8 := 16#0f#;
+   ctrl1       : constant uint8 := 16#20#;
+   ctrl2       : constant uint8 := 16#21#;
+   ctrl3       : constant uint8 := 16#22#;
+   ctrl4       : constant uint8 := 16#23#;
+   ctrl5       : constant uint8 := 16#24#;
+   ref         : constant uint8 := 16#25#;
+   out_temp    : constant uint8 := 16#26#;
+   status      : constant uint8 := 16#27#;
+   out_x_l     : constant uint8 := 16#28#;
+   out_x_h     : constant uint8 := 16#29#;
+   out_y_l     : constant uint8 := 16#2a#;
+   out_y_h     : constant uint8 := 16#2b#;
+   out_z_l     : constant uint8 := 16#2c#;
+   out_z_h     : constant uint8 := 16#2d#;
+   fifo_ctrl   : constant uint8 := 16#2e#;
+   fifo_src    : constant uint8 := 16#2f#;
+   ig_cfg      : constant uint8 := 16#30#;
+   ig_src      : constant uint8 := 16#31#;
+   ig_ths_xh   : constant uint8 := 16#32#;
+   ig_ths_xl   : constant uint8 := 16#33#;
+   ig_ths_yh   : constant uint8 := 16#34#;
+   ig_ths_yl   : constant uint8 := 16#35#;
+   ig_ths_zh   : constant uint8 := 16#36#;
+   ig_ths_zl   : constant uint8 := 16#37#;
+   ig_duration : constant uint8 := 16#38#;
+   low_odr     : constant uint8 := 16#39#;
    --
    -- The temperature offset is emperically determined and seems to work for my
    -- application.  You may want to check the values that you get from the

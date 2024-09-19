@@ -222,6 +222,10 @@ The common library (\package{bbs\_embed\_common} in alire) contains base classes
 \section{Basic Devices}
 The package \package{BBS.embed} defines the following types and functions:
 \begin{lstlisting}
+type uint2 is mod 2**2
+   with size => 2;
+type uint5 is mod 2**5
+   with size => 5;
 type addr7 is mod 2**7
   with size => 7;
 type int12 is range -(2**11) .. 2**11 - 1
@@ -229,6 +233,8 @@ type int12 is range -(2**11) .. 2**11 - 1
 type uint12 is mod 2**12
   with size => 12;
 \end{lstlisting}
+\indextype{int2}
+\indextype{int5}
 \indextype{addr7}
 \indextype{int12}
 \indextype{uint12}
@@ -1094,24 +1100,6 @@ Returns that pressure in units of Pa, mB, Atm, or inHg, depending on the datatyp
 \subsection{\package{BBS.embed.i2c.L3GD20H}}
 This is a driver for the STMicrosystems L3GD20H three-axis digital output gyroscope \cite{L3GD20}.  This device has a number of operating modes that have not been implemented in this driver.  A number of constants are defined, but most of them are intended only for internal use.  The constant \constant{addr} is the I2C address of the L3GD20H sensor and is intended for use in the \function{configure} call.
 
-\begin{table}[!h]
-\begin{center}
-  \begin{tabular}{l|l}
-    Constant & Status \\
-    \hline
-    \constant{zyx\_or} & X,Y,Z axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{z\_or} & Z axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{y\_or} & Y axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{x\_or} & X axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{zyxda} & X,Y,Z axis new data available \\
-    \constant{zda} & Z axis new data available \\
-    \constant{yda} & Y axis new data available \\
-    \constant{xda} & X axis new data available \\
-  \end{tabular}
-  \caption{Constants for L3GD20H Status}
-  \label{tbl:L3GD20HStat}
-\end{center}
-\end{table}
 
 \begin{table}[!h]
 \begin{center}
@@ -1149,6 +1137,21 @@ type rotations_dps is
 \end{lstlisting}
 \indextype{rotations\_dps}
 The datatype \datatype{rotations\_dps} is a record that holds the rotation values in degrees per second from the X, Y, and Z sensors.
+
+\begin{lstlisting}
+type status_type is record
+   xda   : Boolean;
+   yda   : Boolean;
+   zda   : Boolean;
+   zyxda : Boolean;
+   x_or  : Boolean;
+   y_or  : Boolean;
+   z_or  : Boolean;
+   zyxor : Boolean;
+end record;
+\end{lstlisting}
+\indextype{status\_type}
+The datatype \datatype{status\_type} is a record that contains the status bits from the device status register.
 
 \begin{lstlisting}
 procedure configure(self : in out L3GD20H_record; port : i2c_interface;
@@ -1263,10 +1266,10 @@ Return a \datatype{otations\_dps} record containing the rotation in \degree{}/S 
 
 \begin{lstlisting}
 function get_status(self : L3GD20H_record; error : out err_code)
-   return uint8;
+   return status_type;
 \end{lstlisting}
 \indexfunc{get\_status}
-Return the device status.  The constants in Table \ref{tbl:L3GD20HStat} can be used to decode the status.
+Return the device status as \datatype{status\_type}.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
   \item $error$ - The error code from any I2C transactions.

@@ -24,6 +24,8 @@ package body BBS.embed.i2c.L3GD20H is
    --
    function fsd_to_uint8 is new Ada.Unchecked_Conversion(source => fsd,
          target => uint8);
+   function uint8_to_status is new Ada.Unchecked_Conversion(source => uint8,
+         target => status_type);
    --
    procedure configure(self : in out L3GD20H_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
@@ -69,11 +71,11 @@ package body BBS.embed.i2c.L3GD20H is
    --
    --  Check to see if the configured device is present.
    --
-   function present(port : i2c_interface) return boolean is
+   function present(self : in out L3GD20H_record) return boolean is
       err  : err_code;
       temp : uint8;
    begin
-      temp := port.read(addr, who_am_i, err);
+      temp := self.hw.read(self.address, who_am_i, err);
       if err /= NONE then
          return False;
       end if;
@@ -160,19 +162,19 @@ package body BBS.embed.i2c.L3GD20H is
    end;
    --
    function get_status(self : L3GD20H_record;
-                       error : out err_code) return uint8 is
+                       error : out err_code) return status_type is
    begin
-      return self.hw.read(self.address, status, error);
+      return uint8_to_status(self.hw.read(self.address, status, error));
    end;
    --
    function data_ready(self : L3GD20H_record;
                        error : out err_code) return boolean is
-      byte : uint8;
+      byte : status_type;
       err : err_code;
    begin
-      byte := self.hw.read(self.address, status, err);
+      byte := uint8_to_status(self.hw.read(self.address, status, err));
       error := err;
-      if ((byte and zyxda) = zyxda) and (err = none) then
+      if byte.zyxda and (err = none) then
          return true;
       else
          return false;
