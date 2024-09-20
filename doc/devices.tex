@@ -1273,7 +1273,7 @@ Return the device status as \datatype{status\_type}.
 \begin{itemize}
   \item $self$ - The L3GD20H device to read.
   \item $error$ - The error code from any I2C transactions.
-  \item Returns an \datatype{uint8} representing the device status.
+  \item Returns an \datatype{status\_type} representing the device status.
 \end{itemize}
 
 \begin{lstlisting}
@@ -1307,41 +1307,23 @@ This is a driver for the STMicrosystems LSM303DLHC three-axis digital output gyr
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Full-Scale Deflection \\
+    Enumeration & Full-Scale Deflection \\
     \hline
     \constant{fs\_2g} & Full scale is 2G (default) \\
     \constant{fs\_4g} & Full scale is 4G \\
     \constant{fs\_8g} & Full scale is 8G \\
     \constant{fs\_16gs} & Full scale is 16G \\
   \end{tabular}
-  \caption{Constants for LSM303DLHC Full-Scale Accelerometer}
+  \caption{Enumerations for LSM303DLHC Full-Scale Accelerometer, Datatype \datatype{accel\_fsd}}
   \label{tbl:LSM303DLHCafs}
+  \indextype{accel\_fsd}
 \end{center}
 \end{table}
 
 \begin{table}[!h]
 \begin{center}
   \begin{tabular}{l|l}
-    Constant & Status \\
-    \hline
-    \constant{accel\_stat\_zyxor} & X,Y,Z axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{accel\_stat\_zor} & Z axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{accel\_stat\_yor} & Y axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{accel\_stat\_xorr} & X axis data overrun - New data has overwritten previous data before it was read \\
-    \constant{accel\_stat\_zyxda} & X,Y,Z axis new data available \\
-    \constant{accel\_stat\_zda} & Z axis new data available \\
-    \constant{accel\_stat\_yda} & Y axis new data available \\
-    \constant{accel\_stat\_xda} & X axis new data available \\
-  \end{tabular}
-  \caption{Constants for LSM303DLHC Accelerometer Status}
-  \label{tbl:LSM303DLHCaStat}
-\end{center}
-\end{table}
-
-\begin{table}[!h]
-\begin{center}
-  \begin{tabular}{l|l}
-    Constant & Full-Scale Deflection \\
+    Enumeration & Full-Scale Deflection \\
     \hline
     \constant{fa\_1\_3\_gauss} & Full scale is 1.3 gauss \\
     \constant{fs\_1\_9\_gauss} & Full scale is 1.9 gauss \\
@@ -1351,30 +1333,70 @@ This is a driver for the STMicrosystems LSM303DLHC three-axis digital output gyr
     \constant{fs\_5\_6\_gauss} & Full scale is 5.6 gauss \\
     \constant{fs\_8\_1\_gauss} & Full scale is 8.1 gauss\\
   \end{tabular}
-  \caption{Constants for LSM303DLHC Full-Scale Magnetometer}
+  \caption{Enumerations for LSM303DLHC Full-Scale Magnetometer, Datatype \datatype{mag\_fsd}}
   \label{tbl:LSM303DLHCmfs}
+  \indextype{mag\_fsd}
 \end{center}
 \end{table}
 
-\begin{table}[!h]
-\begin{center}
-  \begin{tabular}{l|l}
-    Constant & Status \\
-    \hline
-    \constant{mag\_lock} & Data output register lock. \\
-    \constant{mag\_drdy} & Data ready \\
-  \end{tabular}
-  \caption{Constants for LSM303DLHC Magnetometer Status}
-  \label{tbl:LSM303DLHCmStat}
-\end{center}
-\end{table}
+The status for the accelerometer is returned as a \datatype{accel\_status\_type} record.
+\begin{lstlisting}
+type accel_status_type is record
+   xda   : Boolean;
+   yda   : Boolean;
+   zda   : Boolean;
+   zyxda : Boolean;
+   x_or  : Boolean;
+   y_or  : Boolean;
+   z_or  : Boolean;
+   zyxor : Boolean;
+end record;
+\end{lstlisting}
+\indextype{accel\_status\_type}
 
 Two utility datatypes are defined for holding accelerations.  The first,  \datatype{accelerations} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw acceleration values from the sensor.  The second, \datatype{accelerations\_g} is similar, but the components are all of type \datatype{BBS.units.accel\_g} for acceleration in units on 1 earth gravity.
+\begin{lstlisting}
+type accelerations is record
+   x : integer;
+   y : integer;
+   z : integer;
+end record;
+\end{lstlisting}
 \indextype{accelerations}
+\begin{lstlisting}
+type accelerations_g is record
+   x : BBS.units.accel_g;
+   y : BBS.units.accel_g;
+   z : BBS.units.accel_g;
+end record;
+\end{lstlisting}
 \indextype{accelerations\_g}
 
+The status for the magnetometer is returned as a \datatype{mag\_status\_type} record.
+\begin{lstlisting}
+   type mag_status_type is record
+      drdy : Boolean;
+      lock : Boolean;
+   end record;
+\end{lstlisting}
+\indextype{mag\_status\_type}
+
 Two utility datatypes are defined for holding magnetic fields.  The first,  \datatype{magnetism} is a record with \datatype{x}, \datatype{y}, and \datatype{z} components all of \datatype{Integer} type holding the raw magnetometer values from the sensor.  The second, \datatype{magnetism\_gauss} is similar, but the components are all of type \datatype{BBS.units.mag\_g} for magnetism in units on 1 gauss.
+\begin{lstlisting}
+type magnetism is record
+   x : integer;
+   y : integer;
+   z : integer;
+end record;
+\end{lstlisting}
 \indextype{magnetism}
+\begin{lstlisting}
+type magnetism_gauss is record
+   x : BBS.units.mag_g;
+   y : BBS.units.mag_g;
+   z : BBS.units.mag_g;
+end record;
+\end{lstlisting}
 \indextype{magnetism\_gauss}
 
 \begin{lstlisting}
@@ -1482,11 +1504,11 @@ function get_accel_status(self : LSM303DLHC_record; error : out err_code)
    return uint8;
 \end{lstlisting}
 \indexfunc{get\_accel\_status}
-Return the accelerometer status.  The constants in Table \ref{tbl:LSM303DLHCaStat} can be used to decode the status.
+Return the accelerometer status as a \datatype{accel\_status\_type}.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
   \item $error$ - The error code from any I2C transactions.
-  \item Returns an \datatype{uint8} representing the device status.
+  \item Returns an \datatype{accel\_status\_type} representing the device status.
 \end{itemize}
 
 \begin{lstlisting}
@@ -1602,11 +1624,11 @@ function get_mag_status(self : LSM303DLHC_record; error : out err_code)
    return uint8;
 \end{lstlisting}
 \indexfunc{get\_mag\_status}
-Return the magnetometer status.  The constants in Table \ref{tbl:LSM303DLHCmStat} can be used to decode the status.
+Return the magnetometer status as a \datatype{mag\_status\_type} record.
 \begin{itemize}
   \item $self$ - The LSM303DLHC device to read.
   \item $error$ - The error code from any I2C transactions.
-  \item Returns an \datatype{uint8} representing the device status.
+  \item Returns an \datatype{mag\_status\_type} representing the device status.
 \end{itemize}
 
 \begin{lstlisting}

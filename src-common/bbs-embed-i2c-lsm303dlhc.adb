@@ -16,8 +16,22 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Unchecked_Conversion;
 with BBS.embed.log;
 package body BBS.embed.i2c.LSM303DLHC is
+   package Math is new Ada.Numerics.Generic_Elementary_Functions(float);
+   --
+   --  Unchecked conversions to uint8 datatypes
+   --
+   function afsd_to_uint8 is new Ada.Unchecked_Conversion(source => accel_fsd,
+         target => uint8);
+   function mfsd_to_uint8 is new Ada.Unchecked_Conversion(source => mag_fsd,
+         target => uint8);
+   function uint8_to_astat is new Ada.Unchecked_Conversion(source => uint8,
+         target => accel_status_type);
+   function uint8_to_mstat is new Ada.Unchecked_Conversion(source => uint8,
+         target => mag_status_type);
    --
    procedure configure(self : in out LSM303DLHC_record; port : i2c_interface;
                        accel : addr7; mag : addr7; error : out err_code) is
@@ -33,13 +47,13 @@ package body BBS.embed.i2c.LSM303DLHC is
       self.hw.write(self.addr_mag, mag_cra, uint8(16#98#), error);
       --
       -- Full scale range is +/-1.3 gauss.
-      self.hw.write(self.addr_mag, mag_crb, fs_1_3_gauss, error);
+      self.hw.write(self.addr_mag, mag_crb, mfsd_to_uint8(fs_1_3_gauss), error);
       self.hw.write(self.addr_mag, mag_mr, uint8(16#00#), error);
    end;
    --
    procedure configure(self : in out LSM303DLHC_record;
                        port : i2c_interface; addr_accel : addr7; addr_mag : addr7;
-                       accel_fs : uint8; mag_fs : uint8; error : out err_code) is
+                       accel_fs : accel_fsd; mag_fs : mag_fsd; error : out err_code) is
    begin
       self.hw := port;
       self.addr_accel := addr_accel;
@@ -47,46 +61,46 @@ package body BBS.embed.i2c.LSM303DLHC is
       --
       case accel_fs is
          when fs_2g =>
-            accel_scale := 2.0 / 32768.0;
+            self.accel_scale := 2.0 / 32768.0;
          when fs_4g =>
-            accel_scale := 4.0 / 32768.0;
+            self.accel_scale := 4.0 / 32768.0;
          when fs_8g =>
-            accel_scale := 8.0 / 32768.0;
+            self.accel_scale := 8.0 / 32768.0;
          when fs_16g =>
-            accel_scale := 16.0 / 32768.0;
+            self.accel_scale := 16.0 / 32768.0;
          when others =>
             BBS.embed.log.error.Put_Line("Unknown value for LSM303DLHC accelerometer full scale deflection");
             raise Program_Error;
       end case;
       case mag_fs is
          when fs_1_3_gauss =>
-            mag_scale_xy := 1.0 / 1100.0;
-            mag_scale_z := 1.0 / 980.0;
+            self.mag_scale_xy := 1.0 / 1100.0;
+            self.mag_scale_z := 1.0 / 980.0;
          when fs_1_9_gauss =>
-            mag_scale_xy := 1.0 / 855.0;
-            mag_scale_z := 1.0 / 760.0;
+            self.mag_scale_xy := 1.0 / 855.0;
+            self.mag_scale_z := 1.0 / 760.0;
          when fs_2_5_gauss =>
-            mag_scale_xy := 1.0 / 670.0;
-            mag_scale_z := 1.0 / 600.0;
+            self.mag_scale_xy := 1.0 / 670.0;
+            self.mag_scale_z := 1.0 / 600.0;
          when fs_4_0_gauss =>
-            mag_scale_xy := 1.0 / 450.0;
-            mag_scale_z := 1.0 / 400.0;
+            self.mag_scale_xy := 1.0 / 450.0;
+            self.mag_scale_z := 1.0 / 400.0;
          when fs_4_7_gauss =>
-            mag_scale_xy := 1.0 / 400.0;
-            mag_scale_z := 1.0 / 355.0;
+            self.mag_scale_xy := 1.0 / 400.0;
+            self.mag_scale_z := 1.0 / 355.0;
          when fs_5_6_gauss =>
-            mag_scale_xy := 1.0 / 330.0;
-            mag_scale_z := 1.0 / 295.0;
+            self.mag_scale_xy := 1.0 / 330.0;
+            self.mag_scale_z := 1.0 / 295.0;
          when fs_8_1_gauss =>
-            mag_scale_xy := 1.0 / 230.0;
-            mag_scale_z := 1.0 / 205.0;
+            self.mag_scale_xy := 1.0 / 230.0;
+            self.mag_scale_z := 1.0 / 205.0;
          when others =>
             BBS.embed.log.error.Put_Line("Unknown value for LSM303DLHC magnetometer full scale deflection");
             raise Program_Error;
       end case;
       --
       -- Select accelerometer full scale range
-      self.hw.write(self.addr_accel, accel_ctrl4, accel_fs, error);
+      self.hw.write(self.addr_accel, accel_ctrl4, afsd_to_uint8(accel_fs), error);
       --
       -- 100Hz data rate, X, Y, Z, channels enabled.
       self.hw.write(self.addr_accel, accel_ctrl1, uint8(16#57#), error);
@@ -95,7 +109,7 @@ package body BBS.embed.i2c.LSM303DLHC is
       self.hw.write(self.addr_mag, mag_cra, uint8(16#98#), error);
       --
       -- Select magnetometer full scale range.
-      self.hw.write(self.addr_mag, mag_crb, mag_fs, error);
+      self.hw.write(self.addr_mag, mag_crb, mfsd_to_uint8(mag_fs), error);
       self.hw.write(self.addr_mag, mag_mr, uint8(16#00#), error);
    end;
    --
@@ -150,7 +164,6 @@ package body BBS.embed.i2c.LSM303DLHC is
       return accel;
    end;
    --
-   --
    function get_acceleration_x(self : LSM303DLHC_record;
                                error : out err_code) return BBS.units.accel_g is
       accel : integer := self.get_acceleration_x(error);
@@ -184,18 +197,18 @@ package body BBS.embed.i2c.LSM303DLHC is
    end;
    --
    function get_accel_status(self : LSM303DLHC_record;
-                             error : out err_code) return uint8 is
+                             error : out err_code) return accel_status_type is
    begin
-      return self.hw.read(addr_accel, accel_status, error);
+      return uint8_to_astat(self.hw.read(self.addr_accel, accel_status, error));
    end;
    --
    function accel_data_ready(self : LSM303DLHC_record;
                              error : out err_code) return boolean is
       err : err_code;
-      byte : uint8 := self.hw.read(addr_accel, accel_status, err);
+      byte : accel_status_type := uint8_to_astat(self.hw.read(self.addr_accel, accel_status, err));
    begin
       error := err;
-      if ((byte and accel_stat_zyxda) = accel_stat_zyxda) and (err = none) then
+      if byte.zyxda and (err = none) then
          return true;
       else
          return false;
@@ -204,7 +217,7 @@ package body BBS.embed.i2c.LSM303DLHC is
    --
    function get_temp(self : LSM303DLHC_record;
                      error : out err_code) return integer is
-      word : uint16 := self.hw.readm1(addr_mag, mag_temp_h, error);
+      word : uint16 := self.hw.readm1(self.addr_mag, mag_temp_h, error);
    begin
       return integer(uint16_to_int16(word)/16);
    end;
@@ -213,14 +226,14 @@ package body BBS.embed.i2c.LSM303DLHC is
                      error : out err_code) return float is
       temp : integer := self.get_temp(error);
    begin
-      return float(self.temp_offset + temp)/8.0;
+      return float(temp_offset + temp)/8.0;
    end;
    --
    function get_temp(self : LSM303DLHC_record;
                      error : out err_code) return BBS.units.temp_c is
       temp : integer := self.get_temp(error);
    begin
-      return BBS.units.temp_c(float(self.temp_offset + temp)/8.0);
+      return BBS.units.temp_c(float(temp_offset + temp)/8.0);
    end;
    --
    function get_magnet_x(self : LSM303DLHC_record;
@@ -288,18 +301,18 @@ package body BBS.embed.i2c.LSM303DLHC is
    end;
    --
    function get_mag_status(self : LSM303DLHC_record;
-                           error : out err_code) return uint8 is
+                           error : out err_code) return mag_status_type is
    begin
-      return self.hw.read(self.addr_mag, mag_sr, error);
+      return uint8_to_mstat(self.hw.read(self.addr_mag, mag_sr, error));
    end;
    --
    function mag_data_ready(self : LSM303DLHC_record;
                            error : out err_code) return boolean is
       err : err_code;
-      byte : uint8 := self.hw.read(self.addr_mag, mag_sr, err);
+      byte : mag_status_type := uint8_to_mstat(self.hw.read(self.addr_mag, mag_sr, err));
    begin
       error := err;
-      if ((byte and mag_drdy) = mag_drdy) and (err = none) then
+      if byte.drdy and (err = none) then
          return true;
       else
          return false;

@@ -20,7 +20,7 @@ with BBS.embed.log;
 with Ada.Unchecked_Conversion;
 package body BBS.embed.i2c.L3GD20H is
    --
-   --  Unchecked conversions to uint8 datatypes
+   --  Unchecked conversions
    --
    function fsd_to_uint8 is new Ada.Unchecked_Conversion(source => fsd,
          target => uint8);
