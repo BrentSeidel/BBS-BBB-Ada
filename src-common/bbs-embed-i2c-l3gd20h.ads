@@ -82,8 +82,6 @@ package BBS.embed.i2c.L3GD20H is
          z : BBS.units.rot_d_s;
       end record;
    --
-   -- Stuff for object oriented interface.
-   --
    type L3GD20H_record is new i2c_device_record with private;
    type L3GD20H_ptr is access L3GD20H_record;
    --

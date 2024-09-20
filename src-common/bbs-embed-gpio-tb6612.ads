@@ -22,10 +22,6 @@
 --
 package BBS.embed.gpio.tb6612 is
    --
-   -- Stuff for object oriented interface.  A non-object oriented interface
-   -- is not provided for this device.  If you need one, it should be fairly
-   -- easy to write one.
-   --
    type TB6612_record is tagged private;
    type TB6612_ptr is access TB6612_record;
 

@@ -110,8 +110,6 @@ package BBS.embed.i2c.LSM303DLHC is
       z : BBS.units.mag_g;
    end record;
    --
-   -- Definitions for object oriented interface.
-   --
    type LSM303DLHC_record is new i2c_device_record with private;
    type LSM303DLHC_ptr is access LSM303DLHC_record;
    --

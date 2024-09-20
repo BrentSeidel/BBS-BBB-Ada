@@ -20,6 +20,7 @@
 --  This package provides a list of device addresses for various know I2C devices.
 --
 package BBS.embed.i2c.devices is
+   pragma Preelaborate;
    --
    --  List of addresses for devices in separate packages.  These are listed
    --  here in address order to help check for duplicate addresses.

@@ -19,10 +19,6 @@
 with BBS.embed.i2c.devices;
 package body BBS.embed.i2c.MCP23017 is
    --
-   --
-   -- Object oriented interface
-   --
-   --
    --  Configure the device to work as a single 16 bit I/O port.  The default
    --  Power-on/Reset values should work.
    --
@@ -34,7 +30,8 @@ package body BBS.embed.i2c.MCP23017 is
       self.address := addr;
    end;
    --
-   --  Check to see if the configured device is present.
+   --  Check to see if the configured device is present.  Note that this
+   --  can't tell the difference between a MCP23008 and a MCP23017.
    --
    function present(port : i2c_interface;
                     addr : addr7) return boolean is
@@ -46,8 +43,8 @@ package body BBS.embed.i2c.MCP23017 is
       --  First check to see if address is in range, then check if a device
       --  responds at that address.
       --
-      if (addr < BBS.embed.i2c.devices.addr_MCP23008_1) or
-         (addr > BBS.embed.i2c.devices.addr_MCP23008_8) then
+      if (addr < BBS.embed.i2c.devices.addr_MCP23017_1) or
+         (addr > BBS.embed.i2c.devices.addr_MCP23017_8) then
          return False;
       end if;
       temp := port.read(addr, IOCON, err);

@@ -1733,6 +1733,17 @@ Called to configure the MCP23008 device.  This must be done before using the dev
 \end{itemize}
 
 \begin{lstlisting}
+function present(port : i2c_interface;
+                 addr : addr7) return boolean;
+\end{lstlisting}
+\indexfunc{present}
+Check to see if a MCP23008 (or MCP23017, the code can't distinguish between them) is present at the specified I2C address.  First it checks if the address is in the range for the MCP23017/MCP23008 and then if a read of one of the device registers completes successfully.
+\begin{itemize}
+  \item $port$ - The I2C bus object that the MCP23008 is connected to.
+  \item $addr$ - The I2C address of the device to check.
+\end{itemize}
+
+\begin{lstlisting}
 procedure set_dir(self : MCB23008_record; dir : uint8;
                   error : out err_code);
 \end{lstlisting}
@@ -1789,7 +1800,7 @@ function present(port : i2c_interface;
                  addr : addr7) return boolean;
 \end{lstlisting}
 \indexfunc{present}
-Check to see if a MCP23017 is present at the specified I2C address.  First it checks if the address is in the range for the MCP23017 and then if a read of one of the device registers completes successfully.
+Check to see if a MCP23017 (or MCP23008, the code can't distinguish between them) is present at the specified I2C address.  First it checks if the address is in the range for the MCP23017/MCP23008 and then if a read of one of the device registers completes successfully.
 \begin{itemize}
   \item $port$ - The I2C bus object that the MCP23017 is connected to.
   \item $addr$ - The I2C address of the device to check.
