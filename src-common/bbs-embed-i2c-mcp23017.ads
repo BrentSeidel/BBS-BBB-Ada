@@ -18,26 +18,8 @@
 --
 package BBS.embed.i2c.MCP23017 is
    --
-   --  Addresses for MCP23017 - 16 Bit I/O Expander
-   --
-   --  The MCP23017 has 3 address select pins so it can have one of 8 addresses.
-   --  This allows up to 8 of the devices on a single I2C bus.
-   --
-   addr_0 : constant addr7 := 16#20#;
-   addr_1 : constant addr7 := 16#21#;
-   addr_2 : constant addr7 := 16#22#;
-   addr_3 : constant addr7 := 16#23#;
-   addr_4 : constant addr7 := 16#24#;
-   addr_5 : constant addr7 := 16#25#;
-   addr_6 : constant addr7 := 16#26#;
-   addr_7 : constant addr7 := 16#27#;
-   --
    all_write : constant uint8 := 16#00#;
-   all_read : constant uint8 := 16#FF#;
-   --
-   --  Stuff for object oriented interface.  A non-object oriented interface
-   --  is not provided for this device.  If you need one, it should be fairly
-   --  easy to write one.
+   all_read  : constant uint8 := 16#FF#;
    --
    type MCP23017_record is new i2c_device_record with private;
    type MCP23017_ptr is access MCP23017_record;

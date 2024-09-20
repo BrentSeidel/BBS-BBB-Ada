@@ -16,6 +16,7 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with BBS.embed.i2c.devices;
 package body BBS.embed.i2c.MCP23017 is
    --
    --
@@ -45,7 +46,8 @@ package body BBS.embed.i2c.MCP23017 is
       --  First check to see if address is in range, then check if a device
       --  responds at that address.
       --
-      if (addr < addr_0) or (addr > addr_7) then
+      if (addr < BBS.embed.i2c.devices.addr_MCP23008_1) or
+         (addr > BBS.embed.i2c.devices.addr_MCP23008_8) then
          return False;
       end if;
       temp := port.read(addr, IOCON, err);
