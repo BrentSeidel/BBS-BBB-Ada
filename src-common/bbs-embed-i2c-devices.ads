@@ -64,12 +64,22 @@ package BBS.embed.i2c.devices is
    addr_ADS1015_3 : constant addr7 := 16#4A#;  --  SDA
    addr_ADS1015_4 : constant addr7 := 16#4B#;  --  SCL
    --
-   --  Addresses for PCA9685 PWM Controllers.  This has 6 address select pins so
-   --  it can have 64 different addresses (apparently only 62 are usable).
-   --  The addresses have the forms: 16#4x#, 16#5x#, 16#6x#, and 16#7x#.  Be
-   --  careful as these can conflict with other devices.
+   --  Addresses for PCA9685 PWM Controllers.  This has 6 address select
+   --  pins so it can have 64 different addresses (apparently only 62 are
+   --  usable).  Address 16#70# is used to send commands/data to all of
+   --  the PCA9685 devices on the I2C bus.  Address 16#03# is used to
+   --  command a software reset of all the PCA9685 devices on the I2C bus.
+   --  The addresses have the forms: 16#4x#, 16#5x#, 16#6x#, and 16#7x#.
+   --  Be careful as these can conflict with other devices.
    --
-   addr_PCA9685_00 : constant addr7 := 16#40#;
+   --  Some example addresses for PCA9685.
+   --
+   addr_PCA9685_00  : constant addr7 := 16#40#;
+   addr_PCA9685_01  : constant addr7 := 16#41#;
+   addr_PCA9685_02  : constant addr7 := 16#42#;
+   addr_PCA9685_03  : constant addr7 := 16#43#;
+   addr_PCA9685_all : constant addr7 := 16#70#;
+   addr_PCA9685_rst : constant addr7 := 16#03#;
    --
    addr_L3GD20H : constant addr7 := 16#6b#; -- Gyroscope
    --

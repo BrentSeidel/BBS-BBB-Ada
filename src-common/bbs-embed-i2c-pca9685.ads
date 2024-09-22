@@ -61,10 +61,46 @@ package BBS.embed.i2c.PCA9685 is
    --
    ALL_CHAN : constant channel := 16;
    --
-   addr_0 : constant addr7 := 16#40#;
-   addr_1 : constant addr7 := 16#41#;
-   addr_2 : constant addr7 := 16#42#;
-   addr_3 : constant addr7 := 16#43#;
+   -- For each channel there is a 12 bit counter and two thresholds: the on and
+   -- the off threshold.  When the counter is equal to the on threshold, the
+   -- output turns on.  When the counter is equal to the off threshold, the
+   -- output turns off.  This allows the pulses to be staggered between the
+   -- channels, if needed.
+   -- --------------------------------------------------------
+   --
+   type PS9685_record is new i2c_device_record with private;
+   type PS9685_ptr is access PS9685_record;
+   --
+   procedure configure(self : in out PS9685_record; port : i2c_interface;
+                       addr : addr7; error : out err_code);
+   --
+   procedure set(self : PS9685_record; chan : channel;
+                 on : uint12; off : uint12; error : out err_code);
+   --
+   procedure set_full_on(self : PS9685_record; chan : channel;
+                  error : out err_code);
+   --
+   procedure set_full_off(self : PS9685_record; chan : channel;
+                  error : out err_code);
+   --
+   -- State = true for sleep or false for wake.
+   --
+   procedure sleep(self : PS9685_record; state : boolean;
+                  error : out err_code);
+   --
+   -- Methods for servos
+   --
+   procedure set_servo_range(self : in out PS9685_record; chan : channel;
+                         min : uint12; max : uint12);
+   --
+   -- Once the servo range has been set, a servo can be controlled by set_servo.
+   --
+   procedure set_servo(self : PS9685_record; chan : channel;
+                       position : servo_range; error : out err_code);
+   --
+private
+   --
+   --  Device register addresses
    --
    MODE1 : constant uint8 := 16#00#;
    MODE2 : constant uint8 := 16#01#;
@@ -99,47 +135,7 @@ package BBS.embed.i2c.PCA9685 is
 
    --
    PRESCALE : constant uint8 := 16#FE#;
-   RESERVED : constant uint8 := 16#FF#;
-   --
-   -- For each channel there is a 12 bit counter and two thresholds: the on and
-   -- the off threshold.  When the counter is equal to the on threshold, the
-   -- output turns on.  When the counter is equal to the off threshold, the
-   -- output turns off.  This allows the pulses to be staggered between the
-   -- channels, if needed.
-   -- --------------------------------------------------------
-   -- Stuff for object oriented interface.
-   --
-   type PS9685_record is new i2c_device_record with private;
-   type PS9685_ptr is access PS9685_record;
-   --
-   procedure configure(self : in out PS9685_record; port : i2c_interface;
-                       addr : addr7; error : out err_code);
-   --
-   procedure set(self : PS9685_record; chan : channel;
-                 on : uint12; off : uint12; error : out err_code);
-   --
-   procedure set_full_on(self : PS9685_record; chan : channel;
-                  error : out err_code);
-   --
-   procedure set_full_off(self : PS9685_record; chan : channel;
-                  error : out err_code);
-   --
-   -- State = true for sleep or false for wake.
-   --
-   procedure sleep(self : PS9685_record; state : boolean;
-                  error : out err_code);
-   --
-   -- Methods for servos
-   --
-   procedure set_servo_range(self : in out PS9685_record; chan : channel;
-                         min : uint12; max : uint12);
-   --
-   -- Once the servo range has been set, a servo can be controlled by set_servo.
-   --
-   procedure set_servo(self : PS9685_record; chan : channel;
-                       position : servo_range; error : out err_code);
-   --
-private
+   RESERVED : constant uint8 := 16#FF#;  --  Test mode, don't write to this register.
    --
    -- Array type definitions
    --

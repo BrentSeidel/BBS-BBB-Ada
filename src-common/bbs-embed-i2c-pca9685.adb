@@ -19,44 +19,55 @@
 with BBS.embed.log;
 package body BBS.embed.i2c.PCA9685 is
    --
-   -- Object oriented interface
+   -- The PCA9685 has a default clock frequency of 25MHz.  This is divided by
+   -- 4096 steps per pulse which gives a maximum pulse rate of 6.1kHz.  The
+   -- prescale value is set to 30 which gives a pulse rate of 203Hz.  Each
+   -- step then has a length of 1.2uS.
+   --
+   scale : constant uint8 := 30;
+   --
+   -- MODE1 bits are:
+   --  7 - Restart
+   --  6 - External Clk
+   --  5 - Auto increment
+   --  4 - Sleep
+   --  3 - Sub1
+   --  2 - Sub2
+   --  1 - Sub3
+   --  0 - All call
+   --
+   --  Since only constants are being used for MODE1, don't bother with
+   --  defining a record type with all the bits broken out.  Just define
+   --  some constants.
+   --
+   MODE1_Sleep : constant uint8 := 16#10#;  --  Put device to sleep
+   MODE1_AIncr : constant uint8 := 16#20#;  --  Enable auto-increment mode
    --
    procedure configure(self : in out PS9685_record; port : i2c_interface;
                        addr : addr7; error : out err_code) is
-      --
-      -- The PCA9685 has a default clock frequency of 25MHz.  This is divided by
-      -- 4096 steps per pulse which gives a maximum pulse rate of 6.1kHz.  The
-      -- prescale value is set to 30 which gives a pulse rate of 203Hz.  Each
-      -- step then has a lenght of 1.2uS.
-      --
-      -- MODE1 bits are:
-      --  7 - Restart
-      --  6 - External Clk
-      --  5 - Auto increment
-      --  4 - Sleep
-      --  3 - Sub1
-      --  2 - Sub2
-      --  1 - Sub3
-      --  0 - All call
-      --
    begin
       self.hw := port;
       self.address := addr;
       self.servo_min := (others => 0);
       self.servo_max := (others => 0);
       self.servo_set := (others => false);
-      port.write(addr, MODE1, uint8(16#10#), error); -- Put PCA9685 to sleep
-      port.write(addr, PRESCALE, uint8(16#1E#), error); -- Set prescale to 30
-      port.write(addr, MODE1, uint8(16#20#), error); -- Wake up with auto increment
+      port.write(addr, MODE1, MODE1_Sleep, error);  -- Put PCA9685 to sleep
+      port.write(addr, PRESCALE, scale, error);     -- Set prescale to 30
+      port.write(addr, MODE1, MODE1_AIncr, error);  -- Wake up with auto increment
    end;
-
+   --
+   --  Sets the ON high and low, and the OFF high and low bytes.  This
+   --  is done as a single 4 byte write starting at the address for the
+   --  LEDx_ON_L register (on this device with auto-increment, this also
+   --  writes the next three regsiters).
+   --
    procedure set(self : PS9685_record; chan : channel;
                  on : uint12; off : uint12; error : out err_code) is
    begin
-      self.hw.b(0) := uint8(on and 16#ff#);
-      self.hw.b(1) := uint8(on / 16#100#);
-      self.hw.b(2) := uint8(off and 16#ff#);
-      self.hw.b(3) := uint8(off / 16#100#);
+      self.hw.b(0) := uint8(on and 16#ff#);   --  LEDx_ON_L value
+      self.hw.b(1) := uint8(on / 16#100#);    --  LEDx_ON_H value
+      self.hw.b(2) := uint8(off and 16#ff#);  --  LEDx_OFF_L value
+      self.hw.b(3) := uint8(off / 16#100#);   --  LEDx_OFF_H value
       self.hw.write(self.address, LED_ON_L(chan), buff_index(4), error);
    end;
    --
@@ -78,9 +89,9 @@ package body BBS.embed.i2c.PCA9685 is
                   error : out err_code) is
    begin
       if state then
-         self.hw.write(self.address, MODE1, uint8(16#10#), error); -- Put PCA9685 to sleep
+         self.hw.write(self.address, MODE1, MODE1_Sleep, error); -- Put PCA9685 to sleep
       else
-         self.hw.write(self.address, MODE1, uint8(16#20#), error); -- Wake up with auto increment
+         self.hw.write(self.address, MODE1, MODE1_AIncr, error); -- Wake up with auto increment
       end if;
    end;
    --
