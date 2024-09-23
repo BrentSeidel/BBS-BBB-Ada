@@ -1961,6 +1961,32 @@ Set on and off times for a specific channel.
 \end{itemize}
 
 \begin{lstlisting}
+function get_on(self : PS9685_record; chan : channel;
+                error : out err_code) return uint16;
+\end{lstlisting}
+\indexfunc{get\_on}
+Gets the on time for a channel
+\begin{itemize}
+  \item $self$ - The PCA9685 device to query.
+  \item $chan$ - The channel number.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the on time for the specified channel.
+\end{itemize}
+
+\begin{lstlisting}
+function get_off(self : PS9685_record; chan : channel;
+                 error : out err_code) return uint16;
+\end{lstlisting}
+\indexfunc{get\_of}
+Gets the on time for a channel
+\begin{itemize}
+  \item $self$ - The PCA9685 device to query.
+  \item $chan$ - The channel number.
+  \item $error$ - The error code from any I2C transactions.
+  \item Returns the off time for the specified channel.
+\end{itemize}
+
+\begin{lstlisting}
 procedure set_full_on(self : PS9685_record; chan : channel;
                       error : out err_code);
 \end{lstlisting}
