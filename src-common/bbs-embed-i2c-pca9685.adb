@@ -16,6 +16,7 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+--with Ada.Text_IO;
 with BBS.embed.log;
 package body BBS.embed.i2c.PCA9685 is
    --
@@ -69,6 +70,16 @@ package body BBS.embed.i2c.PCA9685 is
       self.hw.b(2) := uint8(off and 16#ff#);  --  LEDx_OFF_L value
       self.hw.b(3) := uint8(off / 16#100#);   --  LEDx_OFF_H value
       self.hw.write(self.address, LED_ON_L(chan), buff_index(4), error);
+   end;
+   --
+   function get_on(self : PS9685_record; chan : channel; error : out err_code) return uint16 is
+   begin
+      return self.hw.readm2(self.address, LED_ON_L(chan), error);
+   end;
+   --
+   function get_off(self : PS9685_record; chan : channel; error : out err_code) return uint16 is
+   begin
+      return self.hw.readm2(self.address, LED_OFF_L(chan), error);
    end;
    --
    procedure set_full_on(self : PS9685_record; chan : channel;

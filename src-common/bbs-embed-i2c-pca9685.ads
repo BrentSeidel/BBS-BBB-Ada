@@ -77,6 +77,10 @@ package BBS.embed.i2c.PCA9685 is
    procedure set(self : PS9685_record; chan : channel;
                  on : uint12; off : uint12; error : out err_code);
    --
+   function get_on(self : PS9685_record; chan : channel; error : out err_code) return uint16;
+   --
+   function get_off(self : PS9685_record; chan : channel; error : out err_code) return uint16;
+   --
    procedure set_full_on(self : PS9685_record; chan : channel;
                   error : out err_code);
    --
