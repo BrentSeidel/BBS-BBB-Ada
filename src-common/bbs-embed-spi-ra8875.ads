@@ -724,14 +724,14 @@ end record;
    --
    -- Define some common colors
    --
-   R5G6B5_BLACK : constant R5G6B5_color := (R => 0, G => 0, B => 0);
-   R5G6B5_BLUE : constant R5G6B5_color := (R => 0, G => 0, B => 31);
-   R5G6B5_RED : constant R5G6B5_color := (R => 31, G => 0, B => 0);
-   R5G6B5_GREEN : constant R5G6B5_color := (R => 0, G => 63, B => 0);
-   R5G6B5_CYAN : constant R5G6B5_color := (R => 0, G => 63, B => 31);
+   R5G6B5_BLACK   : constant R5G6B5_color := (R => 0, G => 0, B => 0);
+   R5G6B5_BLUE    : constant R5G6B5_color := (R => 0, G => 0, B => 31);
+   R5G6B5_RED     : constant R5G6B5_color := (R => 31, G => 0, B => 0);
+   R5G6B5_GREEN   : constant R5G6B5_color := (R => 0, G => 63, B => 0);
+   R5G6B5_CYAN    : constant R5G6B5_color := (R => 0, G => 63, B => 31);
    R5G6B5_MAGENTA : constant R5G6B5_color := (R => 31, G => 0, B => 31);
-   R5G6B5_YELLOW : constant R5G6B5_color := (R => 31, G => 63, B => 0);
-   R5G6B5_WHITE : constant R5G6B5_color := (R => 31, G => 63, B => 31);
+   R5G6B5_YELLOW  : constant R5G6B5_color := (R => 31, G => 63, B => 0);
+   R5G6B5_WHITE   : constant R5G6B5_color := (R => 31, G => 63, B => 31);
    --
    -- Colors (RGB332)
    --
@@ -757,14 +757,14 @@ end record;
    --
    -- Define some common colors
    --
-   R3G3B2_BLACK : constant R3G3B2_color := (R => 0, G => 0, B => 0);
-   R3G3B2_BLUE : constant R3G3B2_color := (R => 0, G => 0, B => 3);
-   R3G3B2_RED : constant R3G3B2_color := (R => 7, G => 0, B => 0);
-   R3G3B2_GREEN : constant R3G3B2_color := (R => 0, G => 7, B => 0);
-   R3G3B2_CYAN : constant R3G3B2_color := (R => 0, G => 7, B => 3);
+   R3G3B2_BLACK   : constant R3G3B2_color := (R => 0, G => 0, B => 0);
+   R3G3B2_BLUE    : constant R3G3B2_color := (R => 0, G => 0, B => 3);
+   R3G3B2_RED     : constant R3G3B2_color := (R => 7, G => 0, B => 0);
+   R3G3B2_GREEN   : constant R3G3B2_color := (R => 0, G => 7, B => 0);
+   R3G3B2_CYAN    : constant R3G3B2_color := (R => 0, G => 7, B => 3);
    R3G3B2_MAGENTA : constant R3G3B2_color := (R => 7, G => 0, B => 3);
-   R3G3B2_YELLOW : constant R3G3B2_color := (R => 7, G => 7, B => 0);
-   R3G3B2_WHITE : constant R3G3B2_color := (R => 7, G => 7, B => 3);
+   R3G3B2_YELLOW  : constant R3G3B2_color := (R => 7, G => 7, B => 0);
+   R3G3B2_WHITE   : constant R3G3B2_color := (R => 7, G => 7, B => 3);
    --
    -- Graphics cursor
    --

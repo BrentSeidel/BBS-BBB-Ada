@@ -30,9 +30,9 @@ package BBS.embed.RPI is
 -- set that appears on my system.  If you plan to use additional GPIO, just add
 -- them to this list.
 --
-   GPIO_4 : aliased constant string := "/sys/class/gpio/gpio4/";
-   GPIO_5 : aliased constant string := "/sys/class/gpio/gpio5/";
-   GPIO_6 : aliased constant string := "/sys/class/gpio/gpio6/";
+   GPIO_4  : aliased constant string := "/sys/class/gpio/gpio4/";
+   GPIO_5  : aliased constant string := "/sys/class/gpio/gpio5/";
+   GPIO_6  : aliased constant string := "/sys/class/gpio/gpio6/";
    GPIO_13 : aliased constant string := "/sys/class/gpio/gpio13/";
    GPIO_16 : aliased constant string := "/sys/class/gpio/gpio16/";
    GPIO_17 : aliased constant string := "/sys/class/gpio/gpio17/";
