@@ -1,6 +1,6 @@
 --
 --  Author: Brent Seidel
---  Date: 24-Sep-2024
+--  Date: 9-Aug-2024
 --
 --  This file is part of bbs_embed.
 --  Bbs_embed is free software: you can redistribute it and/or modify it
@@ -20,18 +20,16 @@ with Ada.Text_IO;
 with Ada.Direct_IO;
 with BBS.embed.GPIO;
 --
+-- This is a high level object-oriented interface to some of the GPIO pins.
+--
 package BBS.embed.GPIO.Linux is
-   --
+
    type direction is (input, output);
    type Linux_GPIO_record is new GPIO_record with private;
    --
-   --  *****************************************************************
-   --  ***  The following routines will probably need to be updated
-   --  ***  to work with the new GPIO system.  There may still be files
-   --  ***  involved, but it looks like there will also be addresses to
-   --  ***  structures.  These should be able to be treated as opaque
-   --  ***  objects by the Ada software.
-   --  *****************************************************************
+   --  Create a new GPIO object
+   --
+   function gpio_new return GPIO;
    --
    --  Configure a new GPIO object.  The pin control file and GPIO directory
    --  must correspond, otherwise things will not work correctly.  Pin should
@@ -68,10 +66,13 @@ package BBS.embed.GPIO.Linux is
    --  need to be re-configured.
    --
    procedure close(self : in out Linux_GPIO_record);
-   --
+
 private
+   package Char_IO is new Ada.Direct_IO(Character);
    --
-   type Linux_GPIO_record is new GPIO_record with record
-      dir : direction;
-   end record;
-end BBS.embed.GPIO.Linux;
+   type Linux_GPIO_record is new GPIO_record with
+      record
+         gpio_file : Char_IO.File_Type;
+         dir : direction;
+      end record;
+end;

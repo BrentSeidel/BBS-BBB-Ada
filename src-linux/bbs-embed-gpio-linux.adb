@@ -1,6 +1,6 @@
 --
 --  Author: Brent Seidel
---  Date: 9-Aug-2024
+--  Date: 24-Sep-2024
 --
 --  This file is part of bbs_embed.
 --  Bbs_embed is free software: you can redistribute it and/or modify it
@@ -17,123 +17,58 @@
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
 package body BBS.embed.GPIO.Linux is
-
-   function gpio_new return GPIO is
+   --
+   --  Configure a new GPIO object.  The pin control file and GPIO directory
+   --  must correspond, otherwise things will not work correctly.  Pin should
+   --  be one of the pin constants and port should be one of
+   --  the gpio constants from the device specific pins packages.
+   --
+   procedure configure(self : in out Linux_GPIO_record;
+                       pin : string; port : string; dir : direction) is
    begin
-      return new Linux_GPIO_record;
+      null;
    end;
    --
-   --  Set the direction of a pin.  This is a helper function that is not
-   --  tied to a specific pin record and can be used whether a GPIO pin
+   --  Not all GPIOs have an associated pin control file.  Some pins are dedicated
+   --  to GPIO and have no other function.
+   --
+   procedure configure(self : in out Linux_GPIO_record;
+                       port : string; dir : direction);
+   begin
+      null;
+   end;
+   --
+   --  Set the direction of a pin.  This can be used whether a GPIO pin
    --  has been configured or not.  It is also used by the configure
    --  procedure.
    --
    procedure set_dir(self : in out Linux_GPIO_record;
                      port : String; dir : direction) is
-      temp : Ada.Text_IO.File_Type;
    begin
-      --
-      --  Set direction
-      --
-      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "direction");
-      if (dir = input) then
-         Ada.Text_IO.Put_Line(temp, "in");
-      else
-         Ada.Text_IO.Put_Line(temp, "out");
-      end if;
-      Ada.Text_IO.Close(temp);
-      self.dir := dir;
-      --
-      --  Open the GPIO file
-      --
-      if Char_IO.Is_Open(self.gpio_file) then
-         Char_IO.Close(self.gpio_file);
-      end if;
-      if (dir = input) then
-         Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
-      else
-         Char_IO.Open(self.gpio_file, Char_IO.Out_File, port & "value");
-      end if;
+      null;
    end;
    --
-   procedure configure(self : in out Linux_GPIO_record;
-                       pin : string; port : string; dir : direction) is
-      temp : Ada.Text_IO.File_Type;
-   begin
-      --
-      --  Set pin function
-      --
-      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, pin);
-      Ada.Text_IO.Put_Line(temp, "gpio");
-      Ada.Text_IO.Close(temp);
-      --
-      --  Set active status
-      --
-      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "active_low");
-      Ada.Text_IO.Put_Line(temp, "0");
-      Ada.Text_IO.Close(temp);
-      --
-      --  Set direction and open GPIO file
-      --
-      self.set_dir(port, dir);
-      --
-      --  Open the GPIO file
-      --
---      if (dir = input) then
---         Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
---      else
---         Char_IO.Open(self.gpio_file, Char_IO.Out_File, port & "value");
---      end if;
-   end;
+   --  Set the value of an output GPIO.
    --
-   procedure configure(self : in out Linux_GPIO_record;
-                       port : string; dir : direction) is
-      temp : Ada.Text_IO.File_Type;
-   begin
-      --
-      --  Set active status
-      --
-      Ada.Text_IO.Open(temp, Ada.Text_IO.Out_File, port & "active_low");
-      Ada.Text_IO.Put_Line(temp, "0");
-      Ada.Text_IO.Close(temp);
-      --
-      --  Set direction and open GPIO file
-      --
-      self.set_dir(port, dir);
-      --
-      --  Open the GPIO file
-      --
---      if (dir = input) then
---         Char_IO.Open(self.gpio_file, Char_IO.In_File, port & "value");
---      else
---         Char_IO.Open(self.gpio_file, Char_IO.Out_File, port & "value");
---      end if;
-   end;
-   --
+   overriding
    procedure set(self : Linux_GPIO_record; value : bit) is
    begin
-      if (value = 0) then
-         Char_IO.Write(self.gpio_file, '0', 1);
-         Char_IO.Write(self.gpio_file, '0', 1);
-      else
-         Char_IO.Write(self.gpio_file, '1', 1);
-         Char_IO.Write(self.gpio_file, '1', 1);
-      end if;
+      null;
    end;
    --
+   --  Read the value of an input GPIO.
+   --
+   overriding
    function get(self : Linux_GPIO_record) return bit is
-      char : character;
    begin
-      Char_IO.Read(self.gpio_file, char, 1);
-      if (char = '0') then
-         return 0;
-      else
-         return 1;
-      end if;
+      return 0;
    end;
+   --
+   --  Close the file for the pin.  Once this is called, the GPIO object will
+   --  need to be re-configured.
    --
    procedure close(self : in out Linux_GPIO_record) is
    begin
-      Char_IO.Close(self.gpio_file);
+      null;
    end;
-end;
+end BBS.embed.GPIO.Linux;

@@ -2120,7 +2120,7 @@ The datatype \datatype{R5G6B5\_color} is used to represent colors with five bits
          G at 0 range 2 .. 4;
          R at 0 range 5 .. 7;
       end record;
-\begin{lstlisting}
+\end{lstlisting}
 \indextype{R3G3B2\_color}
 The datatype \datatype{R3G3B2\_color} is used to represent colors with three bits for red, three bits for green and two bits for blue.  This adds up to eight bits.
 
@@ -2997,7 +2997,9 @@ Closes a Linux analog input device file.  This should be done when the software 
 \end{itemize}
 
 \subsection{\package{BBS.embed.GPIO.Linux}}
-As the general-purpose I/O pins are handled using device files (sometimes multiple files), the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.
+\color{red}{Warning!  The sysfs interface to GPIOs has been deprecated in Linux.  This package will have to be redone for the new \function{ioctl} based interface.  The current sysfs based package is renamed to \package{BBS.embed.GPIO.Linux\_sysfs} so that it can be used with legacy systems.}
+
+\color{black}{As the general-purpose I/O pins are handled using device files (sometimes multiple files), the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.}
 
 \begin{lstlisting}
 procedure configure(self : in out Linux_GPIO_record;
