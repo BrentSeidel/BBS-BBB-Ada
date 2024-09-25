@@ -16,7 +16,7 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
-package body BBS.embed.GPIO.Linux is
+package body BBS.embed.GPIO.Linux_sysfs is
 
    function gpio_new return GPIO is
    begin
@@ -136,4 +136,4 @@ package body BBS.embed.GPIO.Linux is
    begin
       Char_IO.Close(self.gpio_file);
    end;
-end;
+end BBS.embed.GPIO.Linux_sysfs;

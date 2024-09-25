@@ -33,7 +33,7 @@ package body BBS.embed.GPIO.Linux is
    --  to GPIO and have no other function.
    --
    procedure configure(self : in out Linux_GPIO_record;
-                       port : string; dir : direction);
+                       port : string; dir : direction) is
    begin
       null;
    end;

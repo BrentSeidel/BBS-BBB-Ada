@@ -40,6 +40,8 @@ package BBS.embed is
      with size => 12;
    type uint12 is mod 2**12
      with size => 12;
+   type uint14 is mod 2**14
+      with size => 14;
    --
    --  Unchecked conversions to convert unsigned into signed values.  Others
    --  may be added as needed.

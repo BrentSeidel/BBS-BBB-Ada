@@ -22,7 +22,7 @@ with BBS.embed.GPIO;
 --
 -- This is a high level object-oriented interface to some of the GPIO pins.
 --
-package BBS.embed.GPIO.Linux is
+package BBS.embed.GPIO.Linux_sysfs is
 
    type direction is (input, output);
    type Linux_GPIO_record is new GPIO_record with private;
@@ -75,4 +75,4 @@ private
          gpio_file : Char_IO.File_Type;
          dir : direction;
       end record;
-end;
+end BBS.embed.GPIO.Linux_sysfs;
