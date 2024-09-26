@@ -113,9 +113,9 @@ package BBS.embed.GPIO.Linux is
    --
    type ioctl_type is record
       nr   : nr_type;     --   8 bits
-      dir  : dir_type;    --   2 bits
       code : io_type;     --   8 bits (Linux calls this type)
       size : size_type;   --  14 bits
+      dir  : dir_type;    --   2 bits
    end record;
    for ioctl_type use record
       nr   at 0 range  0 ..  7;
@@ -124,6 +124,8 @@ package BBS.embed.GPIO.Linux is
       dir  at 0 range 30 .. 31;
    end record;
    for ioctl_type'Size use 32;
+--  ioctl  is 2183181313, 8220B401
+--  Should be 2151986177, 8044B401
    --
    --  Structures and constants for GPIO IOCTL calls.  Based on the contents
    --  of gpio.h.
@@ -133,14 +135,14 @@ package BBS.embed.GPIO.Linux is
    --  struct gpiochip_info - Information about a certain GPIO chip
    --  @name: the Linux kernel name of this GPIO chip
    --  @label: a functional name for this GPIO chip, such as a product
-   --  number, may be empty (i.e. label[0] == '\0')
+   --          number, may be empty (i.e. label[0] == '\0')
    --  @lines: number of GPIO lines on this chip
    --
    type gpiochip_info is record
       name  : String(1 .. GPIO_MAX_NAME_SIZE);
       label : String(1 .. GPIO_MAX_NAME_SIZE);
       lines : uint32;
-   end record;
+   end record with Convention => C;
    --
    --  Maximum number of requested lines.
    --
@@ -426,9 +428,9 @@ package BBS.embed.GPIO.Linux is
    --  v1 and v2 ioctl()s
    --
    GPIO_GET_CHIPINFO_IOCTL : constant ioctl_type := (dir => read, code => 16#b4#,
-                                          nr => 1, size => gpiochip_info'Size);
+                                          nr => 1, size => gpiochip_info'Size/8);
    GPIO_GET_LINEINFO_UNWATCH_IOCTL : constant ioctl_type := (dir => rw, code => 16#b4#,
-                                          nr => 16#0c#, size => uint32'Size);
+                                          nr => 16#0c#, size => uint32'Size/8);
    --
    --  v2 ioctl()s
    --
