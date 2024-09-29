@@ -16,20 +16,20 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with BBS.embed.GPIO.Linux;
 package BBS.embed.RPI is
---
--- This package contains definitions for some of the Raspberry Pi pins.  If
--- nothing else, it can serve as a reference for the pins on the board.
---
--- If the /sys directory tree changes, the constants here can be changed and
--- the rest of the software should still work.  Hopefully.  So, use the constants
--- here.
---
---
--- GPIO Definitions.  Note that additional GPIO may be exported.  This is the
--- set that appears on my system.  If you plan to use additional GPIO, just add
--- them to this list.
---
+   --
+   --  This package contains definitions for some of the Raspberry Pi pins.  If
+   --  nothing else, it can serve as a reference for the pins on the board.
+   --
+   --  If the /sys directory tree changes, the constants here can be changed and
+   --  the rest of the software should still work.  Hopefully.  So, use the
+   --  constants here.
+   --
+   --  Old style GPIO Definitions.  Note that additional GPIO may be exported.
+   --  This is the set that appears on my system.  If you plan to use
+   --  additional GPIO, just add them to this list.
+   --
    GPIO_4  : aliased constant string := "/sys/class/gpio/gpio4/";
    GPIO_5  : aliased constant string := "/sys/class/gpio/gpio5/";
    GPIO_6  : aliased constant string := "/sys/class/gpio/gpio6/";
@@ -46,6 +46,24 @@ package BBS.embed.RPI is
    GPIO_25 : aliased constant string := "/sys/class/gpio/gpio25/";
    GPIO_26 : aliased constant string := "/sys/class/gpio/gpio26/";
    GPIO_27 : aliased constant string := "/sys/class/gpio/gpio27/";
+   --
+   --  Chip and line definitions for GPIOs.
+   GPIO4  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 4);
+   GPIO5  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 5);
+   GPIO6  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 6);
+   GPIO13 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 13);
+   GPIO16 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 16);
+   GPIO17 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 17);
+   GPIO18 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 18);
+   GPIO19 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 19);
+   GPIO20 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 20);
+   GPIO21 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 21);
+   GPIO22 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 22);
+   GPIO23 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 23);
+   GPIO24 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 24);
+   GPIO25 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 25);
+   GPIO26 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 26);
+   GPIO27 : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 27);
 --
 -- Serial port definitions
 --

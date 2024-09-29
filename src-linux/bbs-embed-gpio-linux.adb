@@ -18,24 +18,23 @@
 --
 package body BBS.embed.GPIO.Linux is
    --
-   --  Configure a new GPIO object.  The pin control file and GPIO directory
-   --  must correspond, otherwise things will not work correctly.  Pin should
-   --  be one of the pin constants and port should be one of
-   --  the gpio constants from the device specific pins packages.
+   --  Configure a new GPIO object.
    --
-   procedure configure(self : in out Linux_GPIO_record;
-                       pin : string; port : string; dir : direction) is
+   procedure configure(self : in out Linux_GPIO_record; pin : gpio_id; dir : direction) is
    begin
-      null;
-   end;
-   --
-   --  Not all GPIOs have an associated pin control file.  Some pins are dedicated
-   --  to GPIO and have no other function.
-   --
-   procedure configure(self : in out Linux_GPIO_record;
-                       port : string; dir : direction) is
-   begin
-      null;
+      self.chip := pin.chip;
+      self.line := pin.line;
+      self.dir  := dir;
+      if not gpiochips(self.chip).open then
+         gpiochips(self.chip).chip := c_open(names(self.chip), O_RDONLY);
+         if gpiochips(self.chip).chip = -1 then
+            gpiochips(self.chip).open := False;
+            self.valid := False;
+         else
+            gpiochips(self.chip).open := False;
+            self.valid := True;
+         end if;
+      end if;
    end;
    --
    --  Set the direction of a pin.  This can be used whether a GPIO pin

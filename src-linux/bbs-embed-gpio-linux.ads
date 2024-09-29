@@ -21,12 +21,18 @@ with Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 with BBS.embed.GPIO;
 with Interfaces.C;
-with System;
 --
 package BBS.embed.GPIO.Linux is
    --
    type direction is (input, output);
    type Linux_GPIO_record is new GPIO_record with private;
+   --
+   --  GPIOs are assigned to a gpio chip and a line on the chip.
+   --
+   type gpio_id is record
+      chip : uint8;
+      line : uint8;
+   end record;
    --
    --  *****************************************************************
    --  ***  The following routines will probably need to be updated
@@ -36,19 +42,9 @@ package BBS.embed.GPIO.Linux is
    --  ***  objects by the Ada software.
    --  *****************************************************************
    --
-   --  Configure a new GPIO object.  The pin control file and GPIO directory
-   --  must correspond, otherwise things will not work correctly.  Pin should
-   --  be one of the pin constants and port should be one of
-   --  the gpio constants from the device specific pins packages.
+   --  Configure a new GPIO object.
    --
-   procedure configure(self : in out Linux_GPIO_record;
-                       pin : string; port : string; dir : direction);
-   --
-   --  Not all GPIOs have an associated pin control file.  Some pins are dedicated
-   --  to GPIO and have no other function.
-   --
-   procedure configure(self : in out Linux_GPIO_record;
-                       port : string; dir : direction);
+   procedure configure(self : in out Linux_GPIO_record; pin : gpio_id; dir : direction);
    --
    --  Set the direction of a pin.  This can be used whether a GPIO pin
    --  has been configured or not.  It is also used by the configure
@@ -84,8 +80,6 @@ package BBS.embed.GPIO.Linux is
    O_RDONLY : file_flg := 0;
    O_WRONLY : file_flg := 1;
    O_RDWR   : file_flg := 2;
-   --
-   type info_addr is new System.Address;
    --
    --  Stuff for IOCTL.  This might be collected and moved elsewhere.
    --
@@ -163,10 +157,6 @@ package BBS.embed.GPIO.Linux is
       lines : uint32;
    end record with Convention => C;
    --
-   function info_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : info_addr) return interfaces.C.int;
-   pragma Import(C, info_ioctl, "ioctl");
-   --
    --  Maximum number of requested lines.
    --
    --  Must be no greater than 64, as bitmaps are restricted here to 64-bits
@@ -230,6 +220,9 @@ package BBS.embed.GPIO.Linux is
    end record;
    for gpio_v2_line_flag'Size use 64;
 
+   type bits64 is array (0 .. 63) of bit
+      with pack;
+   for bits64'Size use 64;
    --
    --  struct gpio_v2_line_values - Values of GPIO lines
    --  @bits: a bitmap containing the value of the lines, set to 1 for active
@@ -239,8 +232,8 @@ package BBS.embed.GPIO.Linux is
    --  gpio_v2_line_request.offsets.
    --
    type gpio_v2_line_values is record
-      bits : uint64;
-      mask : uint64;
+      bits : bits64;
+      mask : bits64;
    end record with Alignment => 8;
 
    --
@@ -291,7 +284,7 @@ package BBS.embed.GPIO.Linux is
       unused : uint32;
       union  : line_attr_union;
    end record with Convention => C_Pass_By_Copy;
-   type line_attr_array is array (1 .. GPIO_V2_LINE_NUM_ATTRS_MAX) of gpio_v2_line_attribute;
+   type line_attr_array is array (0 .. GPIO_V2_LINE_NUM_ATTRS_MAX - 1) of gpio_v2_line_attribute;
 
    --
    --  struct gpio_v2_line_config_attribute - a configuration attribute
@@ -305,7 +298,7 @@ package BBS.embed.GPIO.Linux is
       attr : gpio_v2_line_attribute;
       mask : uint64;
    end record with  Alignment => 8;
-   type config_attr_array is array (1 .. GPIO_V2_LINE_NUM_ATTRS_MAX) of gpio_v2_line_config_attribute;
+   type config_attr_array is array (0 .. GPIO_V2_LINE_NUM_ATTRS_MAX - 1) of gpio_v2_line_config_attribute;
    --
    --  struct gpio_v2_line_config - Configuration for GPIO lines
    --  @flags: flags for the GPIO lines, with values from &enum
@@ -323,46 +316,49 @@ package BBS.embed.GPIO.Linux is
    type gpio_v2_line_config is record
       flags     : gpio_v2_line_flag;
       num_attrs : uint32;
-      unused1   : uint32;
-      unused2   : uint32;
-      unused3   : uint32;
-      unused4   : uint32;
-      unused5   : uint32;
+      unused1   : uint32 := 0;
+      unused2   : uint32 := 0;
+      unused3   : uint32 := 0;
+      unused4   : uint32 := 0;
+      unused5   : uint32 := 0;
       attrs     : config_attr_array;
    end record;
-
---/**
--- * struct gpio_v2_line_request - Information about a request for GPIO lines
--- * @offsets: an array of desired lines, specified by offset index for the
--- * associated GPIO chip
--- * @consumer: a desired consumer label for the selected GPIO lines such as
--- * "my-bitbanged-relay"
--- * @config: requested configuration for the lines.
--- * @num_lines: number of lines requested in this request, i.e. the number
--- * of valid fields in the %GPIO_V2_LINES_MAX sized arrays, set to 1 to
--- * request a single line
--- * @event_buffer_size: a suggested minimum number of line events that the
--- * kernel should buffer.  This is only relevant if edge detection is
--- * enabled in the configuration. Note that this is only a suggested value
--- * and the kernel may allocate a larger buffer or cap the size of the
--- * buffer. If this field is zero then the buffer size defaults to a minimum
--- * of @num_lines * 16.
--- * @padding: reserved for future use and must be zero filled
--- * @fd: if successful this field will contain a valid anonymous file handle
--- * after a %GPIO_GET_LINE_IOCTL operation, zero or negative value means
--- * error
--- */
---struct gpio_v2_line_request {
---	__u32 offsets[GPIO_V2_LINES_MAX];
---	char consumer[GPIO_MAX_NAME_SIZE];
---	struct gpio_v2_line_config config;
---	__u32 num_lines;
---	__u32 event_buffer_size;
---	/* Pad to fill implicit padding and reserve space for future use. */
---	__u32 padding[5];
---	__s32 fd;
---};
-
+   --
+   --  struct gpio_v2_line_request - Information about a request for GPIO lines
+   --  @offsets: an array of desired lines, specified by offset index for the
+   --            associated GPIO chip
+   --  @consumer: a desired consumer label for the selected GPIO lines such as
+   --             "my-bitbanged-relay"
+   --  @config: requested configuration for the lines.
+   --  @num_lines: number of lines requested in this request, i.e. the number
+   --              of valid fields in the %GPIO_V2_LINES_MAX sized arrays, set to 1 to
+   --              request a single line
+   --  @event_buffer_size: a suggested minimum number of line events that the
+   --                      kernel should buffer.  This is only relevant if edge
+   --                      detection is enabled in the configuration. Note that
+   --                      this is only a suggested value and the kernel may
+   --                      allocate a larger buffer or cap the size of the
+   --                      buffer. If this field is zero then the buffer size
+   --                      defaults to a minimum of @num_lines * 16.
+   --  @padding: reserved for future use and must be zero filled
+   --  @fd: if successful this field will contain a valid anonymous file handle
+   --       after a %GPIO_GET_LINE_IOCTL operation, zero or negative value means
+   --       error
+   --
+   type offset_arr is array (0 .. GPIO_V2_LINES_MAX - 1) of uint32;
+   type gpio_v2_line_request is record
+      offsets   : offset_arr;
+      consumer  : String(1 .. GPIO_MAX_NAME_SIZE);
+      config    : gpio_v2_line_config;
+      num_lines : uint32;
+      event_buffer_size : uint32;
+      unused1 : uint32 := 0;
+      unused2 : uint32 := 0;
+      unused3 : uint32 := 0;
+      unused4 : uint32 := 0;
+      unused5 : uint32 := 0;
+      fd      : uint32;
+   end record;
    --
    --  struct gpio_v2_line_info - Information about a certain GPIO line
    -- * @name: the name of this GPIO line, such as the output pin of the line on
@@ -387,10 +383,10 @@ package BBS.embed.GPIO.Linux is
       num_attrs : uint32;
       flags     : gpio_v2_line_flag;
       attrs     : line_attr_array;
-      unused1   : uint32;
-      unused2   : uint32;
-      unused3   : uint32;
-      unused4   : uint32;
+      unused1   : uint32 := 0;
+      unused2   : uint32 := 0;
+      unused3   : uint32 := 0;
+      unused4   : uint32 := 0;
    end record;
 
 --/**
@@ -473,29 +469,60 @@ package BBS.embed.GPIO.Linux is
    --
    --  v2 ioctl()s
    --
-   GPIO_V2_GET_LINEINFO_IOCTL       : constant ioctl_num
-      := ioctl_to_num((dir => rw, code => 16#b4#, nr => 5, size => gpio_v2_line_info'Size/8));
-   GPIO_V2_GET_LINEINFO_WATCH_IOCTL : constant ioctl_num
-      := ioctl_to_num((dir => rw, code => 16#b4#, nr => 6, size => gpio_v2_line_info'Size/8));
---#define GPIO_V2_GET_LINE_IOCTL _IOWR(0xB4, 0x07, struct gpio_v2_line_request)
---#define GPIO_V2_LINE_SET_CONFIG_IOCTL _IOWR(0xB4, 0x0D, struct gpio_v2_line_config)
-   GPIO_V2_LINE_GET_VALUES_IOCTL    : constant ioctl_num
-      := ioctl_to_num((dir => rw, code => 16#b4#, nr => 16#0e#, size => gpio_v2_line_values'Size/8));
-   GPIO_V2_LINE_SET_VALUES_IOCTL    : constant ioctl_num
-      := ioctl_to_num((dir => rw, code => 16#b4#, nr => 16#0f#, size => gpio_v2_line_values'Size/8));
+   GPIO_V2_GET_LINEINFO_IOCTL       : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 5, size => gpio_v2_line_info'Size/8));
+   GPIO_V2_GET_LINEINFO_WATCH_IOCTL : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 6, size => gpio_v2_line_info'Size/8));
+   GPIO_V2_GET_LINE_IOCTL           : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 7, size => gpio_v2_line_request'Size/8));
+   GPIO_V2_LINE_SET_CONFIG_IOCTL    : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 16#0d#, size => gpio_v2_line_config'Size/8));
+   GPIO_V2_LINE_GET_VALUES_IOCTL    : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 16#0e#, size => gpio_v2_line_values'Size/8));
+   GPIO_V2_LINE_SET_VALUES_IOCTL    : constant ioctl_num := ioctl_to_num((
+      dir => rw, code => 16#b4#, nr => 16#0f#, size => gpio_v2_line_values'Size/8));
    --
    --  File names
    --
    chip0   : constant String := "/dev/gpiochip0";
+   chip1   : constant String := "/dev/gpiochip1";
+   --
+   function cinfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+      info : out gpiochip_info) return interfaces.C.int
+      with pre => (cmd = GPIO_GET_CHIPINFO_IOCTL);
+   pragma Import(C, cinfo_ioctl, "ioctl");
+   --
+   function linfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+      info : out gpio_v2_line_info) return interfaces.C.int
+      with pre => (cmd = GPIO_V2_GET_LINEINFO_IOCTL);
+   pragma Import(C, linfo_ioctl, "ioctl");
 
 
 private
    --
+   type mode_t is new Integer;
+   function C_open(name : string; flags : file_flg; mode : mode_t := 8#666#)
+      return file_id;
+   pragma import(C, C_open, "open");
+   --
    --  GPIO Object.
    --
    type Linux_GPIO_record is new GPIO_record with record
-      chip : file_id;
-      line : Integer;
-      dir  : direction;
+      chip  : uint8;
+      line  : uint8;
+      dir   : direction;
+      valid : Boolean := False;
    end record;
+   --
+   --  Chip data
+   --
+   type gpiochip_data is record
+      chip : file_id;
+      open : Boolean := False;
+   end record;
+   max_chip : constant uint8 := 4;
+   gpiochips : array (0 .. max_chip) of gpiochip_data;
+   names : constant array (0 .. max_chip) of String(1 .. 14) :=
+         ("/dev/gpiochip0", "/dev/gpiochip1", "/dev/gpiochip2", "/dev/gpiochip3", "/dev/gpiochip4");
+   
 end BBS.embed.GPIO.Linux;
