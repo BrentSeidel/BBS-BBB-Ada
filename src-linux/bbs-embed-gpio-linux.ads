@@ -27,11 +27,23 @@ package BBS.embed.GPIO.Linux is
    type direction is (input, output);
    type Linux_GPIO_record is new GPIO_record with private;
    --
+   --  Max number of chips supported
+   --
+   max_chip : constant := 4;
+   --
+   --  Maximum number of requested lines.
+   --
+   --  Must be no greater than 64, as bitmaps are restricted here to 64-bits
+   --  for simplicity, and a multiple of 2 to ensure 32/64-bit alignment of
+   --  structs.
+   --
+   GPIO_V2_LINES_MAX : constant := 64;
+   --
    --  GPIOs are assigned to a gpio chip and a line on the chip.
    --
    type gpio_id is record
-      chip : uint8;
-      line : uint8;
+      chip : uint8 range 0 .. max_chip;
+      line : uint8 range 0 .. GPIO_V2_LINES_MAX - 1;
    end record;
    --
    --  *****************************************************************
@@ -157,14 +169,6 @@ package BBS.embed.GPIO.Linux is
       lines : uint32;
    end record with Convention => C;
    --
-   --  Maximum number of requested lines.
-   --
-   --  Must be no greater than 64, as bitmaps are restricted here to 64-bits
-   --  for simplicity, and a multiple of 2 to ensure 32/64-bit alignment of
-   --  structs.
-   --
-   GPIO_V2_LINES_MAX : constant Integer := 64;
-   --
    --  The maximum number of configuration attributes associated with a line
    --  request.
    --
@@ -234,7 +238,8 @@ package BBS.embed.GPIO.Linux is
    type gpio_v2_line_values is record
       bits : bits64;
       mask : bits64;
-   end record with Alignment => 8;
+   end record with Alignment => 8, Convention => C;
+   for gpio_v2_line_values'Size use 128;
 
    --
    --  enum gpio_v2_line_attr_id - &struct gpio_v2_line_attribute.id values
@@ -357,7 +362,7 @@ package BBS.embed.GPIO.Linux is
       unused3 : uint32 := 0;
       unused4 : uint32 := 0;
       unused5 : uint32 := 0;
-      fd      : uint32;
+      fd      : file_id;
    end record;
    --
    --  struct gpio_v2_line_info - Information about a certain GPIO line
@@ -482,21 +487,31 @@ package BBS.embed.GPIO.Linux is
    GPIO_V2_LINE_SET_VALUES_IOCTL    : constant ioctl_num := ioctl_to_num((
       dir => rw, code => 16#b4#, nr => 16#0f#, size => gpio_v2_line_values'Size/8));
    --
-   --  File names
-   --
-   chip0   : constant String := "/dev/gpiochip0";
-   chip1   : constant String := "/dev/gpiochip1";
-   --
    function cinfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
       info : out gpiochip_info) return interfaces.C.int
       with pre => (cmd = GPIO_GET_CHIPINFO_IOCTL);
    pragma Import(C, cinfo_ioctl, "ioctl");
    --
    function linfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : out gpio_v2_line_info) return interfaces.C.int
+      info : in out gpio_v2_line_info) return interfaces.C.int
       with pre => (cmd = GPIO_V2_GET_LINEINFO_IOCTL);
    pragma Import(C, linfo_ioctl, "ioctl");
+   --
+   function values_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+      info : in out gpio_v2_line_values) return interfaces.C.int
+      with pre => ((cmd = GPIO_V2_LINE_GET_VALUES_IOCTL) or (cmd = GPIO_V2_LINE_SET_VALUES_IOCTL));
+   pragma Import(C, values_ioctl, "ioctl");
+   --
+   function req_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+      info : in out gpio_v2_line_request) return interfaces.C.int
+      with pre => (cmd = GPIO_V2_GET_LINE_IOCTL);
+   pragma Import(C, req_ioctl, "ioctl");
 
+   --
+   --  File names
+   --
+   names : constant array (uint8 range 0 .. max_chip) of String(1 .. 14) :=
+         ("/dev/gpiochip0", "/dev/gpiochip1", "/dev/gpiochip2", "/dev/gpiochip3", "/dev/gpiochip4");
 
 private
    --
@@ -520,9 +535,6 @@ private
       chip : file_id;
       open : Boolean := False;
    end record;
-   max_chip : constant uint8 := 4;
-   gpiochips : array (0 .. max_chip) of gpiochip_data;
-   names : constant array (0 .. max_chip) of String(1 .. 14) :=
-         ("/dev/gpiochip0", "/dev/gpiochip1", "/dev/gpiochip2", "/dev/gpiochip3", "/dev/gpiochip4");
+   gpiochips : array (uint8 range 0 .. max_chip) of gpiochip_data;
    
 end BBS.embed.GPIO.Linux;

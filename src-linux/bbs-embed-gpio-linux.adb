@@ -21,17 +21,18 @@ package body BBS.embed.GPIO.Linux is
    --  Configure a new GPIO object.
    --
    procedure configure(self : in out Linux_GPIO_record; pin : gpio_id; dir : direction) is
+      name : String := names(pin.chip);
    begin
       self.chip := pin.chip;
       self.line := pin.line;
       self.dir  := dir;
       if not gpiochips(self.chip).open then
-         gpiochips(self.chip).chip := c_open(names(self.chip), O_RDONLY);
+         gpiochips(self.chip).chip := c_open(name, O_RDONLY);
          if gpiochips(self.chip).chip = -1 then
             gpiochips(self.chip).open := False;
             self.valid := False;
          else
-            gpiochips(self.chip).open := False;
+            gpiochips(self.chip).open := True;
             self.valid := True;
          end if;
       end if;
