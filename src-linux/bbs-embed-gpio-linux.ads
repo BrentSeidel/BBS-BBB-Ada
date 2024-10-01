@@ -488,22 +488,22 @@ package BBS.embed.GPIO.Linux is
       dir => rw, code => 16#b4#, nr => 16#0f#, size => gpio_v2_line_values'Size/8));
    --
    function cinfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : out gpiochip_info) return interfaces.C.int
+      info : out gpiochip_info) return Interfaces.C.Int
       with pre => (cmd = GPIO_GET_CHIPINFO_IOCTL);
    pragma Import(C, cinfo_ioctl, "ioctl");
    --
    function linfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : in out gpio_v2_line_info) return interfaces.C.int
+      info : in out gpio_v2_line_info) return Interfaces.C.Int
       with pre => (cmd = GPIO_V2_GET_LINEINFO_IOCTL);
    pragma Import(C, linfo_ioctl, "ioctl");
    --
    function values_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : in out gpio_v2_line_values) return interfaces.C.int
+      info : in out gpio_v2_line_values) return Interfaces.C.Int
       with pre => ((cmd = GPIO_V2_LINE_GET_VALUES_IOCTL) or (cmd = GPIO_V2_LINE_SET_VALUES_IOCTL));
    pragma Import(C, values_ioctl, "ioctl");
    --
    function req_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
-      info : in out gpio_v2_line_request) return interfaces.C.int
+      info : in out gpio_v2_line_request) return Interfaces.C.Int
       with pre => (cmd = GPIO_V2_GET_LINE_IOCTL);
    pragma Import(C, req_ioctl, "ioctl");
 
@@ -523,10 +523,12 @@ private
    --  GPIO Object.
    --
    type Linux_GPIO_record is new GPIO_record with record
-      chip  : uint8;
-      line  : uint8;
-      dir   : direction;
-      valid : Boolean := False;
+      chip   : uint8;
+      line   : uint8;
+      offset : uint32;
+      req    : file_id;
+      dir    : direction;
+      valid  : Boolean := False;
    end record;
    --
    --  Chip data

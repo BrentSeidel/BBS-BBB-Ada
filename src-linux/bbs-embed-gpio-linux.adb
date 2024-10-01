@@ -44,7 +44,23 @@ package body BBS.embed.GPIO.Linux is
    --
    procedure set_dir(self : in out Linux_GPIO_record;
                      port : String; dir : direction) is
+      request : gpio_v2_line_request;
+      temp    : Interfaces.C.Int;
+      fd      : file_id;
    begin
+         request.offsets := (others => 0);
+         request.offsets(0) := self.offset;
+         request.num_lines := 1;
+         request.event_buffer_size := 0;
+         request.config.num_attrs := 0;
+         request.config.flags := (others => False);
+         if dir = input then
+            request.config.flags.GPIO_V2_LINE_FLAG_INPUT := True;
+         else
+            request.config.flags.GPIO_V2_LINE_FLAG_OUTPUT := True;
+         end if;
+         fd := gpiochips(self.chip).chip;
+         temp := req_ioctl(fd, GPIO_V2_GET_LINE_IOCTL, request);
       null;
    end;
    --
@@ -52,6 +68,7 @@ package body BBS.embed.GPIO.Linux is
    --
    overriding
    procedure set(self : Linux_GPIO_record; value : bit) is
+--      values : gpio_v2_line_values;
    begin
       null;
    end;
@@ -60,8 +77,14 @@ package body BBS.embed.GPIO.Linux is
    --
    overriding
    function get(self : Linux_GPIO_record) return bit is
+      values : gpio_v2_line_values;
+      temp   : Interfaces.C.Int;
    begin
-      return 0;
+      values.bits := (others => 0);
+      values.mask := (others => 0);
+      values.mask(0) := 1;
+      temp := values_ioctl(self.req, GPIO_V2_LINE_GET_VALUES_IOCTL, values);
+      return values.bits(Integer(self.line));
    end;
    --
    --  Close the file for the pin.  Once this is called, the GPIO object will
