@@ -63,7 +63,7 @@ package BBS.embed.GPIO.Linux is
    --  procedure.
    --
    procedure set_dir(self : in out Linux_GPIO_record;
-                     port : String; dir : direction);
+                     dir : direction);
    --
    --  Set the value of an output GPIO.
    --
@@ -79,6 +79,11 @@ package BBS.embed.GPIO.Linux is
    --  need to be re-configured.
    --
    procedure close(self : in out Linux_GPIO_record);
+   --
+   --  Routines specific to Linux ioctl GPIO interface
+   --
+   function chip_name(self : in out Linux_GPIO_record) return String;
+   function line_name(self : in out Linux_GPIO_record) return String;
    --
    --  Stuff here is exposed for development and debugging purposes.
    --

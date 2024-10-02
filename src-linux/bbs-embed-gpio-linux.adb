@@ -16,16 +16,20 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
+with Ada.Text_IO;
 package body BBS.embed.GPIO.Linux is
    --
    --  Configure a new GPIO object.
    --
    procedure configure(self : in out Linux_GPIO_record; pin : gpio_id; dir : direction) is
       name : String := names(pin.chip);
+      line : gpio_v2_line_info;
+      temp : Interfaces.C.Int;
    begin
+   Ada.Text_IO.Put_Line("Configuring GPIO chip " & uint8'Image(pin.chip) &
+                        ", Line " & uint8'Image(pin.line));
       self.chip := pin.chip;
       self.line := pin.line;
-      self.dir  := dir;
       if not gpiochips(self.chip).open then
          gpiochips(self.chip).chip := c_open(name, O_RDONLY);
          if gpiochips(self.chip).chip = -1 then
@@ -36,6 +40,11 @@ package body BBS.embed.GPIO.Linux is
             self.valid := True;
          end if;
       end if;
+      line.offset := uint32(self.line);
+      temp := linfo_ioctl(gpiochips(self.chip).chip, GPIO_V2_GET_LINEINFO_IOCTL, line);
+      Ada.Text_IO.Put_Line("GPIO Line name " & line.name);
+      self.offset := line.offset;
+      self.set_dir(dir);
    end;
    --
    --  Set the direction of a pin.  This can be used whether a GPIO pin
@@ -43,34 +52,40 @@ package body BBS.embed.GPIO.Linux is
    --  procedure.
    --
    procedure set_dir(self : in out Linux_GPIO_record;
-                     port : String; dir : direction) is
+                     dir : direction) is
       request : gpio_v2_line_request;
       temp    : Interfaces.C.Int;
       fd      : file_id;
    begin
-         request.offsets := (others => 0);
-         request.offsets(0) := self.offset;
-         request.num_lines := 1;
-         request.event_buffer_size := 0;
-         request.config.num_attrs := 0;
-         request.config.flags := (others => False);
-         if dir = input then
-            request.config.flags.GPIO_V2_LINE_FLAG_INPUT := True;
-         else
-            request.config.flags.GPIO_V2_LINE_FLAG_OUTPUT := True;
-         end if;
-         fd := gpiochips(self.chip).chip;
-         temp := req_ioctl(fd, GPIO_V2_GET_LINE_IOCTL, request);
-      null;
+      request.offsets := (others => 0);
+      request.offsets(0) := self.offset;
+      request.num_lines := 1;
+      request.event_buffer_size := 0;
+      request.config.num_attrs := 0;
+      request.config.flags := (others => False);
+      if dir = input then
+         request.config.flags.GPIO_V2_LINE_FLAG_INPUT := True;
+      else
+         request.config.flags.GPIO_V2_LINE_FLAG_OUTPUT := True;
+      end if;
+      fd := gpiochips(self.chip).chip;
+      temp := req_ioctl(fd, GPIO_V2_GET_LINE_IOCTL, request);
+      self.req := request.fd;
+      self.dir  := dir;
    end;
    --
    --  Set the value of an output GPIO.
    --
    overriding
    procedure set(self : Linux_GPIO_record; value : bit) is
---      values : gpio_v2_line_values;
+      values : gpio_v2_line_values;
+      temp   : Interfaces.C.Int;
    begin
-      null;
+      values.bits := (others => 0);
+      values.bits(0) := value;
+      values.mask := (others => 0);
+      values.mask(0) := 1;
+      temp := values_ioctl(self.req, GPIO_V2_LINE_SET_VALUES_IOCTL, values);
    end;
    --
    --  Read the value of an input GPIO.
@@ -84,7 +99,7 @@ package body BBS.embed.GPIO.Linux is
       values.mask := (others => 0);
       values.mask(0) := 1;
       temp := values_ioctl(self.req, GPIO_V2_LINE_GET_VALUES_IOCTL, values);
-      return values.bits(Integer(self.line));
+      return values.bits(0);
    end;
    --
    --  Close the file for the pin.  Once this is called, the GPIO object will
@@ -93,5 +108,27 @@ package body BBS.embed.GPIO.Linux is
    procedure close(self : in out Linux_GPIO_record) is
    begin
       null;
+   end;
+   --
+   --  Routines specific to Linux ioctl GPIO interface
+   --
+   --  Get the name of the GPIO chip for the line.
+   --
+   function chip_name(self : in out Linux_GPIO_record) return String is
+      temp : Interfaces.C.Int;
+      data : gpiochip_info;
+   begin
+      temp := cinfo_ioctl(gpiochips(self.chip).chip, GPIO_GET_CHIPINFO_IOCTL, data);
+   --
+      return data.name;
+   end;
+   --
+   function line_name(self : in out Linux_GPIO_record) return String is
+      temp : Interfaces.C.Int;
+      line : gpio_v2_line_info;
+   begin
+      line.offset := self.offset;
+      temp := linfo_ioctl(gpiochips(self.chip).chip, GPIO_V2_GET_LINEINFO_IOCTL, line);
+      return line.name;
    end;
 end BBS.embed.GPIO.Linux;
