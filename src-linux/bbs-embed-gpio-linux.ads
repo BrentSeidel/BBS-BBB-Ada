@@ -21,6 +21,7 @@ with Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 with BBS.embed.GPIO;
 with Interfaces.C;
+use type Interfaces.C.Int;
 --
 package BBS.embed.GPIO.Linux is
    --
@@ -45,14 +46,6 @@ package BBS.embed.GPIO.Linux is
       chip : uint8 range 0 .. max_chip;
       line : uint8 range 0 .. GPIO_V2_LINES_MAX - 1;
    end record;
-   --
-   --  *****************************************************************
-   --  ***  The following routines will probably need to be updated
-   --  ***  to work with the new GPIO system.  There may still be files
-   --  ***  involved, but it looks like there will also be addresses to
-   --  ***  structures.  These should be able to be treated as opaque
-   --  ***  objects by the Ada software.
-   --  *****************************************************************
    --
    --  Configure a new GPIO object.
    --
@@ -89,6 +82,13 @@ package BBS.embed.GPIO.Linux is
    --
 --private
    --
+   --  Much of the following is a translation of the C gpio.h header file
+   --  into Ada.  Enough has been translated to support the required
+   --  functionality.  Structures that related to unimplemented functionality
+   --  have not yet been translated.
+   --
+   gpio_fault : Exception;
+   --
    type file_id is new interfaces.C.int;
    --
    -- File flags for opening a file.
@@ -112,7 +112,7 @@ package BBS.embed.GPIO.Linux is
    --
    --  #define _IOC_TYPECHECK(t) (sizeof(t))
    --
-   --  Used to create numbers.
+   --  Used to create ioctl command numbers.
    --
    --  NOTE: _IOW means userland is writing and kernel is reading. _IOR
    --  means userland is reading and kernel is writing.
@@ -156,9 +156,6 @@ package BBS.embed.GPIO.Linux is
    --
    function ioctl_to_num is new Ada.Unchecked_Conversion(source => ioctl_type,
          target => ioctl_num);
-   --
-   --  Structures and constants for GPIO IOCTL calls.  Based on the contents
-   --  of gpio.h.
    --
    GPIO_MAX_NAME_SIZE : constant Integer := 32;  --  The maximum size of name and label arrays.
    --
@@ -238,7 +235,7 @@ package BBS.embed.GPIO.Linux is
    --         and 0 for inactive.
    --  @mask: a bitmap identifying the lines to get or set, with each bit
    --         number corresponding to the index into &struct
-   --  gpio_v2_line_request.offsets.
+   --         gpio_v2_line_request.offsets.
    --
    type gpio_v2_line_values is record
       bits : bits64;
@@ -355,7 +352,8 @@ package BBS.embed.GPIO.Linux is
    --       after a %GPIO_GET_LINE_IOCTL operation, zero or negative value means
    --       error
    --
-   type offset_arr is array (0 .. GPIO_V2_LINES_MAX - 1) of uint32;
+   type off_num is new uint32;
+   type offset_arr is array (0 .. GPIO_V2_LINES_MAX - 1) of off_num;
    type gpio_v2_line_request is record
       offsets   : offset_arr;
       consumer  : String(1 .. GPIO_MAX_NAME_SIZE);
@@ -389,7 +387,7 @@ package BBS.embed.GPIO.Linux is
    type gpio_v2_line_info is record
       name      : String(1 .. GPIO_MAX_NAME_SIZE);
       consumer  : String(1 .. GPIO_MAX_NAME_SIZE);
-      offset    : uint32;
+      offset    : off_num;
       num_attrs : uint32;
       flags     : gpio_v2_line_flag;
       attrs     : line_attr_array;
@@ -472,6 +470,11 @@ package BBS.embed.GPIO.Linux is
    --  Note that ioctl() expects the size to be in bytes while 'Size returns
    --  the size in bits, hence the divide by 8.
    --
+   --  Passing the ioctl_type to the ioctl() does not seem to work, even
+   --  though doing an unchecked conversion of it to an ioctl_num (uint32)
+   --  and passing it to the ioctl() does work.  The structure must put
+   --  something else on the stack that confuses the C code.
+   --
    GPIO_GET_CHIPINFO_IOCTL          : constant ioctl_num
       := ioctl_to_num((dir => read, code => 16#b4#, nr => 1, size => gpiochip_info'Size/8));
    GPIO_GET_LINEINFO_UNWATCH_IOCTL  : constant ioctl_num
@@ -530,8 +533,12 @@ private
    type Linux_GPIO_record is new GPIO_record with record
       chip   : uint8;
       line   : uint8;
-      offset : uint32;
-      req    : file_id;
+      offset : off_num;  --  This comes from the line request ioctl() call.
+                         --  It is used instead of line number when setting
+                         --  or getting the GPIO state.
+      req    : file_id;  --  This file descriptor is the one used to actually
+                         --  set and get the GPIO value.  It is returned
+                         --  by a line request ioctl() call.
       dir    : direction;
       valid  : Boolean := False;
    end record;
@@ -543,5 +550,5 @@ private
       open : Boolean := False;
    end record;
    gpiochips : array (uint8 range 0 .. max_chip) of gpiochip_data;
-   
+
 end BBS.embed.GPIO.Linux;

@@ -232,12 +232,15 @@ type int12 is range -(2**11) .. 2**11 - 1
   with size => 12;
 type uint12 is mod 2**12
   with size => 12;
+type uint12 is mod 2**14
+  with size => 14;
 \end{lstlisting}
-\indextype{int2}
-\indextype{int5}
+\indextype{unt2}
+\indextype{unt5}
 \indextype{addr7}
 \indextype{int12}
 \indextype{uint12}
+\indextype{uint14}
 The \datatype{addr7} is used for addressing devices on an I2C bus.  the \datatype{int12} and \datatype{uint12} are used for the return values from typical analog to digital converters and anywhere else a 12 bit number is needed.
 
 \begin{lstlisting}
@@ -2997,13 +3000,77 @@ Closes a Linux analog input device file.  This should be done when the software 
 \end{itemize}
 
 \subsection{\package{BBS.embed.GPIO.Linux}}
-\color{red}{Warning!  The sysfs interface to GPIOs has been deprecated in Linux.  This package will have to be redone for the new \function{ioctl} based interface.  The current sysfs based package is renamed to \package{BBS.embed.GPIO.Linux\_sysfs} so that it can be used with legacy systems.}
+This package accesses the GPIO pins using V2 of the ioctl() interface in Linux.  This is based on some number of \filename{/dev/gpiochip*} files.  Each can provide up to 64 lines, though not all of the lines are necessarily GPIO lines.  If the underlying Linux calls fail, these routines will raise a \constant{gpio\_fault} exception to indicate failure.
 
-\color{black}{As the general-purpose I/O pins are handled using device files (sometimes multiple files), the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.}
+\begin{lstlisting}
+type gpio_id is record
+   chip : uint8 range 0 .. max_chip;
+   line : uint8 range 0 .. GPIO_V2_LINES_MAX - 1;
+end record;
+\end{lstlisting}
+\indextype{gpio\_id}
+The \datatype{gpio\_id} datatype is used to define a GPIO pin.  While it is possible to define your own, it would be best to use the constants defined in \package{BBS.embed.RPI}.  The constant \constant{max\_chip} is used to size some data structures and may change should this get ported to boards with more GPIO chips.  The constant \constant{GPIO\_V2\_LINES\_MAX} is from the \filename{gpio.h} C header file and defines the limit for the number of lines per chip.
 
 \begin{lstlisting}
 procedure configure(self : in out Linux_GPIO_record;
-                    pin : string; port : string; dir : direction);
+                    pin : gpio_id;  dir : direction);
+\end{lstlisting}
+\indexfunc{configure}
+In some cases, pins may have multiple uses.  In these cases, a pin control file needs to be accessed to select the use for the pin.
+\begin{itemize}
+  \item $self$ - The GPIO device to configure.
+  \item $pin$ - The \datatype{gpio\_id} describing the GPIO pin.
+  \item $dir$ - The direction (input or output) for the GPIO pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure set_dir(self : in out Linux_GPIO_record;
+                  port : String; dir : direction);
+\end{lstlisting}
+\indexfunc{set\_dir}
+Sets the direction of a pin.  This is used by the \function{configure} procedure, but can be used whenever a GPIO pin needs to change between input and output.
+\begin{itemize}
+  \item $self$ - The GPIO device to configure.
+  \item $dir$ - The direction (input or output) for the GPIO pin.
+\end{itemize}
+
+\begin{lstlisting}
+procedure close(self : in out Linux_GPIO_record);
+\end{lstlisting}
+\indexfunc{close}
+This currently does nothing.  There is not a one-to-one correlation between file descriptors and GPIO pins.
+\begin{itemize}
+  \item $self$ - The GPIO device to close.
+\end{itemize}
+
+\begin{lstlisting}
+function chip_name(self : in out Linux_GPIO_record) return String;
+\end{lstlisting}
+\indexfunc{chip\_name}
+Gets the internal Linux name for the GPIO chip associated with the GPIO device.
+\begin{itemize}
+  \item $self$ - The GPIO device to query.
+  \item Returns a string containing the GPIO chip name.
+\end{itemize}
+
+\begin{lstlisting}
+function line_name(self : in out Linux_GPIO_record) return String;
+\end{lstlisting}
+\indexfunc{line\_name}
+Gets the internal Linux name for the GPIO line associated with the GPIO device.
+\begin{itemize}
+  \item $self$ - The GPIO device to query.
+  \item Returns a string containing the GPIO line name.
+\end{itemize}
+
+\subsection{\package{BBS.embed.GPIO.Linux\_sysfs}}
+Warning!  The sysfs interface to GPIOs has been deprecated in Linux.  The sysfs based package is renamed to \package{BBS.embed.GPIO.Linux\_sysfs} so that it can be used with legacy systems.
+
+As the general-purpose I/O pins are handled using device files (sometimes multiple files), the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.
+
+\begin{lstlisting}
+procedure configure(self : in out Linux_GPIO_record;
+                    pin : String; port : String; dir : direction);
 \end{lstlisting}
 \indexfunc{configure}
 In some cases, pins may have multiple uses.  In these cases, a pin control file needs to be accessed to select the use for the pin.
@@ -3016,7 +3083,7 @@ In some cases, pins may have multiple uses.  In these cases, a pin control file 
 
 \begin{lstlisting}
 procedure configure(self : in out Linux_GPIO_record;
-                    port : string; dir : direction);
+                    port : String; dir : direction);
 \end{lstlisting}
 \indexfunc{configure}
 For dedicated pins without pin control files, a simpler form can be used for configuration.
@@ -3050,7 +3117,7 @@ Closes a GPIO device file.  This should be done when the software is finished wi
 This package basically provides an Ada wrapper around a bunch of C \function{ioctl} calls.
 \begin{lstlisting}
 procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
-                    SCL : string; SDA : string);
+                    SCL : String; SDA : String);
 \end{lstlisting}
 \indexfunc{configure}
 Configure the I2C interface on a BeagleBone Black or other systems that have multiple functions on the I2C pins.  This configuration procedure sets the pins to the I2C function.

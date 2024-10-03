@@ -147,10 +147,14 @@ I got the following results:
 |--------|-----------|
 | BeagleBone Black | 60 kHz |
 | Raspberry PI 3 | 160 kHz |
+| Raspberry PI 4 | 657 kHz |
 | Arduino Due | 384 kHz |
 
 Note that the times are only approximate and can vary greatly depending on other
 processing on the processor.
+
+Note that the Raspberry Pi used the V2 ioctl() interface to GPIO while the BeagleBone
+Black and Raspberry Pi 3 used the sysfs interface.
 
 By way of comparison, an Adruino Mega 2560 got 126.6kHz or 128.2kHz (it toggled between
 the two as I measured it) in a similar tight loop using digitalWrite().

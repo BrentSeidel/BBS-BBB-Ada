@@ -31,17 +31,21 @@ package body BBS.embed.GPIO.Linux is
       self.chip := pin.chip;
       self.line := pin.line;
       if not gpiochips(self.chip).open then
+         gpiochips(self.chip).open := False;
+         self.valid := False;
          gpiochips(self.chip).chip := c_open(name, O_RDONLY);
          if gpiochips(self.chip).chip = -1 then
-            gpiochips(self.chip).open := False;
-            self.valid := False;
+            raise gpio_fault with "Configure open failed";
          else
             gpiochips(self.chip).open := True;
             self.valid := True;
          end if;
       end if;
-      line.offset := uint32(self.line);
+      line.offset := off_num(self.line);
       temp := linfo_ioctl(gpiochips(self.chip).chip, GPIO_V2_GET_LINEINFO_IOCTL, line);
+      if temp = -1 then
+         raise gpio_fault with "Configure get line info failed";
+      end if;
       Ada.Text_IO.Put_Line("GPIO Line name " & line.name);
       self.offset := line.offset;
       self.set_dir(dir);
@@ -70,6 +74,9 @@ package body BBS.embed.GPIO.Linux is
       end if;
       fd := gpiochips(self.chip).chip;
       temp := req_ioctl(fd, GPIO_V2_GET_LINE_IOCTL, request);
+      if temp = -1 then
+         raise gpio_fault with "Set_dir failed";
+      end if;
       self.req := request.fd;
       self.dir  := dir;
    end;
@@ -86,6 +93,9 @@ package body BBS.embed.GPIO.Linux is
       values.mask := (others => 0);
       values.mask(0) := 1;
       temp := values_ioctl(self.req, GPIO_V2_LINE_SET_VALUES_IOCTL, values);
+      if temp = -1 then
+         raise gpio_fault with "Set GPIO failed";
+      end if;
    end;
    --
    --  Read the value of an input GPIO.
@@ -99,6 +109,9 @@ package body BBS.embed.GPIO.Linux is
       values.mask := (others => 0);
       values.mask(0) := 1;
       temp := values_ioctl(self.req, GPIO_V2_LINE_GET_VALUES_IOCTL, values);
+      if temp = -1 then
+         raise gpio_fault with "Get GPIO failed";
+      end if;
       return values.bits(0);
    end;
    --
@@ -119,7 +132,9 @@ package body BBS.embed.GPIO.Linux is
       data : gpiochip_info;
    begin
       temp := cinfo_ioctl(gpiochips(self.chip).chip, GPIO_GET_CHIPINFO_IOCTL, data);
-   --
+      if temp = -1 then
+         raise gpio_fault with "Chip_name failed";
+      end if;
       return data.name;
    end;
    --
@@ -129,6 +144,9 @@ package body BBS.embed.GPIO.Linux is
    begin
       line.offset := self.offset;
       temp := linfo_ioctl(gpiochips(self.chip).chip, GPIO_V2_GET_LINEINFO_IOCTL, line);
+      if temp = -1 then
+         raise gpio_fault with "Line_name failed";
+      end if;
       return line.name;
    end;
 end BBS.embed.GPIO.Linux;
