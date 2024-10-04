@@ -78,9 +78,7 @@ package BBS.embed.GPIO.Linux is
    function chip_name(self : in out Linux_GPIO_record) return String;
    function line_name(self : in out Linux_GPIO_record) return String;
    --
-   --  Stuff here is exposed for development and debugging purposes.
-   --
---private
+private
    --
    --  Much of the following is a translation of the C gpio.h header file
    --  into Ada.  Enough has been translated to support the required
@@ -520,8 +518,6 @@ package BBS.embed.GPIO.Linux is
    --
    names : constant array (uint8 range 0 .. max_chip) of String(1 .. 14) :=
          ("/dev/gpiochip0", "/dev/gpiochip1", "/dev/gpiochip2", "/dev/gpiochip3", "/dev/gpiochip4");
-
-private
    --
    type mode_t is new Integer;
    function C_open(name : string; flags : file_flg; mode : mode_t := 8#666#)

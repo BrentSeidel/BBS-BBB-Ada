@@ -10,7 +10,9 @@
 # set back to 644 every time the Raspberry Pi boots.
 #
 # The GPIO pins are not exported by default on the Raspberry Pi.  The following
-# commands export them.
+# commands export them.  Note that these exports will cause errors if the
+# sysfs interface to GPIOs has been removed.  In that case, these aren't needed
+# and you should use the new ioctl() based GPIO routines.
 #
 echo "Activating GPIO Pins"
 echo 4 > /sys/class/gpio/export

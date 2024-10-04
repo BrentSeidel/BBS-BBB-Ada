@@ -47,7 +47,8 @@ package BBS.embed.RPI is
    GPIO_26 : aliased constant string := "/sys/class/gpio/gpio26/";
    GPIO_27 : aliased constant string := "/sys/class/gpio/gpio27/";
    --
-   --  Chip and line definitions for GPIOs.
+   --  Chip and line definitions for GPIOs for the new ioctl() based interface.
+   --
    GPIO4  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 4);
    GPIO5  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 5);
    GPIO6  : constant BBS.embed.GPIO.Linux.gpio_id := (chip => 0, line => 6);
