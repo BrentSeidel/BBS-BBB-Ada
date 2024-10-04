@@ -39,7 +39,7 @@ package body BBS.embed.SPI.Linux is
    --
    procedure configure(self : in out Linux_SPI_record; SPI_file : string) is
    begin
-      self.port := C_open(SPI_file, O_RDWR, 8#666#);
+      self.port := BBS.embed.Linux.C_open(SPI_file, BBS.embed.Linux.O_RDWR, 8#666#);
    end;
    --
    procedure set(self : Linux_SPI_record; value : uint8) is
@@ -65,7 +65,7 @@ package body BBS.embed.SPI.Linux is
       temp : Integer;
       pragma unreferenced(temp);
    begin
-      temp := c_close(self.port);
+      temp := BBS.embed.Linux.c_close(self.port);
    end;
    --
 end;

@@ -33,7 +33,7 @@ package body BBS.embed.GPIO.Linux is
       if not gpiochips(self.chip).open then
          gpiochips(self.chip).open := False;
          self.valid := False;
-         gpiochips(self.chip).chip := c_open(name, O_RDONLY);
+         gpiochips(self.chip).chip := BBS.embed.Linux.c_open(name, BBS.embed.Linux.O_RDONLY);
          if gpiochips(self.chip).chip = -1 then
             raise gpio_fault with "Configure open failed";
          else
@@ -59,7 +59,7 @@ package body BBS.embed.GPIO.Linux is
                      dir : direction) is
       request : gpio_v2_line_request;
       temp    : Interfaces.C.Int;
-      fd      : file_id;
+      fd      : BBS.embed.Linux.file_id;
    begin
       request.offsets := (others => 0);
       request.offsets(0) := self.offset;

@@ -66,7 +66,7 @@ package body BBS.embed.i2c.linux is
       Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SDA_Ctrl);
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
-      i2c_fd := C_open(i2c_file, O_RDWR, 8#666#);
+      i2c_fd := BBS.embed.Linux.C_open(i2c_file, BBS.embed.Linux.O_RDWR, 8#666#);
    end;
    --
    -- Procedure to write a byte to a register on a device on the i2c bus.
@@ -85,10 +85,10 @@ package body BBS.embed.i2c.linux is
       buff1(1) := data;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Write error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
@@ -123,10 +123,10 @@ package body BBS.embed.i2c.linux is
       ioctl_msg.nmsgs := 2;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
@@ -163,10 +163,10 @@ package body BBS.embed.i2c.linux is
       ioctl_msg.nmsgs := 2;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
@@ -203,10 +203,10 @@ package body BBS.embed.i2c.linux is
       ioctl_msg.nmsgs := 2;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
@@ -242,24 +242,15 @@ package body BBS.embed.i2c.linux is
       ioctl_msg.nmsgs := 2;
       status := rdwr_ioctl(i2c_fd, i2c_rdwr, ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
          error := none;
       end if;
-   end;
-   --
-   -- Convert an string from strerror into a printable Ada string
-   --
-   function cvt_cstr_adastr(str_ptr : err_msg_ptr) return string is
-      null_loc : constant integer :=
-        Ada.Strings.Fixed.index(string(str_ptr.all), "" & ASCII.NUL);
-   begin
-      return Ada.Strings.Fixed.head(string(str_ptr.all), null_loc - 1);
    end;
    --
    -- Object oriented interface
@@ -277,7 +268,7 @@ package body BBS.embed.i2c.linux is
       Ada.Text_IO.Open(ctrl_file, Ada.Text_IO.Out_File, SDA);
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
-      self.port := C_open(i2c_file, O_RDWR, 8#666#);
+      self.port := BBS.embed.Linux.C_open(i2c_file, BBS.embed.Linux.O_RDWR, 8#666#);
       self.ioctl_msg.messages := self.msg'Unchecked_Access;
    end;
    --
@@ -285,7 +276,7 @@ package body BBS.embed.i2c.linux is
       ctrl_file : Ada.Text_IO.File_Type;
    begin
       BBS.embed.log.info.put_line("I2C: Configuring I2C interface on " & i2c_file);
-      self.port := C_open(i2c_file, O_RDWR, 8#666#);
+      self.port := BBS.embed.Linux.C_open(i2c_file, BBS.embed.Linux.O_RDWR, 8#666#);
       self.ioctl_msg.messages := self.msg'Unchecked_Access;
       BBS.embed.log.info.put_line("I2C: Configuration complete.");
    end;
@@ -335,24 +326,17 @@ package body BBS.embed.i2c.linux is
          self.buff1(buff_index(x + 1)) := self.b(buff_index(x));
       end loop;
       --
---      ioctl_msg.messages := msg'Access;
---      ioctl_msg.nmsgs := 1;
-      reset_errno;
---      status := rdwr_ioctl(self.port, i2c_rdwr, ioctl_msg);
---      if integer(status) < 0 then
-      --
-      --  For some reasion i2c_rdwr doesn't seem to work anymore for writing
-      --  data.
+      BBS.embed.Linux.reset_errno;
       --
       --  Use i2c_slave to set the slave device address
       --
       status := Interfaces.C.int(basic_ioctl(self.port, i2c_slave, Interfaces.C.long(addr)));
       if Integer(status) < 0 then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Write multi error " & Integer'Image(err) &
                                     " occured while setting address.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
          return;
@@ -360,13 +344,13 @@ package body BBS.embed.i2c.linux is
       --
       --  Use C_write to write the data buffer.
       --
-      reset_errno;
+      BBS.embed.Linux.reset_errno;
       status := Interfaces.C.int(C_write(self.port, self.buff1, size_t(size + 1)));
       if Integer(status) /= Integer(size + 1) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Write multi error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
             BBS.embed.log.debug.Put_Line("I2C: Wrote " & Integer'Image(Integer(status)) & " bytes");
             BBS.embed.log.debug.Put_Line("I2C: Expected " & Integer'Image(Integer(size + 1)) & " bytes");
          end if;
@@ -422,10 +406,10 @@ package body BBS.embed.i2c.linux is
       self.ioctl_msg.nmsgs := 2;
       status := rdwr_ioctl(self.port, i2c_rdwr, self.ioctl_msg);
       if (integer(status) < 0) then
-         err := get_errno;
+         err := BBS.embed.Linux.get_errno;
          if (debug) then
             BBS.embed.log.debug.Put("I2C: Read error " & Integer'Image(err) & " occured.  ");
-            BBS.embed.log.debug.Put_Line(cvt_cstr_adastr(strerror(err)));
+            BBS.embed.log.debug.Put_Line(BBS.embed.Linux.cvt_cstr_adastr(BBS.embed.Linux.strerror(err)));
          end if;
          error := failed;
       else
@@ -440,7 +424,7 @@ package body BBS.embed.i2c.linux is
       temp : Integer;
       pragma unreferenced(temp);
    begin
-      temp := c_close(self.port);
+      temp := BBS.embed.Linux.c_close(self.port);
    end;
    --
 end;

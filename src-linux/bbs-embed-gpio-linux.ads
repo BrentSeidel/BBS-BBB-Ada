@@ -20,6 +20,8 @@ with Ada.Direct_IO;
 with Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 with BBS.embed.GPIO;
+with BBS.embed.Linux;
+use type BBS.embed.Linux.file_id;
 with Interfaces.C;
 use type Interfaces.C.Int;
 --
@@ -80,23 +82,13 @@ package BBS.embed.GPIO.Linux is
    --
 private
    --
+   gpio_fault : Exception;
+   --
+   --
    --  Much of the following is a translation of the C gpio.h header file
    --  into Ada.  Enough has been translated to support the required
    --  functionality.  Structures that related to unimplemented functionality
    --  have not yet been translated.
-   --
-   gpio_fault : Exception;
-   --
-   type file_id is new interfaces.C.int;
-   --
-   -- File flags for opening a file.
-   --
-   type file_flg is new interfaces.C.int;
-   O_RDONLY : file_flg := 0;
-   O_WRONLY : file_flg := 1;
-   O_RDWR   : file_flg := 2;
-   --
-   --  Stuff for IOCTL.  This might be collected and moved elsewhere.
    --
    --  NOTE: "write" means userland is writing and kernel is
    --  reading. "read" means userland is reading and kernel is writing.
@@ -363,7 +355,7 @@ private
       unused3 : uint32 := 0;
       unused4 : uint32 := 0;
       unused5 : uint32 := 0;
-      fd      : file_id;
+      fd      : BBS.embed.Linux.file_id;
    end record;
    --
    --  struct gpio_v2_line_info - Information about a certain GPIO line
@@ -493,22 +485,22 @@ private
    GPIO_V2_LINE_SET_VALUES_IOCTL    : constant ioctl_num := ioctl_to_num((
       dir => rw, code => 16#b4#, nr => 16#0f#, size => gpio_v2_line_values'Size/8));
    --
-   function cinfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+   function cinfo_ioctl(f_id : BBS.embed.Linux.file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
       info : out gpiochip_info) return Interfaces.C.Int
       with pre => (cmd = GPIO_GET_CHIPINFO_IOCTL);
    pragma Import(C, cinfo_ioctl, "ioctl");
    --
-   function linfo_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+   function linfo_ioctl(f_id : BBS.embed.Linux.file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
       info : in out gpio_v2_line_info) return Interfaces.C.Int
       with pre => (cmd = GPIO_V2_GET_LINEINFO_IOCTL);
    pragma Import(C, linfo_ioctl, "ioctl");
    --
-   function values_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+   function values_ioctl(f_id : BBS.embed.Linux.file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
       info : in out gpio_v2_line_values) return Interfaces.C.Int
       with pre => ((cmd = GPIO_V2_LINE_GET_VALUES_IOCTL) or (cmd = GPIO_V2_LINE_SET_VALUES_IOCTL));
    pragma Import(C, values_ioctl, "ioctl");
    --
-   function req_ioctl(f_id : file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
+   function req_ioctl(f_id : BBS.embed.Linux.file_id; cmd : ioctl_num; -- BBS.embed.gpio.Linux.ioctl_type;
       info : in out gpio_v2_line_request) return Interfaces.C.Int
       with pre => (cmd = GPIO_V2_GET_LINE_IOCTL);
    pragma Import(C, req_ioctl, "ioctl");
@@ -519,11 +511,6 @@ private
    names : constant array (uint8 range 0 .. max_chip) of String(1 .. 14) :=
          ("/dev/gpiochip0", "/dev/gpiochip1", "/dev/gpiochip2", "/dev/gpiochip3", "/dev/gpiochip4");
    --
-   type mode_t is new Integer;
-   function C_open(name : string; flags : file_flg; mode : mode_t := 8#666#)
-      return file_id;
-   pragma import(C, C_open, "open");
-   --
    --  GPIO Object.
    --
    type Linux_GPIO_record is new GPIO_record with record
@@ -532,7 +519,7 @@ private
       offset : off_num;  --  This comes from the line request ioctl() call.
                          --  It is used instead of line number when setting
                          --  or getting the GPIO state.
-      req    : file_id;  --  This file descriptor is the one used to actually
+      req    : BBS.embed.Linux.file_id;  --  This file descriptor is the one used to actually
                          --  set and get the GPIO value.  It is returned
                          --  by a line request ioctl() call.
       dir    : direction;
@@ -542,7 +529,7 @@ private
    --  Chip data
    --
    type gpiochip_data is record
-      chip : file_id;
+      chip : BBS.embed.Linux.file_id;
       open : Boolean := False;
    end record;
    gpiochips : array (uint8 range 0 .. max_chip) of gpiochip_data;

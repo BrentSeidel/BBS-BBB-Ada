@@ -23,6 +23,7 @@ with Interfaces.C;
 use type Interfaces.C.unsigned_long;
 with BBS.embed;
 with BBS.embed.BBB;
+with BBS.embed.Linux;
 --
 --   The Linux i2c driver does not seem to be designed to work well using file
 -- read and write calls.  Much of it is based on ioctl calls.  Thus we have to
@@ -158,11 +159,6 @@ private
    --
    -- First, declare some bindings to the C library.
    --
-   -- Since the basic C file and ioctl calls use a file descriptor, define a
-   -- type for it and declare bindings for the C open, read, and write functions.
-   --
-   type file_id is new interfaces.C.int;
-   type mode_t is new integer;
    --
    -- The range is used on size_t so that it is forced to be within the size of
    -- buffer.
@@ -171,21 +167,10 @@ private
       range long_integer(buffer'First) .. long_integer(buffer'Last);
    subtype ssize_t is size_t;
    --
-   -- File flags for opening a file read/write.  This is the only one used here
-   -- so don't bother to define others.
-   --
-   O_RDWR : integer := 16#02#;
-   --
-   function C_open(name : string; flags : integer; mode : mode_t := 8#666#) return file_id;
-   pragma import(C, C_open, "open");
-   --
-   function C_close(file : file_id) return integer;
-   pragma import(C, C_close, "close");
-   --
-   function C_read(file : file_id; buff : in out buffer; length : size_t) return ssize_t;
+   function C_read(file : BBS.embed.Linux.file_id; buff : in out buffer; length : size_t) return ssize_t;
    pragma import(C, C_read, "read");
    --
-   function C_write(file : file_id; buff : in out buffer; length : size_t) return ssize_t;
+   function C_write(file : BBS.embed.Linux.file_id; buff : in out buffer; length : size_t) return ssize_t;
    pragma import(C, C_write, "write");
    --
    -- Some of the interface actions need to be done using C ioctl calls.  Since
@@ -235,7 +220,7 @@ private
    --  i2c_tenbit (listed as not supported in Linux documentation)
    --  i2c_pec
    --
-   function basic_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
+   function basic_ioctl(f_id : BBS.embed.Linux.file_id; command : Interfaces.C.unsigned_long;
                         options : Interfaces.C.long) return Interfaces.C.int
    with
      pre => (command = i2c_slave) or
@@ -246,7 +231,7 @@ private
    --
    -- funcs_ioctl supports the i2c_funcs command.
    --
-   function funcs_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
+   function funcs_ioctl(f_id : BBS.embed.Linux.file_id; command : Interfaces.C.unsigned_long;
                         value : out Interfaces.C.long) return Interfaces.C.int
    with
      pre => (command = i2c_funcs);
@@ -254,47 +239,28 @@ private
    --
    -- rdwr_ioctl supports the i2c_rdwr command.
    --
-   function rdwr_ioctl(f_id : file_id; command : Interfaces.C.unsigned_long;
+   function rdwr_ioctl(f_id : BBS.embed.Linux.file_id; command : Interfaces.C.unsigned_long;
                        value : in out i2c_rdwr_ioctl_data) return Interfaces.C.int
    with
      pre => (command = i2c_rdwr);
    pragma Import(C, rdwr_ioctl, "ioctl");
    --
-   -- Now some C functions for getting errno and error messages
-   --
-   function get_errno return integer;
-   pragma Import(C, get_errno, "get_errno");
-   --
-   procedure reset_errno;
-   pragma Import(C, reset_errno, "reset_errno");
-   --
-   type err_msg is new string(1 .. 255);
-   type err_msg_ptr is access err_msg;
-   --
-   procedure perror(msg : string);
-   pragma Import(C, perror, "perror");
-   --
-   function strerror(err_num : integer) return err_msg_ptr;
-   pragma Import(C, strerror, "strerror");
-   --
-   function cvt_cstr_adastr(str_ptr : err_msg_ptr) return string;
-   --
-   i2c_fd : file_id;
+   i2c_fd : BBS.embed.Linux.file_id;
    --
    -- Buffer and message variables
    --
    buff1 : aliased buffer;
    buff2 : aliased buffer;
-   msg : aliased i2c_msg_arr;
+   msg   : aliased i2c_msg_arr;
    ioctl_msg : i2c_rdwr_ioctl_data;
    --
    -- Object oriented definitions
    --
    type linux_i2c_interface_record is new i2c_interface_record with
       record
-         port : file_id;
-         buff1 : aliased buffer;
-         msg : aliased i2c_msg_arr;
+         port      : BBS.embed.Linux.file_id;
+         buff1     : aliased buffer;
+         msg       : aliased i2c_msg_arr;
          ioctl_msg : i2c_rdwr_ioctl_data;
       end record;
    --
