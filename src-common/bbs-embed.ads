@@ -16,7 +16,6 @@
 --  You should have received a copy of the GNU General Public License along
 --  with bbs_embed. If not, see <https://www.gnu.org/licenses/>.--
 --
---
 --  This package contains useful items for programming the embedded systems in
 --  Ada.  The intention is to include I2C, SPI, and GPIO interfaces.
 --
@@ -53,7 +52,7 @@ package BBS.embed is
    function lowByte(x : uint16) return uint8 is
       (uint8(x and 16#FF#));
    --
-   --  buffer to use for reading and writing from I2C or SPI bus.  In most
+   --  Buffer to use for reading and writing from I2C or SPI bus.  In most
    --  cases, only a few bytes are needed.  This should be quite adequate.
    --
    type buff_index is new Integer range 0 .. 127;

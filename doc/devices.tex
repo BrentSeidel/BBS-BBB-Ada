@@ -260,6 +260,17 @@ function lowByte(x : uint16) return uint8 is
 \indexfunc{lowByte}
 These are used to extract the MSB and LST from \datatype{uint16} values.
 
+Buffers are needed for using the I2C and SPI busses.  The general definitions are below:
+\begin{lstlisting}
+type buff_index is new Integer range 0 .. 127;
+type buffer is array(buff_index'Range) of uint8;
+type buff_ptr is access all buffer;
+\end{lstlisting}
+\indextype{buff\_index}
+\indextype{buffer}
+\indextype{buff\_ptr}
+In most cases, these are not needed in the user code and are only used in the I2C, SPI, and related device drivers.  In most cases, only a few bytes are needed in the buffer and if memory is tight, \datatype{buff\_index} can be reduced in range.  Should a larger buffer be needed for some device, this range can be increased.
+
 \subsection{\package{BBS.embed.AIN}}
 Analog inputs have one common routine to read the value.  Everything else is implementation dependent.
 \begin{lstlisting}
@@ -298,15 +309,8 @@ Reads the value of a GPIO device.  The value returned if the device is set to ou
 \subsection{\package{BBS.embed.i2c}}
 An I2C bus can interface with a number of devices on the bus.  It operates with the CPU being the master and the addressed device responding.  The basic I2C bus uses 7 bit addressing for devices and operates at 100kHz.  Any other options (10 bit addressing or higher speeds would be device specific, if supported).
 
-The \package{BBS.embed.i2c} defines some datatypes.  The ones for external use are:
-\begin{itemize}
-  \item \datatype{err\_code} is an enumeration of error statuses that can be returned.  The possible values are \datatype{none}, \datatype{nack}, \datatype{ovre}, \datatype{invalid\_addr}, and \datatype{failed}.  In most cases you'll just want to compare the returned error to \datatype{none}.
-  \item \datatype{buff\_index} is an \datatype{Integer} index into a buffer with a range of 0 .. 127.
-  \item \datatype{buffer} is an array of \datatype{uint8} and bounds of \datatype{buff\_index}.  It is used for buffering data for I2C bus transfers.
-\end{itemize}
+The \package{BBS.embed.i2c} package defines one extra datatype for external use.  \datatype{err\_code} is an enumeration of error statuses that can be returned.  The possible values are \datatype{none}, \datatype{nack}, \datatype{ovre}, \datatype{invalid\_addr}, and \datatype{failed}.  In most cases you'll just want to compare the returned error to \datatype{none}.
 \indextype{err\_code}
-\indextype{buff\_index}
-\indextype{buffer}
 
 The following routines are used for communicating with devices on the I2C bus.  Note that there is no standard about whether multibyte data should be transferred LSB first or MSB first (I've even seen devices that use both depending on which data you're getting).  Routines are provided for MSB first (m1 routines) or MSB second (m2 routines) for 16 bit transfers.  For longer transfers, use the block transfer routines and decode the data yourself.  The 8 and 16 bit routines cover most of the cases.
 \begin{lstlisting}
@@ -2976,7 +2980,7 @@ Linux defines some common methods for interfacing with devices.  This is typical
 \section{Common}
 This section describes the implementation differences between the base common software and the Linux implementation.
 
-\subsection{\package{BBS.embed.AIN.linux}}
+\subsection{\package{BBS.embed.AIN.Linux}}
 As the analog inputs are handled using device files, the name of the device file has to be passed to a configure routine which then opens the file.  When finished, the file should be closed.
 
 \begin{lstlisting}
@@ -3113,8 +3117,8 @@ Closes a GPIO device file.  This should be done when the software is finished wi
   \item $self$ - The GPIO device to close.
 \end{itemize}
 
-\subsection{\package{BBS.embed.i2c.linux}}
-This package basically provides an Ada wrapper around a bunch of C \function{ioctl} calls.
+\subsection{\package{BBS.embed.i2c.Linux}}
+This package basically provides an Ada wrapper around a bunch of C \function{ioctl} calls.  If the underlying Linux calls fail, these routines will raise a \constant{i2c\_fault} exception to indicate failure.
 \begin{lstlisting}
 procedure configure(self : in out linux_i2c_interface_record; i2c_file : string;
                     SCL : String; SDA : String);
@@ -3147,13 +3151,14 @@ Closes a I2C device file.  This should be done when the software is finished wit
   \item $self$ - The I2C device to close.
 \end{itemize}
 
-\subsection{\package{BBS.embed.log.linux}}
+\subsection{\package{BBS.embed.log.Linux}}
 The Linux log implementation just prints the log messages to the console using \function{Ada.Text\_IO.Put} and \function{Ada.Text\_IO.Put\_Line}.  No new functions are added to the class.
 
 \subsection{\package{BBS.embed.Linux}}
+This package is intended to consolidate some of the Linux related definitions used by other Linux specific drivers.  In most cases, these definitions aren't needed in the user code.  Some of this, however might be of interest for examples in how to define and call C functions from Ada.
 
 \subsection{\package{BBS.embed.SPI.Linux}}
-This is mostly Ada wrappers around some C I/O calls.
+This is mostly Ada wrappers around some C I/O calls.  If the underlying Linux calls fail, these routines will raise a \constant{spi\_fault} exception to indicate failure
 
 \begin{lstlisting}
 procedure configure(self : in out Linux_SPI_record; SPI_file : string;
@@ -3190,7 +3195,7 @@ This section covers items specific to the Raspberry Pi.
 This initialization script needs to be run after the Raspberry Pi is booted and before attempting to run software using this package.  It contains shell commands to activate the GPIO pins and set the protection on the pin control files so that non-root users can write to them.  It also sets the protection on the I2C device file for non-root access.  The script is called \filename{init-bbb.sh} and is in the project root directory.  It needs to be run as root (typically using the \cli{sudo} command).
 
 \subsection{\package{BBS.embed.RPI}}
-This package contains string constants for the available GPIO pins, I2C device, and SPI device.  These constants should be used rather that using string literals for the path names.
+This package contains string constants for the available GPIO pins, I2C device, and SPI device.  These constants should be used rather than using string literals for the path names.
 %--------------------------------------------------------------------------------------------------
 \section{BeagleBone Black}
 This section covers items specific to the BeagleBone Black.  Note that the BeagleBone Black has more I/O options than the Raspberry Pi.  This includes PWM outputs, analog inputs, and four on-board LEDs.
