@@ -22,10 +22,7 @@
 --
 with Ada.Unchecked_Conversion;
 package BBS.embed is
-   pragma Pure;
-   author : constant String := "Brent Seidel";
-   version : constant String := "V01.01";
-
+   pragma Preelaborate;
    --
    --  Define some types for use here. (types for 8, 16, 32, and 64 bits
    --  are defined in the root package (BBS)).  Add more here as needed.
@@ -55,4 +52,11 @@ package BBS.embed is
      (uint8(x / 2**8));
    function lowByte(x : uint16) return uint8 is
       (uint8(x and 16#FF#));
+   --
+   --  buffer to use for reading and writing from I2C or SPI bus.  In most
+   --  cases, only a few bytes are needed.  This should be quite adequate.
+   --
+   type buff_index is new Integer range 0 .. 127;
+   type buffer is array(buff_index'Range) of uint8;
+   type buff_ptr is access all buffer;
 end;

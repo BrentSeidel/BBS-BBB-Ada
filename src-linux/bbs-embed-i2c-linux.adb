@@ -236,7 +236,7 @@ package body BBS.embed.i2c.linux is
       msg(1).addr := uint16(addr);
       msg(1).flags := 1; -- read
       msg(1).len := size;
-      msg(1).buff := cbuff_ptr(buff);
+      msg(1).buff := BBS.embed.Linux.cbuff_ptr(buff);
       --
       ioctl_msg.messages := msg'Access;
       ioctl_msg.nmsgs := 2;
@@ -269,6 +269,9 @@ package body BBS.embed.i2c.linux is
       Ada.Text_IO.Put_Line(ctrl_file, "i2c");
       Ada.Text_IO.Close(ctrl_file);
       self.port := BBS.embed.Linux.C_open(i2c_file, BBS.embed.Linux.O_RDWR, 8#666#);
+      if self.port = -1 then
+         raise i2c_fault with "I2C file open failed.";
+      end if;
       self.ioctl_msg.messages := self.msg'Unchecked_Access;
    end;
    --
@@ -345,7 +348,7 @@ package body BBS.embed.i2c.linux is
       --  Use C_write to write the data buffer.
       --
       BBS.embed.Linux.reset_errno;
-      status := Interfaces.C.int(C_write(self.port, self.buff1, size_t(size + 1)));
+      status := Interfaces.C.int(BBS.embed.Linux.C_write(self.port, self.buff1, BBS.embed.Linux.size_t(size + 1)));
       if Integer(status) /= Integer(size + 1) then
          err := BBS.embed.Linux.get_errno;
          if (debug) then

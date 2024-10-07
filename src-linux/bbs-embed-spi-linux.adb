@@ -40,22 +40,23 @@ package body BBS.embed.SPI.Linux is
    procedure configure(self : in out Linux_SPI_record; SPI_file : string) is
    begin
       self.port := BBS.embed.Linux.C_open(SPI_file, BBS.embed.Linux.O_RDWR, 8#666#);
+      if self.port = -1 then
+         raise spi_fault with "SPI file open failed.";
+      end if;
    end;
    --
    procedure set(self : Linux_SPI_record; value : uint8) is
-      temp : size_t;
-      t2 : uint8 := value;
+      temp : BBS.embed.Linux.size_t;
    begin
-      temp := c_write(self.port, t2, 1);
+      buff(0) := value;
+      temp := BBS.embed.Linux.C_write(self.port, buff, 1);
    end;
    --
    function get(self : Linux_SPI_record) return uint8 is
-      temp : uint8 := 0;
-      dummy1 : size_t;
-      dummy2 : ssize_t;
+      dummy2 : BBS.embed.Linux.ssize_t;
    begin
-      dummy2 := C_read(self.port, temp, dummy1);
-      return temp;
+      dummy2 := BBS.embed.Linux.C_read(self.port, buff, 1);
+      return buff(0);
    end;
    --
    --  Close the I2C interface when done.  Once this is called, the

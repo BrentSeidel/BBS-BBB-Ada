@@ -46,6 +46,9 @@ package BBS.embed.Linux is
    --
    type mode_t is new Interfaces.C.Int;
    --
+   type cbuff_ptr is new buff_ptr;
+   pragma Convention(C, cbuff_ptr);
+   --
    --  Declare C file functions.
    --
    function C_open(name : string; flags : file_flg; mode : mode_t := 8#666#)
@@ -55,14 +58,20 @@ package BBS.embed.Linux is
    function C_close(file : file_id) return integer;
    pragma import(C, C_close, "close");
    --
---   function C_read(file : file_id; buff : in out buffer; length : size_t) return ssize_t;
---   pragma import(C, C_read, "read");
+   -- The range is used on size_t so that it is forced to be within the size of
+   -- buffer.
    --
---   function C_write(file : file_id; buff : in out buffer; length : size_t) return ssize_t;
---   pragma import(C, C_write, "write");
+   type size_t is new long_integer
+      range long_integer(buffer'First) .. long_integer(buffer'Last);
+   subtype ssize_t is size_t;
+   --
+   function C_read(file : BBS.embed.Linux.file_id; buff : in out buffer; length : size_t) return ssize_t;
+   pragma import(C, C_read, "read");
+   --
+   function C_write(file : BBS.embed.Linux.file_id; buff : in out buffer; length : size_t) return ssize_t;
+   pragma import(C, C_write, "write");
    --
    -- Now some C functions for getting errno and error messages
-   --
    --
    type err_msg is new string(1 .. 255);
    type err_msg_ptr is access err_msg;

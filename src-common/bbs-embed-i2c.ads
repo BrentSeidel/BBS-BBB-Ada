@@ -31,15 +31,7 @@ package BBS.embed.i2c is
    --
    type err_code is (none, nack, ovre, invalid_addr, failed);
    --
-   --  buffer to use for reading and writing from i2c bus.  In most cases, only
-   --  a few bytes are needed.  This should be quite adequate.
-   --
-   type buff_index is new Integer range 0 .. 127;
-   type buffer is array(buff_index'Range) of uint8;
-   type buff_ptr is access all buffer;
-   --
    --   The I2C  object
-   --
    --
    --  The root class for I2C interface objects.  This represents the actual I2C
    --  hardware interface.  A buffer is required for all interfaces, beyond that

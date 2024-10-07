@@ -19,7 +19,7 @@
 with Ada.Direct_IO;
 with Ada.Text_IO;
 with Ada.Unchecked_Conversion;
-with BBS.embed.GPIO;
+--with BBS.embed.GPIO;
 with BBS.embed.Linux;
 use type BBS.embed.Linux.file_id;
 with Interfaces.C;
@@ -83,7 +83,6 @@ package BBS.embed.GPIO.Linux is
 private
    --
    gpio_fault : Exception;
-   --
    --
    --  Much of the following is a translation of the C gpio.h header file
    --  into Ada.  Enough has been translated to support the required

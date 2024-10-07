@@ -20,6 +20,7 @@ with Ada.Text_IO;
 with Interfaces.C;
 use type Interfaces.C.unsigned_long;
 with BBS.embed.Linux;
+use type BBS.embed.Linux.File_ID;
 with BBS.embed.SPI;
 
 package BBS.embed.SPI.Linux is
@@ -60,27 +61,15 @@ package BBS.embed.SPI.Linux is
    procedure close(self : in out Linux_SPI_record);
 private
    --
-   -- Some of the more advanced features of the SPI port require the use of
-   -- IOCTL calls.  So, to be prepared, the use of C/Unix files is needed.  This
-   -- is similar to the approach taken in the BBS.embed.i2c package.
+   --  SPI exception raised for errors calling Linux.
    --
-   -- First, declare some bindings to the C library.
-   --
-   -- Since the basic C file and ioctl calls use a file descriptor, define a
-   -- type for it and declare bindings for the C open, read, and write functions.
-   --
-   type size_t is new long_integer;
-   subtype ssize_t is size_t;
-   --
-   --
-   function C_read(file : BBS.embed.Linux.file_id; buff : in out uint8; length : size_t) return ssize_t;
-   pragma import(C, C_read, "read");
-   --
-   function C_write(file : BBS.embed.Linux.file_id; buff : in out uint8; length : size_t) return ssize_t;
-   pragma import(C, C_write, "write");
+   spi_fault : Exception;
    --
    type Linux_SPI_record is new SPI_record with record
       port   : BBS.embed.Linux.file_id;
    end record;
-
+   --
+   --  Buffer for SPI communication
+   --
+   buff : aliased buffer;
 end;
