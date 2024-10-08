@@ -24,12 +24,20 @@ package BBS.embed.SPI is
    type SPI_record is abstract tagged limited null record;
    type SPI_ptr is access all SPI_record'Class;
    --
-   -- Write a value to the SPI
+   -- Write a byte to the SPI
    --
    procedure set(self : SPI_record; value : uint8) is abstract;
    --
-   -- Read a value from the SPI
+   --  Write a buffer to the SPI
+   --
+   procedure set(self : SPI_record; value : buffer; size : buff_index) is abstract;
+   --
+   -- Read a byte from the SPI
    --
    function get(self : SPI_record) return uint8 is abstract;
-
+   --
+   --  Read a buffer from the SPI
+   --
+   procedure get(self : SPI_record; value : out buffer; size : buff_index) is abstract;
+   --
 end;

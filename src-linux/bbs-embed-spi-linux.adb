@@ -45,6 +45,8 @@ package body BBS.embed.SPI.Linux is
       end if;
    end;
    --
+   -- Write a byte to the SPI
+   --
    procedure set(self : Linux_SPI_record; value : uint8) is
       temp : BBS.embed.Linux.size_t;
    begin
@@ -52,11 +54,30 @@ package body BBS.embed.SPI.Linux is
       temp := BBS.embed.Linux.C_write(self.port, buff, 1);
    end;
    --
-   function get(self : Linux_SPI_record) return uint8 is
-      dummy2 : BBS.embed.Linux.ssize_t;
+   --  Write a buffer to the SPI
+   --
+   procedure set(self : Linux_SPI_record; value : buffer; size : buff_index) is
+      temp : BBS.embed.Linux.size_t;
+      buff : buffer := value;
    begin
-      dummy2 := BBS.embed.Linux.C_read(self.port, buff, 1);
+      temp := BBS.embed.Linux.C_write(self.port, buff, BBS.embed.Linux.size_t(size));
+   end;
+   --
+   -- Read a byte from the SPI
+   --
+   function get(self : Linux_SPI_record) return uint8 is
+      temp : BBS.embed.Linux.ssize_t;
+   begin
+      temp := BBS.embed.Linux.C_read(self.port, buff, 1);
       return buff(0);
+   end;
+   --
+   --  Read a buffer from the SPI
+   --
+   procedure get(self : Linux_SPI_record; value : out buffer; size : buff_index) is
+      temp : BBS.embed.Linux.ssize_t;
+   begin
+      temp := BBS.embed.Linux.C_read(self.port, value, BBS.embed.Linux.size_t(size));
    end;
    --
    --  Close the I2C interface when done.  Once this is called, the
@@ -67,6 +88,40 @@ package body BBS.embed.SPI.Linux is
       pragma unreferenced(temp);
    begin
       temp := BBS.embed.Linux.c_close(self.port);
+   end;
+   --
+   --  Print the SPI configuration
+   --
+   procedure print_config(self : in out Linux_SPI_record) is
+      temp : Interfaces.C.Int;
+      byte : uint8  := 0;
+      word : uint32 := 0;
+   begin
+      temp := mode_ioctl(self.port, SPI_IOC_RD_MODE, byte);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Get mode ioctl() failed");
+      end if;
+      Ada.Text_IO.Put_Line("SPI port mode is " & uint8'Image(byte));
+      temp := lsb_ioctl(self.port, SPI_IOC_RD_LSB_FIRST, byte);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Get LSB ioctl() failed");
+      end if;
+      Ada.Text_IO.Put_Line("SPI port LSB mode is " & uint8'Image(byte));
+      temp := bits_ioctl(self.port, SPI_IOC_RD_BITS_PER_WORD, byte);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Get bits ioctl() failed");
+      end if;
+      Ada.Text_IO.Put_Line("SPI port bits per word is " & uint8'Image(byte));
+      temp := speed_ioctl(self.port, SPI_IOC_RD_MAX_SPEED_HZ, word);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Get speed ioctl() failed");
+      end if;
+      Ada.Text_IO.Put_Line("SPI port bits per second is " & uint32'Image(word));
+      temp := mode32_ioctl(self.port, SPI_IOC_RD_MODE32, word);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Get mode 32 ioctl() failed");
+      end if;
+      Ada.Text_IO.Put_Line("SPI port mode 32 is " & uint32'Image(word));
    end;
    --
 end;

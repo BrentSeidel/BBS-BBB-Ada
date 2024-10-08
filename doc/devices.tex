@@ -298,8 +298,8 @@ Sets the output value of a GPIO device.  The effect if the device is set to inpu
 
 \begin{lstlisting}
 function get(self : GPIO_record) return bit is abstract;
-\indexfunc{get}
 \end{lstlisting}
+\indexfunc{get}
 Reads the value of a GPIO device.  The value returned if the device is set to output is device specific.
 \begin{itemize}
   \item $self$ - The object for the GPIO device.
@@ -484,8 +484,21 @@ procedure set(self : SPI_record; value : uint8) is abstract;
 Writes a byte to the SPI bus.
 \begin{itemize}
   \item $self$ - The SPI interface device to use for communication.
-  \item $data$ - The data to write.
+  \item $value$ - The data to write.
 \end{itemize}
+
+\begin{lstlisting}
+procedure set(self : SPI_record; value : buffer; size : buff_index)
+   is abstract;
+\end{lstlisting}
+\indexfunc{set}
+Writes a buffer to the SPI bus.
+\begin{itemize}
+  \item $self$ - The SPI interface device to use for communication.
+  \item $value$ - The buffer containing the data to write.
+  \item $size$ - The number of bytes from the buffer to write.
+\end{itemize}
+
 \begin{lstlisting}
 function get(self : SPI_record) return uint8 is abstract;
 \end{lstlisting}
@@ -494,6 +507,18 @@ Reads a byte from the SPI bus.
 \begin{itemize}
   \item $self$ - The SPI interface device to use for communication.
   \item Returns the byte read from the bus.
+\end{itemize}
+
+\begin{lstlisting}
+procedure get(self : SPI_record; value : out buffer; size : buff_index)
+   is abstract;
+\end{lstlisting}
+\indexfunc{set}
+Reads a buffer from the SPI bus.
+\begin{itemize}
+  \item $self$ - The SPI interface device to use for communication.
+  \item $value$ - The buffer containing the data read from the bus.
+  \item $size$ - The number of bytes from the buffer to read.
 \end{itemize}
 
 %--------------------------------------------------------------------------------------------------
