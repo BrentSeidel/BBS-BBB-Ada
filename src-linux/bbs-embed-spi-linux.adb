@@ -124,4 +124,16 @@ package body BBS.embed.SPI.Linux is
       Ada.Text_IO.Put_Line("SPI port mode 32 is " & uint32'Image(word));
    end;
    --
+   --  Set SPI speed
+   --
+   procedure set_speed(self : in out Linux_SPI_record; speed : uint32) is
+      temp : Interfaces.C.Int;
+      word : uint32 := speed;
+   begin
+      temp := speed_ioctl(self.port, SPI_IOC_WR_MAX_SPEED_HZ, word);
+      if temp = -1 then
+         Ada.Text_IO.Put_Line("SPI Set speed ioctl() failed");
+      end if;
+   end;
+   --
 end;

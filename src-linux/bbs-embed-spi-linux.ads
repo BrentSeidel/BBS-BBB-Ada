@@ -75,6 +75,9 @@ package BBS.embed.SPI.Linux is
    --
    procedure print_config(self : in out Linux_SPI_record);
    --
+   --  Set SPI speed
+   --
+   procedure set_speed(self : in out Linux_SPI_record; speed : uint32);
 private
    --
    --  SPI exception raised for errors calling Linux.

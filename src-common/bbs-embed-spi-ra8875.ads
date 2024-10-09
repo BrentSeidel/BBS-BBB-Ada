@@ -42,83 +42,6 @@ package BBS.embed.SPI.RA8875 is
    --
    type RA8875_LAYER is (LAYER1, LAYER2);
    --
-   -- Power and display control register
-   RA8875_PWRR : constant uint8 := 16#01#;
-   RA8875_PWRR_DISPON : constant uint8 := 16#80#;
-   RA8875_PWRR_DISPOFF : constant uint8 := 16#00#;
-   RA8875_PWRR_SLEEP : constant uint8 := 16#02#;
-   RA8875_PWRR_NORMAL : constant uint8 := 16#00#;
-   RA8875_PWRR_SOFTRESET : constant uint8 := 16#01#;
-   --
-   -- Memory read/write command
-   RA8875_MRWC : constant uint8 := 16#02#;
-   --
-   -- Pixel clock setting register
-   RA8875_PCSR : constant uint8 := 16#04#;
-   RA8875_PCSR_PDATR : constant uint8 := 16#00#;
-   RA8875_PCSR_PDATL : constant uint8 := 16#80#;
-   RA8875_PCSR_CLK : constant uint8 := 16#00#;
-   RA8875_PCSR_2CLK : constant uint8 := 16#01#;
-   RA8875_PCSR_4CLK : constant uint8 := 16#02#;
-   RA8875_PCSR_8CLK : constant uint8 := 16#03#;
-   --
-   -- Serial flash/ROM configuration register
-   RA8875_SROC : constant uint8 := 16#05#;
-   --
-   -- Serial flash/ROM CLK setting register
-   RA8875_SFCLR : constant uint8 := 16#06#;
-   --
-   -- System configuration register
-   RA8875_SYSR : constant uint8 := 16#10#;
-   RA8875_SYSR_8BPP : constant uint8 := 16#00#;
-   RA8875_SYSR_16BPP : constant uint8 := 16#0C#;
-   RA8875_SYSR_MCU8 : constant uint8 := 16#00#;
-   RA8875_SYSR_MCU16 : constant uint8 := 16#03#;
-   --
-   -- General purpose input
-   RA8875_GPI : constant uint8 := 16#12#;
-   --
-   -- General purpose output
-   RA8875_GPO : constant uint8 := 16#13#;
-   --
-   -- Horizontal Display Width Register
-   RA8875_HDWR : constant uint8 := 16#14#;
-   --
-   -- Horizontal non-display fine tuning option register
-   RA8875_HNDFTR : constant uint8 := 16#15#;
-   RA8875_HNDFTR_DE_HIGH : constant uint8 := 16#00#;
-   RA8875_HNDFTR_DE_LOW : constant uint8 := 16#80#;
-   --
-   -- LCD Horizontal non-display period register
-   RA8875_HNDR : constant uint8 := 16#16#;
-   --
-   -- HSYNC start position register
-   RA8875_HSTR : constant uint8 := 16#17#;
-   --
-   -- HSYNC pulse width register
-   --
-   RA8875_HPWR : constant uint8 := 16#18#;
-   RA8875_HPWR_LOW : constant uint8 := 16#00#;
-   RA8875_HPWR_HIGH : constant uint8 := 16#80#;
-   --
-   -- LCD vertical display height register 0
-   RA8875_VDHR0 : constant uint8 := 16#19#;
-   --
-   -- LCD vertical display height register 1
-   RA8875_VDHR1 : constant uint8 := 16#1A#;
-   --
-   -- LCD vertical non-display period register 0
-   RA8875_VNDR0 : constant uint8 := 16#1B#;
-   --
-   -- LVD vertical non-display period register 1
-   RA8875_VNDR1 : constant uint8 := 16#1C#;
-   --
-   -- VSYNC start position register 0
-   RA8875_VSTR0 : constant uint8 := 16#1D#;
-   --
-   -- VSYNC start position register 1
-   RA8875_VSTR1 : constant uint8 := 16#1E#;
-   --
    -- VSYNC pulse width register
    RA8875_VPWR : constant uint8 := 16#1F#;
    RA8875_VPWR_LOW : constant uint8 := 16#00#;
@@ -788,9 +711,7 @@ end record;
    function GCursor_to_buffer is new Ada.Unchecked_Conversion(source => RA8875_GCursor,
                                                               target => RA8875_GCursorBuffer);
    ----------------------------------------------------------------------------
-   -- Object funcitons and procedures
-   --
-   function RA8875_new return RA8875_ptr;
+--   function RA8875_new return RA8875_ptr;
    --
    -- Low level methods
    --
@@ -798,12 +719,6 @@ end record;
    procedure setup(self : in out RA8875_record; CS : GPIO.GPIO; RST : GPIO.GPIO; screen : SPI_ptr);
    procedure hwReset(self : in out RA8875_record);
    procedure swReset(self : in out RA8875_record);
-   procedure writeCmd(self : RA8875_record; value : uint8);
-   procedure writeData(self : RA8875_record; value : uint8);
-   function readStatus(self : RA8875_record) return uint8;
-   function readData(self : RA8875_record) return uint8;
-   procedure writeReg(self : RA8875_record; reg : uint8; value : uint8);
-   function readReg(self : RA8875_record; reg : uint8) return uint8;
    --
    -- Configuration methods
    --
@@ -915,6 +830,95 @@ end record;
    procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
 --
 private
+   --
+   --  Private definitions
+   --
+   --
+   -- Power and display control register
+   RA8875_PWRR : constant uint8 := 16#01#;
+   RA8875_PWRR_DISPON : constant uint8 := 16#80#;
+   RA8875_PWRR_DISPOFF : constant uint8 := 16#00#;
+   RA8875_PWRR_SLEEP : constant uint8 := 16#02#;
+   RA8875_PWRR_NORMAL : constant uint8 := 16#00#;
+   RA8875_PWRR_SOFTRESET : constant uint8 := 16#01#;
+   --
+   -- Memory read/write command
+   RA8875_MRWC : constant uint8 := 16#02#;
+   --
+   -- Pixel clock setting register
+   RA8875_PCSR : constant uint8 := 16#04#;
+   RA8875_PCSR_PDATR : constant uint8 := 16#00#;
+   RA8875_PCSR_PDATL : constant uint8 := 16#80#;
+   RA8875_PCSR_CLK : constant uint8 := 16#00#;
+   RA8875_PCSR_2CLK : constant uint8 := 16#01#;
+   RA8875_PCSR_4CLK : constant uint8 := 16#02#;
+   RA8875_PCSR_8CLK : constant uint8 := 16#03#;
+   --
+   -- Serial flash/ROM configuration register
+   RA8875_SROC : constant uint8 := 16#05#;
+   --
+   -- Serial flash/ROM CLK setting register
+   RA8875_SFCLR : constant uint8 := 16#06#;
+   --
+   -- System configuration register
+   RA8875_SYSR : constant uint8 := 16#10#;
+   RA8875_SYSR_8BPP : constant uint8 := 16#00#;
+   RA8875_SYSR_16BPP : constant uint8 := 16#0C#;
+   RA8875_SYSR_MCU8 : constant uint8 := 16#00#;
+   RA8875_SYSR_MCU16 : constant uint8 := 16#03#;
+   --
+   -- General purpose input
+   RA8875_GPI : constant uint8 := 16#12#;
+   --
+   -- General purpose output
+   RA8875_GPO : constant uint8 := 16#13#;
+   --
+   -- Horizontal Display Width Register
+   RA8875_HDWR : constant uint8 := 16#14#;
+   --
+   -- Horizontal non-display fine tuning option register
+   RA8875_HNDFTR : constant uint8 := 16#15#;
+   RA8875_HNDFTR_DE_HIGH : constant uint8 := 16#00#;
+   RA8875_HNDFTR_DE_LOW : constant uint8 := 16#80#;
+   --
+   -- LCD Horizontal non-display period register
+   RA8875_HNDR : constant uint8 := 16#16#;
+   --
+   -- HSYNC start position register
+   RA8875_HSTR : constant uint8 := 16#17#;
+   --
+   -- HSYNC pulse width register
+   --
+   RA8875_HPWR : constant uint8 := 16#18#;
+   RA8875_HPWR_LOW : constant uint8 := 16#00#;
+   RA8875_HPWR_HIGH : constant uint8 := 16#80#;
+   --
+   -- LCD vertical display height register 0
+   RA8875_VDHR0 : constant uint8 := 16#19#;
+   --
+   -- LCD vertical display height register 1
+   RA8875_VDHR1 : constant uint8 := 16#1A#;
+   --
+   -- LCD vertical non-display period register 0
+   RA8875_VNDR0 : constant uint8 := 16#1B#;
+   --
+   -- LVD vertical non-display period register 1
+   RA8875_VNDR1 : constant uint8 := 16#1C#;
+   --
+   -- VSYNC start position register 0
+   RA8875_VSTR0 : constant uint8 := 16#1D#;
+   --
+   -- VSYNC start position register 1
+   RA8875_VSTR1 : constant uint8 := 16#1E#;
+   --
+   --  Internal functions
+   --
+   procedure writeCmd(self : RA8875_record; value : uint8);
+   procedure writeData(self : RA8875_record; value : uint8);
+   function readStatus(self : RA8875_record) return uint8;
+   function readData(self : RA8875_record) return uint8;
+   procedure writeReg(self : RA8875_record; reg : uint8; value : uint8);
+   function readReg(self : RA8875_record; reg : uint8) return uint8;
    ----------------------------------------------------------------------------
    type RA8875_record is tagged
       record
