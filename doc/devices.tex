@@ -2100,34 +2100,34 @@ type RA8875_LAYER is (LAYER1, LAYER2);
 The datatype \datatype{RA8875\_LAYER} is used to select the currently active layer for the display.  In some configurations, only one layer is allowed and this option is ignored.
 
 \begin{lstlisting}
-type RA8875_MWCR0_MODE is (graphic, text);
+type MWCR0_MODE is (graphic, text);
 \end{lstlisting}
-\indextype{RA8875\_MWCR0\_MODE}
-The datatype \datatype{RA8875\_MWCR0\_MODE} is used to determine if the RA8875 is operating in text mode or graphics mode.
+\indextype{MWCR0\_MODE}
+The datatype \datatype{MWCR0\_MODE} is used to determine if the RA8875 is operating in text mode or graphics mode.
 
 \begin{lstlisting}
-type RA8875_MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
+type MWCR0_CURDIR is (LRTD, RLTD, TDLR, DTLR);
 \end{lstlisting}
-\indextype{RA8875\_MWCR0\_CURDIR}
-The datatype \datatype{RA8875\_MWCR0\_CURDIR} is used to determine the memory write direction for graphics mode.  The options are left to right top down (\constant{LRTD}), right to left top down (\constant{RLTD}), top down left to right (\constant{TDLR}), and down to top left to right (\constant {DTLR}).
+\indextype{MWCR0\_CURDIR}
+The datatype \datatype{MWCR0\_CURDIR} is used to determine the memory write direction for graphics mode.  The options are left to right top down (\constant{LRTD}), right to left top down (\constant{RLTD}), top down left to right (\constant{TDLR}), and down to top left to right (\constant {DTLR}).
 
 \begin{lstlisting}
-type RA8875_MWCR1_GCURS_ENABLE is (disable, enable);
+type MWCR1_GCURS_ENABLE is (disable, enable);
 \end{lstlisting}
-\indextype{RA8875\_MWCR1\_GCURS\_ENABLE}
-The datatype \datatype{RA8875\_MWCR1\_GCURS\_ENABLE} is used to determine if the graphics cursor should be enabled or disabled.
+\indextype{MWCR1\_GCURS\_ENABLE}
+The datatype \datatype{MWCR1\_GCURS\_ENABLE} is used to determine if the graphics cursor should be enabled or disabled.
 
 \begin{lstlisting}
-type RA8875_MWCR1_GCURS_SET is range 0 .. 7;
+type MWCR1_GCURS_SET is range 0 .. 7;
 \end{lstlisting}
-\indextype{RA8875\_MWCR1\_GCURS\_SET}
-The datatype \datatype{RA8875\_MWCR1\_GCURS\_SET} is used to select which set of graphics cursors to use.
+\indextype{MWCR1\_GCURS\_SET}
+The datatype \datatype{MWCR1\_GCURS\_SET} is used to select which set of graphics cursors to use.
 
 \begin{lstlisting}
-type RA8875_MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
+type MWCR1_WRITE_DEST is (LAYER, CGRAM, GCURS, PATTERN);
 \end{lstlisting}
-\indextype{RA8875\_MWCR1\_WRITE\_DEST}
-The datatype \datatype{RA8875\_MWCR1\_WRITE\_DEST} is used to select the destination for graphics writing.
+\indextype{MWCR1\_WRITE\_DEST}
+The datatype \datatype{MWCR1\_WRITE\_DEST} is used to select the destination for graphics writing.
 
 \begin{lstlisting}
 type R5G6B5_color is record
@@ -2157,33 +2157,31 @@ The datatype \datatype{R5G6B5\_color} is used to represent colors with five bits
 The datatype \datatype{R3G3B2\_color} is used to represent colors with three bits for red, three bits for green and two bits for blue.  This adds up to eight bits.
 
 \begin{lstlisting}
-type RA8875_FNCR0_Code_Page is
-     (RA8875_FNCR0_ISO8859_1, RA8875_FNCR0_ISO8859_2,
-      RA8875_FNCR0_ISO8859_3, RA8875_FNCR0_ISO8859_4);
+type FNCR0_Code_Page is (FNCR0_ISO8859_1, FNCR0_ISO8859_2,
+                         FNCR0_ISO8859_3, FNCR0_ISO8859_4);
 \end{lstlisting}
-\indextype{RA8875\_FNCR0\_Code\_Page}
-The datatype \datatype{RA8875\_FNCR0\_Code\_Page} is used to select which code page to use when translating character codes to glyphs on the display.
+\indextype{FNCR0\_Code\_Page}
+The datatype \datatype{FNCR0\_Code\_Page} is used to select which code page to use when translating character codes to glyphs on the display.
 
 \begin{lstlisting}
-type RA8875_ELLIPSE_PART is (RA8875_ELLIPSE_LL, RA8875_ELLIPSE_UL,
-                             RA8875_ELLIPSE_UR, RA8875_ELLIPSE_LR);
+type ELLIPSE_PART is (ELLIPSE_LL, ELLIPSE_UL, ELLIPSE_UR, ELLIPSE_LR);
 \end{lstlisting}
-\indextype{RA8875\_ELLIPSE\_PART}
-The datatype \datatype{RA8875\_ELLIPSE\_PART} is used to select which part of an ellipse is drawn.  The options are lower-left (\constant{RA8875\_ELLIPSE\_LL}), upper-left (\constant{RA8875\_ELLIPSE\_UL}), upper-right (\constant{RA8875\_ELLIPSE\_UR}), and lower-right (\constant{RA8875\_ELLIPSE\_LR}).
+\indextype{ELLIPSE\_PART}
+The datatype \datatype{ELLIPSE\_PART} is used to select which part of an ellipse is drawn.  The options are lower-left (\constant{ELLIPSE\_LL}), upper-left (\constant{ELLIPSE\_UL}), upper-right (\constant{ELLIPSE\_UR}), and lower-right (\constant{ELLIPSE\_LR}).
 
 \begin{lstlisting}
-type RA8875_LTPR0_SCROLL_MODE is (LAYER12_SIMULTANEOUS, LAYER1_ONLY,
-                                  LAYER2_ONLY, BUFFERED);
+type LTPR0_SCROLL_MODE is (LAYER12_SIMULTANEOUS, LAYER1_ONLY,
+                           LAYER2_ONLY, BUFFERED);
 \end{lstlisting}
-\indextype{RA8875\_LTPR0\_SCROLL\_MODE}
-The datatype \datatype{RA8875\_LTPR0\_SCROLL\_MODE} is used to identify the mode for scrolling.  Both layers can be scrolled simultaneously, either of the two layers can be selected to scroll independently, or layer 2 can be used as a scroll buffer.
+\indextype{LTPR0\_SCROLL\_MODE}
+The datatype \datatype{LTPR0\_SCROLL\_MODE} is used to identify the mode for scrolling.  Both layers can be scrolled simultaneously, either of the two layers can be selected to scroll independently, or layer 2 can be used as a scroll buffer.
 
 \begin{lstlisting}
-type RA8875_LTPR0_DISP_MODE is (ONLY_LAYER1, ONLY_LAYER2, LIGHTEN, TRANSPARENT,
-                                  BOOL_OR, BOOL_AND, FLOATING, RESERVED);
+type LTPR0_DISP_MODE is (ONLY_LAYER1, ONLY_LAYER2, LIGHTEN, TRANSPARENT,
+                         BOOL_OR, BOOL_AND, FLOATING, RESERVED);
 \end{lstlisting}
-\indextype{RA8875\_LTPR0\_DISP\_MODE}
-The datatype \datatype{RA8875\_LTPR0\_DISP\_MODE} is used to identify the way to display the two layers.  Each layer can be displayed by itself or in various combinations.
+\indextype{LTPR0\_DISP\_MODE}
+The datatype \datatype{LTPR0\_DISP\_MODE} is used to identify the way to display the two layers.  Each layer can be displayed by itself or in various combinations.
 
 \begin{lstlisting}
    type RA8875_GCursor is array (0 .. 31, 0 .. 31) of integer range 0 .. 3
@@ -2404,9 +2402,9 @@ Sets some of the RA8875 display control parameters.
 \end{itemize}
 
 \begin{lstlisting}
-procedure setWriteCtrl0(self : RA8875_record; mode : RA8875_MWCR0_MODE;
+procedure setWriteCtrl0(self : RA8875_record; mode : MWCR0_MODE;
                         cursorVisible : boolean; cursorBlink : boolean;
-                        writeDir : RA8875_MWCR0_CURDIR;
+                        writeDir : MWCR0_CURDIR;
                         WriteCursorIncr : boolean; ReadCursorIncr : boolean);
 \end{lstlisting}
 \indexfunc{setWriteCtrl0}
@@ -2423,9 +2421,9 @@ Configures the RA8875 memory write control register 0.
 
 \begin{lstlisting}
 procedure setWriteCtrl1(self : RA8875_record;
-                        cursorEnable : RA8875_MWCR1_GCURS_ENABLE;
-                        GCursorSelect : RA8875_MWCR1_GCURS_SET;
-                        writeDest : RA8875_MWCR1_WRITE_DEST;
+                        cursorEnable : MWCR1_GCURS_ENABLE;
+                        GCursorSelect : MWCR1_GCURS_SET;
+                        writeDest : MWCR1_WRITE_DEST;
                         layer : RA8875_LAYER);
 \end{lstlisting}
 \indexfunc{setWriteCtrl1}
@@ -2461,7 +2459,7 @@ Sets the foreground and background color for text.
 \end{itemize}
 
 \begin{lstlisting}
-procedure textSetCodePage(self : RA8875_record; page : RA8875_FNCR0_Code_Page);
+procedure textSetCodePage(self : RA8875_record; page : FNCR0_Code_Page);
 \end{lstlisting}
 \indexfunc{textSetCodePage}
 Selects the code page to used when translating character codes to glyphs on the screen.  The options are: \constant{RA8875\_FNCR0\_ISO8859\_1}, \constant{RA8875\_FNCR0\_ISO8859\_2}, \constant{RA8875\_FNCR0\_ISO8859\_3}, and \constant{RA8875\_FNCR0\_ISO8859\_4}.
@@ -2631,7 +2629,7 @@ Draw an ellipse oriented either horizontally or vertically.
 \begin{lstlisting}
 procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
                              hRad : uint16;  vRad : uint16;
-                             seg : RA8875_ELLIPSE_PART; fill : boolean);
+                             seg : ELLIPSE_PART; fill : boolean);
 \end{lstlisting}
 \indexfunc{drawEllipseSegment}
 Draw a segment of an ellipse oriented either horizontally or vertically.
@@ -2745,7 +2743,7 @@ Draw an ellipse oriented either horizontally or vertically.
 
 \begin{lstlisting}
 procedure drawEllipseSegment(self : RA8875_record; x : uint16; y : uint16;
-                             hRad : uint16; vRad : uint16; seg : RA8875_ELLIPSE_PART;
+                             hRad : uint16; vRad : uint16; seg : ELLIPSE_PART;
                              color : R5G6B5_color; fill : boolean);
 \end{lstlisting}
 \indexfunc{drawEllipseSegment}
@@ -2790,7 +2788,7 @@ function checkTouched(self : RA8875_record) return boolean;
 Checks if the RA8875 has recorded a touch event.
 \begin{itemize}
   \item $self$ - The RA8875 device to check.
-  \item Returns \constant{True} if a touch event has occured.
+  \item Returns \constant{True} if a touch event has occurred.
 \end{itemize}
 
 \begin{lstlisting}
@@ -2915,8 +2913,8 @@ Selects which layer to use.
 
 \begin{lstlisting}
 procedure setLayerSetting0(self : RA8875_record;
-                           scroll : RA8875_LTPR0_SCROLL_MODE;
-                           float : boolean; display : RA8875_LTPR0_DISP_MODE);
+                           scroll : LTPR0_SCROLL_MODE;
+                           float : boolean; display : LTPR0_DISP_MODE);
 \end{lstlisting}
 \indexfunc{setLayerSetting0}
 Sets layer transparency register 0 in the RA8875.
@@ -2963,7 +2961,7 @@ Sets the graphics cursor position.
 \end{itemize}
 
 \begin{lstlisting}
-procedure setGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
+procedure setGraphCursor(self : RA8875_record; curs : MWCR1_GCURS_SET;
                          data : RA8875_GCursor);
 \end{lstlisting}
 \indexfunc{setGraphCursor}
@@ -2975,8 +2973,8 @@ Sets the graphics cursor.
 \end{itemize}
 
 \begin{lstlisting}
-procedure selectGraphCursor(self : RA8875_record; curs : RA8875_MWCR1_GCURS_SET;
-                            enable : RA8875_MWCR1_GCURS_ENABLE);
+procedure selectGraphCursor(self : RA8875_record; curs : MWCR1_GCURS_SET;
+                            enable : MWCR1_GCURS_ENABLE);
 \end{lstlisting}
 \indexfunc{selectGraphCursor}
 Selects the graphics cursor.
