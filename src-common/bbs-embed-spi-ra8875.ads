@@ -250,7 +250,7 @@ package BBS.embed.SPI.RA8875 is
    --
    procedure fillScreen(self : RA8875_record; color : R5G6B5_color);
    --
-private
+--private      --  Commented out for development/test/debugging
    --
    --  Private definitions
    --
@@ -617,6 +617,7 @@ private
    procedure writeReg(self : RA8875_record; reg : uint8; value : uint8);
    function readReg(self : RA8875_record; reg : uint8) return uint8;
    ----------------------------------------------------------------------------
+private     --  For development/test/debugging
    type RA8875_record is tagged
       record
          cs_gpio    : BBS.embed.GPIO.GPIO;
@@ -633,8 +634,8 @@ private
    --
    -- Constants for pin outputs
    --
-   gpio_high : constant bit := 0;
-   gpio_low  : constant bit := 1;
+   gpio_high : constant bit := 1;
+   gpio_low  : constant bit := 0;
    --
    -- Constants for RA8875 transaction types
    --
@@ -642,5 +643,5 @@ private
    DATAREAD  : constant uint8 := 16#40#;
    CMDWRITE  : constant uint8 := 16#80#;
    CMDREAD   : constant uint8 := 16#C0#;
-
+   --
 end;
